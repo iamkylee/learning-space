@@ -225,6 +225,18 @@ button.primary:hover { filter: brightness(1.08); color: var(--panel); }
 .cheat h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 500; }
 .cheat .f { font-family: var(--f-mono); font-size: 13px; line-height: 1.8; overflow-x: auto; white-space: pre; }
 
+.ts-grid { display: grid; gap: 4px; align-items: center; justify-content: start; }
+.ts-lab { font-size: 12px; color: var(--muted); white-space: nowrap; padding-right: 8px; }
+.cell.blank { border-color: transparent; background: transparent; }
+.cell.hdr { border-color: transparent; background: transparent; font-size: 11px; }
+.cell.stamp { background: var(--kernel-soft); border-color: var(--kernel); color: var(--kernel); }
+.cell.sum { color: var(--ink); font-weight: 600; cursor: pointer; }
+.cell.cut { text-decoration: line-through; opacity: .55; border-style: dashed; }
+.cell.opx { border-style: dashed; }
+.cell.res { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; cursor: pointer; }
+.cell.colsel { box-shadow: 0 0 0 2px var(--accent); }
+.cell.hdr.colsel, .cell.blank.colsel { box-shadow: none; color: var(--accent); font-weight: 700; }
+
 /* stepper */
 .st-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; color: var(--muted); }
 .st-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -631,17 +643,94 @@ b′ = γ · (b − μ) / √(σ² + ε) + β</div>
     <section id="deconv">
       <div class="eyebrow">11 · Transposed convolution</div>
       <h2>反卷積：把特徵圖放大</h2>
-      <p>反卷積（transposed convolution，也叫轉置卷積）是卷積的「反方向」：讓高寬變大，用在語意分割、生成模型、U-Net 的解碼器。它不是把卷積還原，只是形狀反過來。</p>
+      <p>反卷積（transposed convolution，也叫轉置卷積）是卷積的「反方向」：讓高寬變大，用在語意分割、生成模型、U-Net 的解碼器。它只把<strong>形狀</strong>反過來，不會把卷積前的數值還原，權重和一般卷積一樣是學出來的。</p>
+      <div class="table-wrap"><table>
+        <tr><th></th><th>方向</th><th>例子（k=3, s=2, p=1）</th></tr>
+        <tr><td>卷積</td><td>大 → 小</td><td class="mono">6 → 3</td></tr>
+        <tr><td>反卷積</td><td>小 → 大</td><td class="mono">3 → 6（op=1）</td></tr>
+      </table></div>
+
+      <h3>看法一：蓋印章</h3>
+      <p>一般卷積是「看一塊、算出一個數」。反卷積反過來，是「<strong>拿一個數，蓋出一整塊</strong>」：</p>
+      <ol>
+        <li>輸入的每一格，把整個 kernel 乘上自己的值，當成一個印章。</li>
+        <li>第 i 格的印章蓋在位置 <code>i × s</code> 開始的地方，所以每格往右移 s 格。</li>
+        <li>蓋到重疊的位置就<strong>相加</strong>。</li>
+      </ol>
+      <pre class="diagram">輸入 [1, 2]，kernel [1, 2, 3]，stride 2，padding 0
+
+位置:        0   1   2   3   4
+輸入 1 蓋:   1   2   3              ← 1 × [1,2,3]，從位置 0 開始
+輸入 2 蓋:           2   4   6      ← 2 × [1,2,3]，從位置 2 開始
+─────────────────────────────
+輸出:        1   2   5   4   6      ← 位置 2 重疊：3 + 2 = 5</pre>
+
+      <div class="panel" id="stampPanel">
+        <div class="panel-title"><b>蓋印章示意（一維）</b><span>點「合計」或「輸出」的格子，看它是哪些印章加起來的</span></div>
+        <div class="controls">
+          <label class="field">輸入值<input id="tsX" type="text" value="1, 2" style="width:130px" inputmode="decimal"></label>
+          <label class="field">kernel 權重<input id="tsW" type="text" value="1, 2, 3" style="width:130px" inputmode="decimal"></label>
+          <label class="field">stride s<input id="tsS" type="number" min="1" max="5" value="2"></label>
+          <label class="field">padding p<input id="tsP" type="number" min="0" max="5" value="0"></label>
+          <label class="field">output_padding<input id="tsOp" type="number" min="0" max="4" value="0"></label>
+        </div>
+        <div class="btn-row">
+          <button type="button" data-ts="1,2|1,2,3|2|0|0">上面的例子</button>
+          <button type="button" data-ts="1,2,3,4|1,1,1,1|2|1|0">k=4, s=2, p=1 放大 2 倍</button>
+          <button type="button" data-ts="1,1,1,1|1,1,1|2|0|0">k=3, s=2 棋盤格</button>
+          <button type="button" data-ts="1,2,1|1,2,1|2|1|1">p=1 剪邊、op=1 補尾</button>
+          <button type="button" data-ts="1,2,3|1,2,3|1|0|0">s=1 只多 k−1</button>
+        </div>
+        <div class="scroll-x"><div class="ts-grid" id="tsGrid"></div></div>
+        <div class="legend">
+          <span><i style="background:var(--kernel-soft);border-color:var(--kernel)"></i>印章蓋下去的值</span>
+          <span><i style="border-style:dashed"></i>被 padding 剪掉 / output_padding 補的</span>
+          <span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>最後的輸出</span>
+        </div>
+        <div class="result" id="tsOut"></div>
+      </div>
+
+      <h3>輸出長度的公式怎麼來的</h3>
+      <ol>
+        <li>最後一格輸入（第 in − 1 格）的印章從位置 <code>(in − 1) × s</code> 開始。</li>
+        <li>印章本身再往右延伸 <code>k − 1</code> 格。</li>
+        <li>所以最右邊在 <code>(in − 1) × s + (k − 1)</code>，長度要再 +1。</li>
+      </ol>
+      <div class="formula">蓋完印章的全長 = (in − 1) × s + (k − 1) + 1
+例：(2 − 1) × 2 + (3 − 1) + 1 = 5</div>
+      <p>再把其他三個設定加進來：</p>
+      <div class="table-wrap"><table>
+        <tr><th>設定</th><th>在反卷積裡的意思</th><th>對公式的影響</th></tr>
+        <tr><td>padding p</td><td>蓋完之後，頭尾<strong>各剪掉</strong> p 格</td><td class="mono">− 2p</td></tr>
+        <tr><td>膨脹 d</td><td>印章的格子間有空隙，變寬成 d(k−1)+1 格</td><td class="mono">(k−1) 換成 d(k−1)</td></tr>
+        <tr><td>output_padding</td><td>尾端多保留幾格</td><td class="mono">+ op</td></tr>
+      </table></div>
       <div class="formula">輸出 = (輸入 − 1) × s − 2p + d × (k − 1) + output_padding + 1
 
-常用：k=4, s=2, p=1 → 剛好放大 2 倍
+常用：k=4, s=2, p=1 → (in−1)×2 − 2 + 3 + 1 = 2 × in，剛好放大 2 倍
       k=3, s=2, p=1, output_padding=1 → 也是 2 倍</div>
-      <h3>等價的理解方式</h3>
+      <p><strong>為什麼 padding 是減的？</strong>反卷積是卷積的反方向。卷積的 padding 讓輸出變大，所以反卷積的 padding 意思也反過來，變成剪掉。這樣設計，設定相同的卷積和反卷積，形狀剛好互相對應：卷積 6 → 3，反卷積 3 → 6。</p>
+
+      <h3>看法二：插 0，再做一般卷積</h3>
+      <p>同一件事換一種算法，結果完全一樣。下面的二維示意就是用這個方法畫的。</p>
       <ol>
         <li>在輸入的每兩格之間插入 <code>s − 1</code> 個 0。</li>
-        <li>四邊各補 <code>k − 1 − p</code> 圈 0。</li>
-        <li>用 stride 1 做一般卷積。</li>
+        <li>頭尾各補 <code>k − 1 − p</code> 個 0（有 output_padding 時，尾端再多補 op 個）。</li>
+        <li>用翻轉過的 kernel、stride 1 做一般卷積。</li>
       </ol>
+      <pre class="diagram">同一個例子：輸入 [1, 2]，kernel [1, 2, 3]，s=2，p=0
+
+① 插 s−1 = 1 個 0：   [1, 0, 2]
+② 頭尾各補 k−1−p = 2： [0, 0, 1, 0, 2, 0, 0]          ← 7 格
+③ kernel 翻轉成 [3, 2, 1]，stride 1：
+   [0 0 1]·[3 2 1] = 1
+   [0 1 0]·[3 2 1] = 2
+   [1 0 2]·[3 2 1] = 3 + 2 = 5
+   [0 2 0]·[3 2 1] = 4
+   [2 0 0]·[3 2 1] = 6
+輸出 [1, 2, 5, 4, 6]，和蓋印章一樣</pre>
+      <p>kernel 要翻轉，但權重本來就是學出來的，實際使用時不必在意。補 <code>k − 1 − p</code> 個 0 是為了讓印章的邊緣剛好碰到第一個輸入值；p 越大補得越少，輸出越短，這是 −2p 的另一種解釋。</p>
+
       <div class="panel">
         <div class="panel-title"><b>反卷積示意（二維）</b><span>綠色是原本的輸入，虛線是補的 0</span></div>
         <div class="controls">
@@ -661,12 +750,24 @@ b′ = γ · (b − μ) / √(σ² + ε) + β</div>
         <tr><td class="mono">7</td><td class="mono">k=3, s=2, p=1, op=1</td><td class="mono">6×2 − 2 + 2 + 1 + 1</td><td class="num">14</td></tr>
         <tr><td class="mono">4</td><td class="mono">k=2, s=2, p=0</td><td class="mono">3×2 − 0 + 1 + 1</td><td class="num">8</td></tr>
       </table></div>
-      <ul>
-        <li><strong>參數量和卷積一樣</strong>：k² × C_in × C_out (+ C_out)。</li>
-        <li><strong>為什麼需要 output_padding</strong>：卷積 stride 2 時，32 和 33 都會變成 16（因為有 floor）。反卷積從 16 回去時不知道該變 32 還是 33，output_padding 用來指定多補 1。</li>
-        <li><strong>棋盤格偽影</strong>：k 不是 s 的倍數時（例如 k=3, s=2），輸出各格被重疊覆蓋的次數不均，容易出現格狀紋路。常見的替代方法是「先最近鄰或雙線性上採樣，再接一般 3×3 卷積」。</li>
-      </ul>
-      <div class="remember">反卷積 = 插 0 + 補邊 + 一般卷積；輸出 = (in−1)s − 2p + k + op（d=1 時）。</div>
+
+      <h3>output_padding：回到哪一個大小</h3>
+      <p>卷積有 floor，所以不同的大小可能縮成同一個大小。反卷積往回放大時，就不知道該回到哪一個：</p>
+      <pre class="diagram">卷積 k3 s2 p1：   5 → ⌊(5+2−3)/2⌋+1 = 3
+                  6 → ⌊(6+2−3)/2⌋+1 = 3
+
+反卷積 k3 s2 p1： 3 → (3−1)×2 − 2 + 2 + 1 = 5      op = 0
+                  3 → 5 + 1             = 6      op = 1</pre>
+      <p>output_padding 就是用來指定要回到哪一個，它必須<strong>小於 stride</strong>。在 U-Net 這類網路，通常選讓解碼器尺寸和編碼器對齊的那個值。</p>
+
+      <h3>棋盤格偽影：數數看每格被蓋了幾次</h3>
+      <pre class="diagram">k=3, s=2：  1 1 2 1 2 1 2 1 1      ← 有的格子蓋 1 次、有的蓋 2 次
+k=4, s=2：  1 1 2 2 2 2 2 2 1 1    ← 中間都是 2 次</pre>
+      <p>被蓋比較多次的格子數值容易比較大，影像上就會出現規律的格狀紋路。<strong>k 是 s 的倍數</strong>時中間的覆蓋次數才會一樣，所以 k=4、s=2、p=1 很常用。另一個常見做法是先用最近鄰或雙線性插值放大，再接一般 3×3 卷積。上面的蓋印章示意有「覆蓋次數」這一列，可以自己試試看。</p>
+
+      <h3>參數量</h3>
+      <p>和一般卷積一樣：<code>k² × C_in × C_out (+ C_out)</code>。例如 128 → 64 通道、k=4：<code>4×4×128×64 = 131,072</code>。</p>
+      <div class="remember">每個輸入值蓋一個 kernel 印章、每次移 s 格、重疊相加；全長 (in−1)s + k，再減 2p、加 op。</div>
     </section>
 
     <!-- 12 fc -->
@@ -1128,6 +1229,82 @@ k=4,s=2,p=1 → ×2</div></div>
   }
   ['dIn', 'dK', 'dS', 'dP', 'dOp'].forEach((id) => $(id).addEventListener('input', drawDeconv));
   drawDeconv();
+
+  /* ---------- deconv stamp (1D) ---------- */
+  function parseNums(str, max) {
+    return String(str).split(/[,，\s]+/).filter(Boolean).map(Number).filter(Number.isFinite).slice(0, max);
+  }
+  const nf = (v) => String(Math.round(v * 1e4) / 1e4);
+  let tsSel = null;
+  function drawStamp() {
+    const x = parseNums($('tsX').value, 8), w = parseNums($('tsW').value, 7);
+    const s = Math.max(1, int($('tsS'), 2)), p = Math.max(0, int($('tsP'), 0)), op = Math.max(0, int($('tsOp'), 0));
+    const grid = $('tsGrid');
+    grid.innerHTML = '';
+    if (!x.length || !w.length) { $('tsOut').innerHTML = '<span class="err">請輸入數字，用逗號分開，例如 1, 2, 3。</span>'; return; }
+    const n = x.length, k = w.length, full = (n - 1) * s + k, out = full - 2 * p + op;
+    if (out < 1) { $('tsOut').innerHTML = '<span class="err">padding 太大，頭尾剪完沒有剩下任何格子。</span>'; return; }
+    const cols = Math.max(full, p + out);
+    const sum = new Array(cols).fill(0), cnt = new Array(cols).fill(0), who = Array.from({ length: cols }, () => []);
+    for (let i = 0; i < n; i++) for (let j = 0; j < k; j++) {
+      const c = i * s + j; sum[c] += x[i] * w[j]; cnt[c]++; who[c].push([i, j]);
+    }
+    const inOut = (c) => c >= p && c < p + out;
+    if (tsSel === null || tsSel >= cols) {
+      tsSel = p;
+      for (let c = p; c < p + out; c++) if (cnt[c] > 1) { tsSel = c; break; }
+    }
+    grid.style.gridTemplateColumns = 'auto repeat(' + cols + ', auto)';
+    const lab = (t) => { const d = document.createElement('div'); d.className = 'ts-lab'; d.textContent = t; grid.appendChild(d); };
+    const add = (el, c) => { if (c === tsSel) el.classList.add('colsel'); grid.appendChild(el); };
+    lab('位置');
+    for (let c = 0; c < cols; c++) add(cellEl(c, 'hdr'), c);
+    for (let i = 0; i < n; i++) {
+      lab('輸入 ' + nf(x[i]) + ' 蓋');
+      for (let c = 0; c < cols; c++) {
+        const j = c - i * s;
+        add(j >= 0 && j < k ? cellEl(nf(x[i] * w[j]), 'stamp') : cellEl('', 'blank'), c);
+      }
+    }
+    lab('合計');
+    for (let c = 0; c < cols; c++) {
+      const b = cellEl(c < full ? nf(sum[c]) : '0', 'sum val' + (inOut(c) ? '' : ' cut') + (c >= full ? ' opx' : ''), 'button');
+      b.setAttribute('aria-label', '位置 ' + c);
+      b.addEventListener('click', () => { tsSel = c; drawStamp(); });
+      add(b, c);
+    }
+    lab('覆蓋次數');
+    for (let c = 0; c < cols; c++) add(cellEl(c < full ? cnt[c] : 0, 'hdr'), c);
+    lab('輸出');
+    for (let c = 0; c < cols; c++) {
+      if (!inOut(c)) { add(cellEl('', 'blank'), c); continue; }
+      const b = cellEl(nf(c < full ? sum[c] : 0), 'res', 'button');
+      b.setAttribute('aria-label', '輸出第 ' + (c - p + 1) + ' 格');
+      b.addEventListener('click', () => { tsSel = c; drawStamp(); });
+      add(b, c);
+    }
+    const lines = [];
+    lines.push('① 蓋完印章的全長 = (' + n + ' − 1)×' + s + ' + (' + k + ' − 1) + 1 = ' + full);
+    lines.push('② 頭尾各剪 p = ' + p + ' 格' + (op ? '，尾端多留 op = ' + op + ' 格' : '') + '：' + full + ' − 2×' + p + (op ? ' + ' + op : '') + ' = ' + out);
+    lines.push('公式：(' + n + ' − 1)×' + s + ' − 2×' + p + ' + (' + k + ' − 1) + ' + op + ' + 1 = <span class="big">' + out + '</span>');
+    const c = tsSel;
+    const parts = who[c] ? who[c].map(([i, j]) => nf(x[i]) + '×' + nf(w[j])) : [];
+    lines.push('');
+    lines.push('位置 ' + c + (inOut(c) ? '（輸出第 ' + (c - p + 1) + ' 格）' : '（被剪掉）') + '：' +
+      (parts.length ? parts.join(' + ') + ' = ' + nf(sum[c]) + '　← ' + parts.length + ' 個印章重疊' : '沒有印章蓋到，等於 0'));
+    if (s > 1) lines.push(k % s === 0
+      ? 'k = ' + k + ' 是 s = ' + s + ' 的倍數，中間每格覆蓋次數一樣。'
+      : 'k = ' + k + ' 不是 s = ' + s + ' 的倍數，中間覆蓋次數不平均，容易出現棋盤格。');
+    $('tsOut').innerHTML = lines.join('\n');
+  }
+  ['tsX', 'tsW', 'tsS', 'tsP', 'tsOp'].forEach((id) => $(id).addEventListener('input', () => { tsSel = null; drawStamp(); }));
+  document.querySelectorAll('[data-ts]').forEach((b) => b.addEventListener('click', () => {
+    const [xs, ws, s, p, op] = b.dataset.ts.split('|');
+    $('tsX').value = xs.split(',').join(', '); $('tsW').value = ws.split(',').join(', ');
+    $('tsS').value = s; $('tsP').value = p; $('tsOp').value = op;
+    tsSel = null; drawStamp();
+  }));
+  drawStamp();
 
   /* ---------- 1D visualizer ---------- */
   let sel = 0, vizState = null, chain = [];
