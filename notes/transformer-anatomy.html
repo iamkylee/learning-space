@@ -1,0 +1,1168 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Transformer 解剖圖</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
+<style>
+/* Layout concept: 長頁技術講義。頂部固定章節列，單欄內容，圖表與計算器放在淺色面板中。 */
+:root{
+  --bg:#F4F5F8; --surface:#FFFFFF; --surface2:#EBEDF2; --fg:#151922; --muted:#586174; --line:#D6DAE3;
+  --accent:#2640C4; --accent-fg:#FFFFFF; --code-bg:#EEF0F5;
+  --kw:#7336AE; --cm:#5A6578; --fn:#14639F;
+  --emb:#F7D5DF; --emb-bd:#C45A82;
+  --att:#FADFBD; --att-bd:#C97F22;
+  --ffn:#CDE3F5; --ffn-bd:#3F86C2;
+  --nrm:#F4E8AC; --nrm-bd:#A98F1E;
+  --lin:#DFD7F2; --lin-bd:#7E67BA;
+  --sft:#CDE8D5; --sft-bd:#3F9460;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1218; --surface:#171B23; --surface2:#222733; --fg:#E8EBF2; --muted:#9AA3B5; --line:#2C3240;
+    --accent:#8FA6FF; --accent-fg:#0F1218; --code-bg:#12161D;
+    --kw:#C9A8FF; --cm:#8A95AA; --fn:#8CC4F2;
+    --emb:#4B2735; --emb-bd:#D77D9C;
+    --att:#4B3619; --att-bd:#E3A455;
+    --ffn:#1E3A52; --ffn-bd:#73AEDF;
+    --nrm:#4A4220; --nrm-bd:#D6BE52;
+    --lin:#34294F; --lin-bd:#A794DA;
+    --sft:#1F4130; --sft-bd:#6FC68E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1218; --surface:#171B23; --surface2:#222733; --fg:#E8EBF2; --muted:#9AA3B5; --line:#2C3240;
+  --accent:#8FA6FF; --accent-fg:#0F1218; --code-bg:#12161D;
+  --kw:#C9A8FF; --cm:#8A95AA; --fn:#8CC4F2;
+  --emb:#4B2735; --emb-bd:#D77D9C;
+  --att:#4B3619; --att-bd:#E3A455;
+  --ffn:#1E3A52; --ffn-bd:#73AEDF;
+  --nrm:#4A4220; --nrm-bd:#D6BE52;
+  --lin:#34294F; --lin-bd:#A794DA;
+  --sft:#1F4130; --sft-bd:#6FC68E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--font-body); font-size:16px; line-height:1.8;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.wrap{max-width:1000px;margin:0 auto;padding-block:0 72px}
+a{color:var(--accent)}
+.mono,code{font-family:var(--font-mono)}
+code{font-size:.88em;background:var(--code-bg);padding:.1em .4em;border-radius:4px}
+
+/* hero */
+.hero{padding-block:44px 28px}
+.hero .kicker{font-family:var(--font-mono);font-size:12.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(34px,6.5vw,58px);line-height:1.15;margin:10px 0 14px;text-wrap:balance;letter-spacing:-.01em}
+.hero p{max-width:44em;color:var(--muted);margin:0 0 10px}
+
+/* nav */
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;display:flex;gap:4px;padding-block:8px}
+nav.toc a{font-size:14px;text-decoration:none;color:var(--muted);padding:6px 12px;border-radius:999px;flex:0 0 auto}
+nav.toc a:hover{color:var(--fg);background:var(--surface2)}
+nav.toc a.on{color:var(--accent-fg);background:var(--accent)}
+nav.toc a:focus-visible,.tab:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* sections */
+section{padding-block:52px 8px;scroll-margin-top:calc(54px + env(safe-area-inset-top,0px))}
+section>h2{font-family:var(--font-display);font-size:clamp(26px,4.2vw,34px);line-height:1.3;margin:0 0 6px;text-wrap:balance}
+.ref{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);margin:0 0 18px}
+h3{font-size:19px;margin:34px 0 8px;line-height:1.4}
+p{margin:0 0 14px;max-width:46em}
+.wide{max-width:none}
+.note{background:var(--surface2);border-radius:10px;padding:14px 18px;margin:18px 0;max-width:none;font-size:15px}
+.note b{font-weight:700}
+.tbl{overflow-x:auto;margin:16px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px;line-height:1.6}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:.03em;background:var(--surface2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.nm{white-space:nowrap;font-weight:700}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px;border:1.5px solid}
+.sw-emb{background:var(--emb);border-color:var(--emb-bd)}.sw-att{background:var(--att);border-color:var(--att-bd)}
+.sw-ffn{background:var(--ffn);border-color:var(--ffn-bd)}.sw-nrm{background:var(--nrm);border-color:var(--nrm-bd)}
+.sw-lin{background:var(--lin);border-color:var(--lin-bd)}.sw-sft{background:var(--sft);border-color:var(--sft-bd)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--muted);margin:10px 0 0}
+
+/* stacked share bar */
+.share{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:8px 0 6px}
+.share span{display:block;height:100%;min-width:2px}
+.share-cap{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13.5px;color:var(--muted)}
+
+/* layer list */
+.layers{margin:18px 0;display:flex;flex-direction:column}
+.layer{padding:18px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);gap:6px 28px}
+.layer:last-child{border-bottom:1px solid var(--line)}
+.layer h4{margin:0;font-size:16.5px;line-height:1.4}
+.layer .en{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);display:block;margin-top:2px;font-weight:400}
+.layer .meta{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7}
+.layer p{margin:0 0 8px;font-size:15px}
+.layer .fx{font-family:var(--font-mono);font-size:13.5px;background:var(--code-bg);padding:8px 12px;border-radius:6px;overflow-x:auto;white-space:pre;margin:6px 0 0}
+@media (max-width:640px){.layer{grid-template-columns:minmax(0,1fr)}}
+
+/* tabs & panels */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-block:4px 10px}
+.tab,.btn{font:inherit;font-size:14px;line-height:1.3;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+.tab:hover,.btn:hover{background:var(--surface2)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.row .lab{font-size:13.5px;color:var(--muted);margin-right:4px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.dscroll{overflow-x:auto}
+svg.diagram{display:block;margin:0 auto;height:auto;width:100%}
+svg text{fill:var(--fg);font-family:var(--font-body);font-size:13px}
+svg .dim{fill:var(--muted)}
+svg .sm{font-size:11.5px}
+svg .mono{font-family:var(--font-mono)}
+svg .b{stroke-width:1.5}
+svg .b-emb{fill:var(--emb);stroke:var(--emb-bd)}svg .b-att{fill:var(--att);stroke:var(--att-bd)}
+svg .b-ffn{fill:var(--ffn);stroke:var(--ffn-bd)}svg .b-nrm{fill:var(--nrm);stroke:var(--nrm-bd)}
+svg .b-lin{fill:var(--lin);stroke:var(--lin-bd)}svg .b-sft{fill:var(--sft);stroke:var(--sft-bd)}
+svg .b-n{fill:var(--surface2);stroke:var(--muted)}
+svg .ln{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .mk{fill:var(--fg)}
+svg .grp{fill:var(--surface2);stroke:var(--muted);stroke-dasharray:4 4;stroke-width:1.2;opacity:.7}
+svg .shadow{fill:var(--surface);stroke:var(--muted);stroke-width:1}
+.cap{font-size:14.5px;color:var(--muted);margin:12px 2px 0;max-width:none}
+.cap b{color:var(--fg)}
+
+/* code */
+.codehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 8px}
+pre.code{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:13px;line-height:1.7;tab-size:4;white-space:pre}
+.kw{color:var(--kw);font-weight:600}.cm{color:var(--cm)}.fn{color:var(--fn);font-weight:600}
+
+/* forms */
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+input[type=number],select{font:inherit;font-size:15px;font-family:var(--font-mono);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+input[type=number]:disabled{opacity:.5}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.checks{display:flex;flex-wrap:wrap;gap:8px 22px;margin:8px 0 14px;font-size:14.5px}
+.checks label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.big{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:clamp(24px,5vw,38px);font-weight:600;line-height:1.2;overflow-wrap:anywhere}
+.bigsub{color:var(--muted);font-size:14px}
+
+/* attention demo */
+.barrow{display:grid;grid-template-columns:34px minmax(0,1fr) 56px;gap:8px;align-items:center;font-family:var(--font-mono);font-size:12.5px;margin:3px 0}
+.bar{height:11px;border-radius:3px;min-width:1px}
+.bar.a{background:var(--att-bd)}.bar.b{background:var(--ffn-bd)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:12px}
+.stat div{background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.6}
+.stat b{font-family:var(--font-mono);font-size:15px}
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.cols2>*{min-width:0}
+.hbar{display:grid;grid-template-columns:104px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px;margin:6px 0;font-family:var(--font-mono)}
+.hbar i{display:block;height:14px;background:var(--lin-bd);border-radius:3px}
+.hbar.hl i{background:var(--accent)}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+footer p{max-width:none;margin-bottom:8px}
+/* 手機：GPT-3 參數表改成每列一張小卡 */
+@media (max-width:700px){
+  #gpt-table{min-width:0}
+  #gpt-table thead{display:none}
+  #gpt-table,#gpt-table tbody,#gpt-table tr,#gpt-table td{display:block}
+  #gpt-table tr{padding:12px 14px;border-bottom:1px solid var(--line)}
+  #gpt-table tr:last-child{border-bottom:0}
+  #gpt-table td{border:0;padding:2px 0;text-align:left!important;white-space:normal}
+  #gpt-table td.nm{font-size:16.5px;padding-bottom:4px}
+  #gpt-table td:empty{display:none}
+  #gpt-table td[data-label]:not(.nm)::before{content:attr(data-label) "　";color:var(--muted);font-size:12.5px;font-family:var(--font-body)}
+}
+.hg-wrap{overflow-x:auto}
+#hg-canvas{display:block;cursor:crosshair;touch-action:manipulation}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+<meta name="description" content="對照 GPT-3 參數表與 Vaswani 等人 2017 年原論文，逐層說明矩陣形狀、參數量與作用；附架構圖、參數量計算器與完整虛擬碼。">
+<meta name="author" content="iamkylee">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+</head><body>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span>iamkylee 分享</span></div>
+<div class="wrap">
+<header class="hero">
+  <div class="kicker">Attention Is All You Need · GPT-3 參數表</div>
+  <h1>Transformer 解剖圖</h1>
+  <p>把截圖裡的 GPT-3 參數表，對照 Vaswani 等人 2017 年的原論文，逐層說明每個矩陣的形狀、參數量與作用。頁面包含重繪的架構圖、可調整超參數的參數量計算器，以及從嵌入到訓練、推論的完整虛擬碼。</p>
+  <p>表中每個數字都用程式重新計算過，總和與截圖的 175,181,291,520 完全一致。</p>
+</header>
+
+<nav class="toc" id="toc" aria-label="章節">
+  <a href="#overview">總覽</a><a href="#gpt3">GPT-3 參數表</a><a href="#paper">論文逐層</a><a href="#diagrams">架構圖</a><a href="#attention">注意力</a><a href="#position">位置編碼</a><a href="#calc">計算器</a><a href="#code">虛擬碼</a>
+<a href="#further">延伸觀看</a></nav>
+
+<section id="overview">
+  <h2>總覽：兩份資料怎麼對上</h2>
+  <p class="ref">論文 §3 · 截圖「We will break this down」</p>
+  <p>論文提出的是 encoder-decoder 架構，原始模型只有 6 層、d_model = 512。截圖中的 GPT-3 只保留 decoder 的概念（沒有編碼器，也沒有交叉注意力），層數放大到 96，d_model 放大到 12,288。兩者的積木相同：嵌入、多頭注意力、前饋網路（FFN，截圖稱 Up / Down-projection）、殘差連接，以及最後把向量轉回詞表機率。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>論文 base</th><th>論文 big</th><th>截圖 GPT-3</th></tr></thead>
+    <tbody>
+      <tr><td>架構</td><td>encoder + decoder</td><td>encoder + decoder</td><td>僅 decoder 堆疊</td></tr>
+      <tr><td>層數</td><td>6 + 6</td><td>6 + 6</td><td>96</td></tr>
+      <tr><td>d_model（截圖：d_embed）</td><td>512</td><td>1,024</td><td>12,288</td></tr>
+      <tr><td>注意力頭數 h</td><td>8</td><td>16</td><td>96</td></tr>
+      <tr><td>每頭維度 d_k = d_v</td><td>64</td><td>64</td><td>128</td></tr>
+      <tr><td>FFN 寬度 d_ff（截圖：n_neurons）</td><td>2,048</td><td>4,096</td><td>49,152</td></tr>
+      <tr><td>詞表大小</td><td>約 37,000（EN-DE BPE）</td><td>約 37,000</td><td>50,257</td></tr>
+      <tr><td>輸入嵌入 / 輸出投影</td><td>共用同一份權重</td><td>共用</td><td>分開，各算一次</td></tr>
+      <tr><td>位置資訊</td><td>固定的 sin / cos</td><td>固定的 sin / cos</td><td>截圖參數表未列</td></tr>
+      <tr><td>總參數量</td><td>約 65M（論文表 3）</td><td>213M（論文表 3）</td><td>175,181,291,520</td></tr>
+    </tbody>
+  </table></div>
+  <p>資料流只有一條主幹：token 查表成向量，加上位置資訊，進入 N 個相同的層。每一層先讓各位置互相交換資訊（注意力），再各自做一次非線性變換（FFN），兩者都包著殘差連接。最後一層輸出經線性轉換與 softmax，變成下一個 token 的機率分佈。</p>
+</section>
+
+<section id="gpt3">
+  <h2>截圖：GPT-3 參數表逐列解讀</h2>
+  <p class="ref">截圖內容 · 表中數字由本頁重新計算</p>
+  <p>截圖標示 GPT-3 共有 175,181,291,520 個權重，分成 27,938 個矩陣。每一列是一類矩陣，右邊方框的數字是這類矩陣在所有層、所有頭加總後的參數量。</p>
+  <div class="tbl"><table id="gpt-table">
+    <thead><tr><th>類別</th><th>每個矩陣的形狀</th><th class="num">矩陣數</th><th class="num">參數量</th><th class="num">占比</th><th>作用</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <div class="share" id="gpt-share" aria-hidden="true"></div>
+  <div class="share-cap" id="gpt-share-cap"></div>
+
+  <h3>27,938 個矩陣怎麼數</h3>
+  <p>依表中公式推算：每層有 96 個頭，每個頭各有一個 Query、Key、Value 矩陣；Output、Up、Down 每層各一個；再加上整個模型的 Embedding 與 Unembedding。</p>
+  <p class="mono wide" style="font-size:14px">96 層 × ( 96 頭 × 3 + 3 ) + 2 = 96 × 291 + 2 = <b>27,938</b></p>
+
+  <h3>為什麼 Query、Key、Value 各有 9,216 個矩陣</h3>
+  <p>9,216 = 96 × 96：模型有 96 層，每層有 96 個注意力頭。<b>每個頭都有自己的一組 Q、K、V 矩陣</b>，所以 Key 矩陣有 96 × 96 = 9,216 個，Query 與 Value 也各是 9,216 個。</p>
+  <div class="panel">
+    <div class="hg-wrap"><canvas id="hg-canvas" aria-label="96 層乘 96 個頭的方格圖，每一格代表一個注意力頭"></canvas></div>
+    <p class="cap" id="hg-read" style="margin-top:10px"></p>
+    <p class="cap">每個方格是一個注意力頭。橫向是同一層的 96 個頭，縱向是 96 層（第 1 層在最上面）。點選方格可以切換，亮色整列是同一層的 96 個頭。</p>
+  </div>
+  <div class="tbl"><table style="min-width:520px">
+    <thead><tr><th>項目</th><th>算式</th><th class="num">結果</th></tr></thead>
+    <tbody>
+      <tr><td>注意力頭總數</td><td class="mono">96 層 × 96 頭</td><td class="num">9,216</td></tr>
+      <tr><td>每個頭的矩陣</td><td class="mono">Q、K、V 各一個</td><td class="num">3</td></tr>
+      <tr><td>Q、K、V 矩陣總數</td><td class="mono">9,216 × 3</td><td class="num">27,648</td></tr>
+      <tr><td>每個矩陣的參數</td><td class="mono">128 × 12,288</td><td class="num">1,572,864</td></tr>
+      <tr><td>全部 Key 矩陣</td><td class="mono">9,216 × 1,572,864</td><td class="num">14,495,514,624</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>一個頭在做什麼：</b>每個位置的 12,288 維向量 x，分別乘上這個頭的 W_Q、W_K、W_V，各自被壓成 128 維的 q、k、v。q 與 k 的點積決定要注意哪些位置，v 則是被取用的內容。</p>
+  <p><b>為什麼每個頭要分開學：</b>不同的頭負責看不同的關係，例如有的頭找代名詞指向誰，有的頭找動詞與受詞。要看不同的關係，就需要不同的投影方式，所以矩陣不能共用。這也是論文所說的多頭注意力能同時關注不同子空間的資訊。</p>
+  <p><b>為什麼是 128 維：</b>12,288 ÷ 96 = 128。96 個頭各輸出 128 維，拼接後剛好又是 12,288 維，可以接著乘 Output 矩陣寫回主幹。Output 矩陣是拼接後整體乘一次，因此每層只有一個，共 96 個，不是每個頭一個。</p>
+  <h3>表中沒有算進去的東西</h3>
+  <p>表中的 175,181,291,520 只包含上面八類權重矩陣。論文模型中的 bias、LayerNorm 的 γ 與 β，以及位置資訊的參數都不在表內。GPT 系列使用學習式位置嵌入（GPT-3 的上下文長度為 2,048，約再增加 2,517 萬個參數），相對於總量只是零頭。</p>
+  <div class="note"><b>最值得記住的比例：</b>FFN（Up + Down）約占 66%，四種注意力矩陣加起來約占 33%，兩個嵌入矩陣合計不到 1%。模型的參數主要花在每個位置獨立運算的 MLP，而不是注意力。研究界常把 MLP 視為模型儲存事實知識的主要位置，這個解讀仍在討論中。</div>
+</section>
+
+<section id="paper">
+  <h2>論文逐層：參數與作用</h2>
+  <p class="ref">論文 §3.1–3.5 · 以 base model 為例（d_model = 512）</p>
+  <p>下列各層依資料流排列。參數量為 base model 的實際算術結果，含 bias（論文沒有明說 bias，這裡採 tensor2tensor 等實作的常見做法）。n 表示序列長度。</p>
+  <div class="layers" id="layers"></div>
+
+  <h3>整體參數量核算</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>部分</th><th>算式</th><th class="num">參數量</th></tr></thead>
+    <tbody>
+      <tr><td>詞嵌入（與輸出投影共用）</td><td class="mono">37,000 × 512</td><td class="num">18,944,000</td></tr>
+      <tr><td>編碼器 6 層</td><td class="mono">6 × 3,152,384</td><td class="num">18,914,304</td></tr>
+      <tr><td>解碼器 6 層</td><td class="mono">6 × 4,204,032</td><td class="num">25,224,192</td></tr>
+      <tr><td><b>合計</b></td><td></td><td class="num"><b>63,082,496</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>論文表 3 記載 base model 為 65M。差距來自詞表大小只是約略值，以及各實作在 bias、LayerNorm 上的細節不同。</p>
+
+  <h3>訓練設定（論文 §5）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>設定</th></tr></thead>
+    <tbody>
+      <tr><td>優化器</td><td>Adam，β₁ = 0.9，β₂ = 0.98，ε = 10⁻⁹</td></tr>
+      <tr><td>學習率</td><td class="mono">lrate = d_model^-0.5 · min(step^-0.5, step · warmup^-1.5)，warmup_steps = 4000</td></tr>
+      <tr><td>正則化</td><td>每個子層輸出與（嵌入 + 位置編碼）之和做 dropout，P_drop = 0.1；label smoothing ε_ls = 0.1</td></tr>
+      <tr><td>批次</td><td>約 25,000 個來源 token 與 25,000 個目標 token</td></tr>
+      <tr><td>硬體與時間</td><td>8 張 P100；base 訓練 100K 步約 12 小時，big 訓練 300K 步約 3.5 天</td></tr>
+      <tr><td>推論</td><td>beam size 4，長度懲罰 α = 0.6，最大輸出長度為輸入長度 + 50</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>為什麼用自注意力（論文表 1）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>層類型</th><th>每層複雜度</th><th>循序運算數</th><th>最長路徑</th></tr></thead>
+    <tbody>
+      <tr><td>Self-Attention</td><td class="mono">O(n² · d)</td><td class="mono">O(1)</td><td class="mono">O(1)</td></tr>
+      <tr><td>Recurrent</td><td class="mono">O(n · d²)</td><td class="mono">O(n)</td><td class="mono">O(n)</td></tr>
+      <tr><td>Convolutional</td><td class="mono">O(k · n · d²)</td><td class="mono">O(1)</td><td class="mono">O(log_k n)</td></tr>
+      <tr><td>Self-Attention（限制鄰域 r）</td><td class="mono">O(r · n · d)</td><td class="mono">O(1)</td><td class="mono">O(n / r)</td></tr>
+    </tbody>
+  </table></div>
+  <p>任兩個位置之間只隔一次注意力運算，所以長距離依賴容易學；代價是 n² 的計算與記憶體。序列長度 n 小於表示維度 d 時，自注意力比循環層更快。</p>
+</section>
+
+<section id="diagrams">
+  <h2>各階層架構圖</h2>
+  <p class="ref">依論文 Figure 1、2 概念重繪，並加上張量形狀</p>
+  <div class="row"><span class="lab">圖表</span></div>
+  <div class="tabs" id="diag-tabs" role="tablist"></div>
+  <div class="row" id="prof-row"><span class="lab">顯示維度</span>
+    <button class="tab" type="button" data-prof="base" aria-selected="true">論文 base</button>
+    <button class="tab" type="button" data-prof="gpt3" aria-selected="false">GPT-3（截圖）</button>
+  </div>
+  <div class="panel">
+    <div class="dscroll" id="diag-box"></div>
+    <div class="legend" id="diag-legend">
+      <span><i class="sw sw-emb"></i>嵌入 / 遮罩</span><span><i class="sw sw-att"></i>多頭注意力</span><span><i class="sw sw-ffn"></i>前饋網路</span>
+      <span><i class="sw sw-nrm"></i>Add &amp; Norm / 縮放</span><span><i class="sw sw-lin"></i>線性 / 矩陣乘</span><span><i class="sw sw-sft"></i>Softmax</span>
+    </div>
+    <p class="cap" id="diag-cap"></p>
+  </div>
+</section>
+
+<section id="attention">
+  <h2>注意力：為什麼要除以 √d_k</h2>
+  <p class="ref">論文 §3.2.1 與註腳 4 · 下方為真實的隨機抽樣計算</p>
+  <p>論文假設 query 與 key 的每個分量是平均 0、變異數 1 的獨立隨機變數，則點積 q·k 的平均為 0、變異數為 d_k。d_k 越大，分數越分散，softmax 越容易被推到幾乎只剩一個位置的飽和區，梯度因此變得極小。把分數除以 √d_k 後，標準差回到約 1。</p>
+  <div class="panel">
+    <div class="fields" style="grid-template-columns:minmax(0,1fr) auto">
+      <label class="field"><span>d_k = <b id="dk-val" class="mono">64</b></span><input id="dk-exp" type="range" min="0" max="10" step="1" value="6"></label>
+      <div class="row" style="align-self:end"><button class="btn" id="dk-roll" type="button">重新抽樣</button></div>
+    </div>
+    <div class="row"><span class="lab"><i class="sw sw-att"></i>未縮放 softmax(q·k)</span><span class="lab"><i class="sw sw-ffn"></i>縮放後 softmax(q·k / √d_k)</span></div>
+    <div id="att-bars"></div>
+    <div class="stat" id="att-stat"></div>
+  </div>
+
+  <h3>多少個頭最好？（論文表 3，A 列）</h3>
+  <p>保持總計算量不變，只改頭數與每頭維度（d_k = d_v = 512 / h）。單頭比最佳設定差 0.9 BLEU，頭數太多時品質也會下降。</p>
+  <div class="panel" id="head-chart"></div>
+  <p class="cap">資料為 newstest2013 開發集上的 BLEU；長條自 24.0 起算，用來放大差異，不是從零起算。</p>
+  <p>論文圖 4、圖 5 的視覺化顯示，不同注意力頭確實學到不同分工。例如第 5 層有些頭在處理指代：句中的「its」會把很集中的注意力放在「Law」與「application」上。</p>
+</section>
+
+<section id="position">
+  <h2>位置編碼</h2>
+  <p class="ref">論文 §3.5 · 固定的 sin / cos，沒有可學習參數</p>
+  <p>自注意力本身不知道 token 的順序，所以要把位置資訊加到嵌入上。論文用不同頻率的正弦與餘弦：偶數維用 sin，奇數維用 cos，波長由 2π 到 10000·2π 呈等比數列。選它的理由是，對任何固定的位移 k，PE(pos+k) 都能寫成 PE(pos) 的線性函數，模型因此容易學到相對位置；它也可能外插到比訓練時更長的序列。論文也試過學習式位置嵌入，結果幾乎相同（表 3 的 E 列）。</p>
+  <p class="mono wide" style="font-size:13.5px">PE(pos, 2i) = sin(pos / 10000^(2i / d_model))　　PE(pos, 2i+1) = cos(pos / 10000^(2i / d_model))</p>
+  <div class="panel">
+    <div class="cols2">
+      <label class="field"><span>d_model = <b id="pe-d-val" class="mono">128</b></span><input id="pe-d" type="range" min="16" max="256" step="16" value="128"></label>
+      <label class="field"><span>位置數 = <b id="pe-p-val" class="mono">50</b></span><input id="pe-p" type="range" min="10" max="100" step="10" value="50"></label>
+    </div>
+    <div class="dscroll" style="margin-top:12px"><canvas id="pe-canvas" aria-label="位置編碼熱圖，橫軸為維度，縱軸為位置"></canvas></div>
+    <p class="cap" id="pe-read">橫軸是維度 i（左邊頻率高，右邊頻率低），縱軸是位置 pos。移動游標可讀取數值，暖色為正、冷色為負。</p>
+  </div>
+</section>
+
+<section id="calc">
+  <h2>參數量計算器</h2>
+  <p class="ref">以論文與截圖的公式為準 · 預設值可一鍵載入</p>
+  <p>調整超參數，立刻看到各部分參數量。先載入「GPT-3（截圖）」可以重現 175,181,291,520。</p>
+  <div class="panel">
+    <div class="row"><span class="lab">預設</span>
+      <button class="btn" type="button" data-preset="base">Transformer base</button>
+      <button class="btn" type="button" data-preset="big">Transformer big</button>
+      <button class="btn" type="button" data-preset="gpt3">GPT-3（截圖）</button>
+    </div>
+    <div class="fields" id="calc-fields"></div>
+    <div class="fields" style="grid-template-columns:minmax(0,260px)">
+      <label class="field"><span>架構</span>
+        <select id="c-arch"><option value="encdec">encoder + decoder（論文）</option><option value="dec">僅 decoder（GPT 類）</option></select>
+      </label>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="c-auto" checked>d_k = d_v = d_model / h</label>
+      <label><input type="checkbox" id="c-tie" checked>輸入嵌入與輸出投影共用權重</label>
+      <label><input type="checkbox" id="c-bias" checked>計入 bias</label>
+      <label><input type="checkbox" id="c-ln" checked>計入 LayerNorm（γ, β）</label>
+    </div>
+    <div class="big" id="c-total">—</div>
+    <div class="bigsub" id="c-short"></div>
+    <div class="share" id="c-share" aria-hidden="true"></div>
+    <div class="share-cap" id="c-share-cap"></div>
+    <div class="tbl"><table>
+      <thead><tr><th>部分</th><th class="num">參數量</th><th class="num">占比</th></tr></thead>
+      <tbody id="c-rows"></tbody>
+    </table></div>
+    <p class="cap" id="c-layers"></p>
+    <p class="cap" id="c-check"></p>
+  </div>
+</section>
+
+<section id="code">
+  <h2>完整虛擬碼</h2>
+  <p class="ref">Python / NumPy 風格 · 附張量形狀</p>
+  <p>從超參數、基本元件、注意力、編碼器與解碼器、完整前向傳播，到訓練與推論都各有一頁。最後一頁是截圖中 GPT-3 的 decoder-only 寫法。符號與論文一致；論文未規定的細節（如初始化、LayerNorm 的 ε）會在註解中標明。</p>
+  <div class="tabs" id="code-tabs" role="tablist"></div>
+  <div class="codehead"><span class="cap" id="code-desc" style="margin:0"></span>
+    <span class="row" style="margin:0"><button class="btn" type="button" id="code-copy">複製此頁</button><button class="btn" type="button" id="code-copy-all">複製全部</button></span></div>
+  <pre class="code" id="code-pre" tabindex="0"></pre>
+</section>
+
+<section id="further">
+  <h2>延伸觀看：想看更深入的講解</h2>
+  <p class="ref">以下為外部連結（YouTube / 3Blue1Brown 網站），影片版權屬原作者，本頁僅提供連結，沒有轉載影片內容。</p>
+  <ul class="ls-links">
+    <li><a href="https://www.youtube.com/watch?v=wjZofJX0v4M" target="_blank" rel="noopener">Transformers, the tech behind LLMs</a>（3Blue1Brown，Deep Learning Chapter 5）
+      <small>GPT 與 Transformer 的整體圖像：嵌入、注意力、MLP 與逐字預測。本頁的 GPT-3 參數表來自這支影片，<a href="https://www.youtube.com/watch?v=wjZofJX0v4M&amp;t=1239s" target="_blank" rel="noopener">從 20:39 開始</a>是參數表的段落。文字版：<a href="https://www.3blue1brown.com/lessons/gpt/" target="_blank" rel="noopener">3blue1brown.com/lessons/gpt</a></small></li>
+    <li><a href="https://www.youtube.com/watch?v=eMlx5fFNoYc" target="_blank" rel="noopener">Attention in transformers, step-by-step</a>（3Blue1Brown）
+      <small>一步一步推導注意力機制，可搭配本頁「注意力：為什麼要除以 √d_k」一節閱讀。文字版：<a href="https://www.3blue1brown.com/lessons/attention/" target="_blank" rel="noopener">3blue1brown.com/lessons/attention</a></small></li>
+    <li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" target="_blank" rel="noopener">3Blue1Brown 深度學習系列播放清單</a>
+      <small>從神經網路、反向傳播一路到 Transformer 的完整系列。</small></li>
+  </ul>
+</section>
+
+<footer>
+  <p><b>來源</b></p>
+  <p>Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, Polosukhin. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Attention Is All You Need</a>, NeurIPS 2017（arXiv:1706.03762v7）。</p>
+  <p>GPT-3 參數表取自 3Blue1Brown 影片〈<a href="https://www.youtube.com/watch?v=wjZofJX0v4M&amp;t=1239s" target="_blank" rel="noopener">Transformers, the tech behind LLMs</a>〉的畫面（約 20:39 處）。本頁未內嵌該畫面，內文所稱「截圖」即指該畫面；內容依其與論文整理，沒有逐段轉錄影片，影片中的其他說明請以影片為準。</p>
+  <p>本頁圖形為依論文概念重新繪製，並非原圖。</p>
+</footer>
+</div>
+
+<script>
+/* ===== 純計算（無 DOM）===== */
+function calcParams(c){
+  var att = c.h*c.dModel*c.dk*2 + c.h*c.dModel*c.dv + c.h*c.dv*c.dModel;
+  var attB = c.bias ? (2*c.h*c.dk + c.h*c.dv + c.dModel) : 0;
+  var ffn = 2*c.dModel*c.dff;
+  var ffnB = c.bias ? (c.dff + c.dModel) : 0;
+  var lnP = c.ln ? 2*c.dModel : 0;
+  var encdec = c.arch === 'encdec';
+  var embCopies = encdec ? (c.tie ? 1 : 3) : (c.tie ? 1 : 2);
+  var nEnc = encdec ? c.nEnc : 0;
+  var decAtt = encdec ? 2 : 1;
+  var decLn = encdec ? 3 : 2;
+  var encLayer = (att+attB) + (ffn+ffnB) + 2*lnP;
+  var decLayer = decAtt*(att+attB) + (ffn+ffnB) + decLn*lnP;
+  var parts = [
+    {key:'emb', label:'嵌入與輸出投影（'+embCopies+' 份 V × d_model）', count: embCopies*c.vocab*c.dModel},
+    {key:'att', label:'多頭注意力（Q、K、V、O）', count: nEnc*(att+attB) + c.nDec*decAtt*(att+attB)},
+    {key:'ffn', label:'前饋網路（Up、Down）', count: (nEnc + c.nDec)*(ffn+ffnB)},
+    {key:'ln',  label:'LayerNorm（γ、β）', count: nEnc*2*lnP + c.nDec*decLn*lnP}
+  ];
+  var total = parts.reduce(function(a,p){return a+p.count},0);
+  return {parts:parts,total:total,encLayer:encLayer,decLayer:decLayer,embCopies:embCopies,nEnc:nEnc};
+}
+</script>
+
+<script>
+(function(){
+'use strict';
+var $ = function(id){return document.getElementById(id)};
+var fmt = function(n){return Math.round(n).toLocaleString('en-US')};
+var esc = function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+function short(n){ if(n>=1e9) return (n/1e9).toFixed(2)+' B'; if(n>=1e6) return (n/1e6).toFixed(1)+' M'; return fmt(n); }
+function pct(a,b){ return (a/b*100).toFixed(a/b<0.01?2:1)+'%'; }
+
+/* ===== nav 高亮 ===== */
+(function(){
+  var ids=['overview','gpt3','paper','diagrams','attention','position','calc','code'];
+  var links={}; document.querySelectorAll('#toc a').forEach(function(a){links[a.getAttribute('href').slice(1)]=a});
+  if(!('IntersectionObserver' in window)) return;
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ ids.forEach(function(i){links[i].classList.toggle('on',i===e.target.id)}); var a=links[e.target.id]; if(a&&a.scrollIntoView){ try{ var bar=$('toc'); bar.scrollTo({left:a.offsetLeft-16,behavior:'smooth'}); }catch(_){} } } });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  ids.forEach(function(i){io.observe($(i))});
+})();
+
+/* ===== GPT-3 表 ===== */
+var G={dEmb:12288,nVocab:50257,dQ:128,dV:128,nHeads:96,nLayers:96,nNeurons:49152};
+var GROWS=[
+  {n:'Embedding', shape:G.dEmb+' × '+G.nVocab, dims:[G.dEmb,G.nVocab], count:1, kind:'emb',
+   fx:'d_embed × n_vocab', role:'查表：把每個 token 的整數 ID 換成 12,288 維向量。這一步沒有乘法，只是取出詞表矩陣中對應的那一欄。'},
+  {n:'Key', dims:[G.dQ,G.dEmb], count:G.nHeads*G.nLayers, kind:'att',
+   role:'每個頭有自己的 128 × 12,288 矩陣，把每個位置的向量投影成 key，表示「我可以被哪種 query 找到」。'},
+  {n:'Query', dims:[G.dQ,G.dEmb], count:G.nHeads*G.nLayers, kind:'att',
+   role:'同形狀。把每個位置投影成 query，表示「我在找什麼資訊」。query 與 key 的點積決定注意力權重。'},
+  {n:'Value', dims:[G.dV,G.dEmb], count:G.nHeads*G.nLayers, kind:'att',
+   role:'同形狀。決定某個位置被注意到時，要傳遞出去的內容。'},
+  {n:'Output', dims:[G.dEmb,G.dV*G.nHeads], count:G.nLayers, kind:'att',
+   role:'把 96 個頭各自輸出的 128 維結果拼成 12,288 維，再乘上 12,288 × 12,288 的矩陣，寫回主幹（殘差流）。對應論文的 W^O。'},
+  {n:'Up-projection', dims:[G.nNeurons,G.dEmb], count:G.nLayers, kind:'ffn',
+   role:'FFN 的第一個線性轉換，每個位置獨立運算：12,288 維展開成 49,152 維（4 倍），之後經過非線性。對應論文的 W₁。'},
+  {n:'Down-projection', dims:[G.dEmb,G.nNeurons], count:G.nLayers, kind:'ffn',
+   role:'FFN 的第二個線性轉換，把 49,152 維壓回 12,288 維，再加回主幹。對應論文的 W₂。'},
+  {n:'Unembedding', dims:[G.nVocab,G.dEmb], count:1, kind:'emb',
+   role:'把最後一個位置的向量映到 50,257 個 logit，經 softmax 後就是下一個 token 的機率分佈。'}
+];
+(function(){
+  var tot=0; GROWS.forEach(function(r){ r.params=r.dims[0]*r.dims[1]*r.count; tot+=r.params; });
+  var matrices=GROWS.reduce(function(a,r){return a+r.count},0);
+  var tb=document.querySelector('#gpt-table tbody'), h='';
+  GROWS.forEach(function(r){
+    var sh = r.shape ? r.shape : fmt(r.dims[0])+' × '+fmt(r.dims[1]);
+    if(r.n==='Embedding') sh=fmt(G.dEmb)+' × '+fmt(G.nVocab);
+    var note = r.n==='Output' ? '<br><span class="dim" style="color:var(--muted);font-size:12.5px">每層一個（96 頭 × 128）</span>' : (/Key|Query|Value/.test(r.n)?'<br><span style="color:var(--muted);font-size:12.5px">每層每頭一個</span>':'');
+    h+='<tr><td class="nm" data-label="類別"><i class="sw sw-'+r.kind+'"></i>'+r.n+'</td><td class="mono" data-label="形狀">'+sh+note+'</td><td class="num" data-label="矩陣數">'+fmt(r.count)+'</td><td class="num" data-label="參數量">'+fmt(r.params)+'</td><td class="num" data-label="占比">'+pct(r.params,tot)+'</td><td>'+r.role+'</td></tr>';
+  });
+  h+='<tr><td class="nm" data-label="類別">合計</td><td></td><td class="num" data-label="矩陣數"><b>'+fmt(matrices)+'</b></td><td class="num" data-label="參數量"><b>'+fmt(tot)+'</b></td><td class="num" data-label="占比">100%</td><td>與截圖標示的 27,938 個矩陣、175,181,291,520 個權重一致：'+(matrices===27938&&tot===175181291520?'是':'否')+'</td></tr>';
+  tb.innerHTML=h;
+  var sums={emb:0,att:0,ffn:0}; GROWS.forEach(function(r){sums[r.kind]+=r.params});
+  var cols={emb:'var(--emb-bd)',att:'var(--att-bd)',ffn:'var(--ffn-bd)'}, names={emb:'嵌入 + 輸出投影',att:'注意力 Q / K / V / O',ffn:'FFN Up + Down'};
+  $('gpt-share').innerHTML=['att','ffn','emb'].map(function(k){return '<span style="width:'+(sums[k]/tot*100)+'%;background:'+cols[k]+'"></span>'}).join('');
+  $('gpt-share-cap').innerHTML=['att','ffn','emb'].map(function(k){return '<span><i class="sw sw-'+k+'"></i>'+names[k]+' '+pct(sums[k],tot)+'（'+fmt(sums[k])+'）</span>'}).join('');
+})();
+
+/* ===== 96 層 × 96 頭 方格圖 ===== */
+(function(){
+  var cv=$('hg-canvas'), sel={l:0,h:0}, cs=6;
+  function readout(){
+    $('hg-read').innerHTML='第 <b>'+(sel.l+1)+'</b> 層、第 <b>'+(sel.h+1)+'</b> 個頭，有自己的 W_Q、W_K、W_V，每個都是 128 × 12,288。它是全部 9,216 個頭中的第 <b>'+(sel.l*96+sel.h+1).toLocaleString('en-US')+'</b> 個。';
+  }
+  function draw(){
+    var avail=Math.max(260,cv.parentElement.clientWidth-4);
+    cs=Math.max(3,Math.min(8,Math.floor(avail/96)));
+    cv.width=96*cs; cv.height=96*cs; cv.style.width=cv.width+'px'; cv.style.height=cv.height+'px';
+    var css=getComputedStyle(document.documentElement);
+    var base=hex2rgb(css.getPropertyValue('--muted')), rowc=hex2rgb(css.getPropertyValue('--att-bd')), acc=hex2rgb(css.getPropertyValue('--accent'));
+    var ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,cv.width,cv.height);
+    for(var l=0;l<96;l++){
+      for(var h=0;h<96;h++){
+        var c=(l===sel.l&&h===sel.h)?acc:(l===sel.l?rowc:base);
+        ctx.fillStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+(l===sel.l?1:0.35)+')';
+        ctx.fillRect(h*cs,l*cs,cs-1,cs-1);
+      }
+    }
+    readout();
+  }
+  function pick(e){
+    var r=cv.getBoundingClientRect();
+    var h=Math.floor((e.clientX-r.left)/r.width*96), l=Math.floor((e.clientY-r.top)/r.height*96);
+    if(h<0||h>95||l<0||l>95||(h===sel.h&&l===sel.l)) return;
+    sel.h=h; sel.l=l; draw();
+  }
+  cv.addEventListener('click',pick);
+  cv.addEventListener('pointermove',function(e){ if(e.pointerType==='mouse') pick(e); });
+  draw();
+  window.addEventListener('resize',draw);
+  try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw); }catch(_){}
+  new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+
+/* ===== 論文逐層 ===== */
+var LAYERS=[
+  {k:'emb',zh:'輸入嵌入',en:'Input Embedding · §3.4',shape:'(n) → (n, 512)',params:'37,000 × 512 = 18,944,000',
+   role:'把 token ID 查表成 512 維向量，並乘上 √d_model。輸入嵌入、輸出嵌入與最後的 pre-softmax 線性轉換共用同一份權重，所以這份參數只算一次。',fx:'x = W_emb[token_ids] · √d_model'},
+  {k:'emb',zh:'位置編碼',en:'Positional Encoding · §3.5',shape:'(n, 512) + (n, 512)',params:'0（固定函數）',
+   role:'自注意力不含順序資訊，因此把正弦與餘弦位置向量加到嵌入上。維度與嵌入相同，才能直接相加。',fx:'PE(pos,2i)=sin(pos/10000^(2i/d))\nPE(pos,2i+1)=cos(pos/10000^(2i/d))'},
+  {k:'att',zh:'多頭自注意力（編碼器）',en:'Multi-Head Self-Attention · §3.2',shape:'(n, 512) → (n, 512)',params:'W_Q、W_K、W_V：各 8 × 512 × 64 = 262,144\nW_O：512 × 512 = 262,144\n權重 1,048,576 ＋ bias 2,048 = 1,050,624',
+   role:'h = 8 個頭，各自把 512 維投影成 64 維的 Q、K、V，平行做縮放點積注意力，再把 8 × 64 = 512 維拼接起來，用 W_O 投影回 512 維。每個位置都能看見整個輸入序列。',fx:'head_i = Attention(xW_Q^i, xW_K^i, xW_V^i)\nout = Concat(head_1..head_8) · W_O'},
+  {k:'nrm',zh:'殘差連接與層正規化',en:'Add & Norm · §3.1',shape:'(n, 512) → (n, 512)',params:'γ、β：2 × 512 = 1,024（每個子層一組）',
+   role:'每個子層都包成 LayerNorm(x + Sublayer(x))。殘差連接讓梯度直接穿過深層，也是所有子層輸出維度都必須是 512 的原因。子層輸出先做 dropout（P_drop = 0.1）再相加。',fx:'y = LayerNorm(x + Dropout(Sublayer(x)))'},
+  {k:'ffn',zh:'位置獨立前饋網路',en:'Position-wise FFN · §3.3',shape:'(n, 512) → (n, 2048) → (n, 512)',params:'W₁：512 × 2,048 ＋ b₁ 2,048\nW₂：2,048 × 512 ＋ b₂ 512\n合計 2,099,712',
+   role:'對每個位置獨立、且使用相同參數的兩層網路：先展開到 d_ff = 2048，過 ReLU，再壓回 512。等同兩個 kernel size 為 1 的卷積。不同層的參數不同。',fx:'FFN(x) = max(0, xW₁ + b₁)W₂ + b₂'},
+  {k:'att',zh:'遮罩多頭自注意力（解碼器）',en:'Masked Multi-Head Attention · §3.1',shape:'(m, 512) → (m, 512)',params:'與編碼器注意力相同：1,050,624',
+   role:'解碼器的自注意力，在 softmax 之前把「未來位置」的分數設為 −∞。搭配輸出序列右移一格，確保第 i 個位置的預測只依賴位置 i 之前已知的輸出。',fx:'scores = QKᵀ/√d_k，未來位置 = −∞'},
+  {k:'att',zh:'編碼器—解碼器注意力',en:'Encoder-Decoder Attention · §3.2.3',shape:'Q (m, 512)；K、V (n, 512) → (m, 512)',params:'同上：1,050,624',
+   role:'Query 來自前一個解碼器子層，Key 與 Value 來自編碼器最終輸出。這讓解碼器每個位置都能查看整個來源序列，等同傳統 seq2seq 的注意力。',fx:'Q = y·W_Q；K = memory·W_K；V = memory·W_V'},
+  {k:'lin',zh:'線性轉換與 Softmax',en:'Linear + Softmax · §3.4',shape:'(m, 512) → (m, V)',params:'0 額外參數（與嵌入共用）',
+   role:'用共用的嵌入矩陣把解碼器輸出轉成詞表大小的 logit，再 softmax 成下一個 token 的機率。訓練時搭配 label smoothing（ε = 0.1）。',fx:'P(next) = softmax(y · W_embᵀ)'}
+];
+(function(){
+  var h='';
+  LAYERS.forEach(function(l){
+    h+='<div class="layer"><div><h4><i class="sw sw-'+l.k+'"></i>'+l.zh+'<span class="en">'+l.en+'</span></h4><div class="meta">形狀 '+esc(l.shape)+'</div></div><div><p>'+l.role+'</p><div class="meta" style="white-space:pre-line;margin-top:0">參數：'+esc(l.params)+'</div><div class="fx">'+esc(l.fx)+'</div></div></div>';
+  });
+  $('layers').innerHTML=h;
+})();
+
+/* ===== SVG 輔助 ===== */
+var PROF={
+  base:{name:'論文 base',dModel:512,h:8,dk:64,dv:64,dff:2048},
+  gpt3:{name:'GPT-3（截圖）',dModel:12288,h:96,dk:128,dv:128,dff:49152}
+};
+var curProf='base', curDiag='arch';
+var DEFS='<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>';
+function wrap(w,h,inner,label,minw){ return '<svg class="diagram" style="min-width:'+(minw||w)+'px;max-width:'+w+'px" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(label)+'">'+DEFS+inner+'</svg>'; }
+function box(x,y,w,h,label,kind,sub){
+  var cx=x+w/2, t;
+  if(sub) t='<text x="'+cx+'" y="'+(y+h/2-2)+'" text-anchor="middle" font-weight="600">'+esc(label)+'</text><text class="dim sm" x="'+cx+'" y="'+(y+h/2+13)+'" text-anchor="middle">'+esc(sub)+'</text>';
+  else t='<text x="'+cx+'" y="'+(y+h/2+5)+'" text-anchor="middle" font-weight="600">'+esc(label)+'</text>';
+  return '<rect class="b b-'+kind+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6"/>'+t;
+}
+function arrow(pts){ return '<path class="ln" d="M'+pts.map(function(p){return p.join(',')}).join(' L')+'" marker-end="url(#ah)"/>'; }
+function lab(x,y,s,anchor,cls){ return '<text class="'+(cls||'dim sm')+'" x="'+x+'" y="'+y+'" text-anchor="'+(anchor||'start')+'">'+esc(s)+'</text>'; }
+function stackBox(x,y,w,h,label,kind,sub,n){ var s=''; for(var i=n;i>=1;i--){ s+='<rect class="shadow" x="'+(x+i*6)+'" y="'+(y-i*6)+'" width="'+w+'" height="'+h+'" rx="6"/>'; } return s+box(x,y,w,h,label,kind,sub); }
+
+/* 圖 1：完整架構 */
+function dArch(){
+  var s='', E=190, D=530, bw=190, bxE=E-bw/2, bxD=D-bw/2;
+  s+='<rect class="grp" x="72" y="392" width="236" height="214" rx="14"/>';
+  s+='<rect class="grp" x="412" y="290" width="236" height="316" rx="14"/>';
+  // encoder
+  s+=box(bxE,548,bw,44,'Multi-Head Attention','att','h = 8, d_k = d_v = 64');
+  s+=box(bxE,508,bw,26,'Add & Norm','nrm');
+  s+=box(bxE,448,bw,44,'Feed Forward','ffn','512 → 2048 → 512');
+  s+=box(bxE,406,bw,26,'Add & Norm','nrm');
+  s+=arrow([[E,548],[E,534]])+arrow([[E,508],[E,492]])+arrow([[E,448],[E,432]]);
+  s+=arrow([[E,620],[E,592]]);
+  s+='<path class="ln" d="M'+E+',406 V372 H382 V470 H'+bxD+'" marker-end="url(#ah)"/>'+lab(286,364,'K、V（編碼器輸出）','middle');
+  s+='<path class="ln" d="M'+E+',600 H82 V521 H'+bxE+'" marker-end="url(#ah)"/><path class="ln" d="M'+E+',500 H82 V419 H'+bxE+'" marker-end="url(#ah)"/>';
+  s+=lab(64,500,'×6','end','sm');
+  // decoder
+  s+=box(bxD,548,bw,44,'Masked Multi-Head','att','Attention · 下三角遮罩');
+  s+=box(bxD,508,bw,26,'Add & Norm','nrm');
+  s+=box(bxD,448,bw,44,'Multi-Head Attention','att','交叉注意力');
+  s+=box(bxD,408,bw,26,'Add & Norm','nrm');
+  s+=box(bxD,348,bw,44,'Feed Forward','ffn','512 → 2048 → 512');
+  s+=box(bxD,308,bw,26,'Add & Norm','nrm');
+  s+=arrow([[D,548],[D,534]])+arrow([[D,508],[D,492]])+arrow([[D,448],[D,434]])+arrow([[D,408],[D,392]])+arrow([[D,348],[D,334]]);
+  s+=arrow([[D,620],[D,592]]);
+  s+='<path class="ln" d="M'+D+',600 H422 V521 H'+bxD+'" marker-end="url(#ah)"/><path class="ln" d="M'+D+',500 H422 V421 H'+bxD+'" marker-end="url(#ah)"/><path class="ln" d="M'+D+',400 H422 V321 H'+bxD+'" marker-end="url(#ah)"/>';
+  s+=lab(656,450,'×6','start','sm');
+  // top
+  s+=arrow([[D,308],[D,268]]);
+  s+=box(bxD,240,bw,28,'Linear','lin','共用嵌入權重');
+  s+=arrow([[D,240],[D,224]]);
+  s+=box(bxD,196,bw,28,'Softmax','sft');
+  s+=arrow([[D,196],[D,182]])+lab(D,172,'Output Probabilities（下一個 token）','middle','dim sm');
+  // bottom
+  [[E,'Inputs','來源 token（n）'],[D,'Outputs（右移一格）','目標 token（m）']].forEach(function(c){
+    var cx=c[0];
+    s+='<circle class="b b-n" cx="'+cx+'" cy="632" r="12"/><text x="'+cx+'" y="637" text-anchor="middle" font-weight="700">+</text>';
+    s+=box(cx-bw/2,664,bw,34,c[0]===E?'Input Embedding':'Output Embedding','emb');
+    s+=arrow([[cx,716],[cx,698]])+arrow([[cx,664],[cx,644]]);
+    s+=lab(cx,732,c[1],'middle','')+lab(cx,748,c[2],'middle','dim sm');
+  });
+  s+=lab(172,636,'Positional Encoding','end')+lab(548,636,'Positional Encoding','start');
+  return wrap(720,760,s,'Transformer 完整架構圖',640);
+}
+
+/* 圖 2：縮放點積注意力 */
+function dSDPA(p){
+  var s='', cx=215, w=210, x=cx-w/2;
+  s+='<text class="mono" x="20" y="30" font-size="14">Attention(Q,K,V) = softmax( QKᵀ / √d_k ) · V</text>';
+  s+=lab(20,52,p.name+'：d_k = '+p.dk+'，√d_k ≈ '+Math.sqrt(p.dk).toFixed(2)+'，d_v = '+p.dv,'start','dim sm');
+  s+=box(x,380,w,40,'MatMul  Q · Kᵀ','lin');
+  s+=box(x,320,w,34,'Scale  ÷ √d_k','nrm');
+  s+=box(x,262,w,34,'Mask（選用）','emb');
+  s+=box(x,204,w,34,'Softmax（逐列）','sft');
+  s+=box(x,146,w,40,'MatMul  權重 · V','lin');
+  s+=box(90,450,100,36,'Q','n','(n, d_k)')+box(230,450,100,36,'K','n','(n, d_k)')+box(450,450,100,36,'V','n','(n, d_v)');
+  s+=arrow([[140,450],[140,420]])+arrow([[280,450],[280,420]]);
+  s+=arrow([[cx,380],[cx,354]])+arrow([[cx,320],[cx,296]])+arrow([[cx,262],[cx,238]])+arrow([[cx,204],[cx,186]]);
+  s+='<path class="ln" d="M500,450 V166 H'+(x+w)+'" marker-end="url(#ah)"/>';
+  s+=arrow([[cx,146],[cx,112]])+lab(cx,100,'輸出 (n, d_v)','middle','');
+  s+=lab(cx+10,372,'(n, n) 相似度分數','start')+lab(cx+10,312,'(n, n) 除以 √d_k，避免數值過大','start')+lab(cx+10,254,'(n, n) 未來位置設為 −∞（僅解碼器）','start')+lab(cx+10,196,'(n, n) 權重，每列和為 1','start');
+  return wrap(640,500,s,'縮放點積注意力流程圖',560);
+}
+
+/* 圖 3：多頭注意力 */
+function dMHA(p){
+  var s='';
+  s+=lab(20,28,p.name+'：h = '+p.h+' 個頭，每頭 d_k = '+p.dk+'，d_v = '+p.dv+'，d_model = '+fmt(p.dModel),'start','dim sm');
+  var xs=[70,270,470];
+  var names=[['V','W^V_i','d_model → d_v'],['K','W^K_i','d_model → d_k'],['Q','W^Q_i','d_model → d_k']];
+  names.forEach(function(nm,i){
+    var x=xs[i]-30;
+    s+=box(x+0,498,100,34,nm[0],'n','(n, d_model)');
+    s+=arrow([[x+50,498],[x+50,462]]);
+    s+=stackBox(x,424,100,38,'Linear','lin',nm[1],2);
+    s+=lab(x+50,413,nm[2],'middle','dim sm');
+  });
+  s+=arrow([[90,418],[90,386]])+arrow([[290,418],[290,386]])+arrow([[490,418],[490,386]]);
+  s+=stackBox(60,320,460,66,'Scaled Dot-Product Attention','att','× '+p.h+' 個頭平行運算',2);
+  s+=arrow([[290,320],[290,288]]);
+  s+=box(200,254,180,34,'Concat','nrm','(n, h·d_v = '+fmt(p.h*p.dv)+')');
+  s+=arrow([[290,254],[290,222]]);
+  s+=box(200,188,180,34,'Linear  W^O','lin','h·d_v → d_model');
+  s+=arrow([[290,188],[290,152]])+lab(290,140,'輸出 (n, '+fmt(p.dModel)+')','middle','');
+  s+=lab(600,336,'每頭輸出 (n, '+p.dv+')','end','dim sm');
+  return wrap(640,560,s,'多頭注意力流程圖',560);
+}
+
+/* 圖 4：FFN 與殘差 */
+function dFFN(p){
+  var s='', r=Math.round(p.dff/p.dModel);
+  s+=lab(20,28,p.name+'：d_model = '+fmt(p.dModel)+'，d_ff = '+fmt(p.dff)+'（'+r+' 倍）。長條寬度依維度比例繪製。','start','dim sm');
+  s+='<rect class="b b-n" x="30" y="120" width="70" height="40" rx="5"/>'+lab(65,112,'x','middle','')+lab(65,176,'(n, '+fmt(p.dModel)+')','middle','dim sm');
+  s+=arrow([[100,140],[170,140]])+lab(135,128,'W₁ + b₁','middle','dim sm');
+  s+='<rect class="b b-ffn" x="170" y="120" width="'+(70*r)+'" height="40" rx="5"/>'+lab(170+35*r,140+5,'max(0, xW₁ + b₁)','middle','mono sm')+lab(170+35*r,176,'(n, '+fmt(p.dff)+')','middle','dim sm');
+  var x2=170+70*r;
+  s+=arrow([[x2,140],[x2+70,140]])+lab(x2+35,128,'W₂ + b₂','middle','dim sm');
+  s+='<rect class="b b-n" x="'+(x2+70)+'" y="120" width="70" height="40" rx="5"/>'+lab(x2+105,176,'(n, '+fmt(p.dModel)+')','middle','dim sm');
+  var xa=x2+70+70;
+  s+=arrow([[xa,140],[xa+40,140]]);
+  s+=box(xa+40,118,110,44,'Add & Norm','nrm');
+  s+='<path class="ln" d="M65,160 V240 H'+(xa+95)+' V162" marker-end="url(#ah)"/>'+lab((65+xa+95)/2,258,'殘差連接：x 直接加到子層輸出','middle','dim sm');
+  var W=xa+40+110+30;
+  s+=lab(20,300,'權重參數 = 2 × d_model × d_ff = 2 × '+fmt(p.dModel)+' × '+fmt(p.dff)+' = '+fmt(2*p.dModel*p.dff)+'（每層，不含 bias）','start','mono sm');
+  s+=lab(20,322,'每個位置獨立運算、共用同一組權重；不同層的權重不同。論文用 ReLU，GPT 系列改用 GELU。','start','dim sm');
+  return wrap(Math.max(W,640),340,s,'前饋網路與殘差連接示意圖',Math.max(W,640));
+}
+
+/* 圖 5：因果遮罩 */
+function dMask(){
+  var s='', toks=['The','cat','sat','on','the','mat'], n=6, c=44;
+  function grid(ox,oy,title,fn){
+    s+=lab(ox,oy-34,title,'start','');
+    s+=lab(ox-8,oy-12,'query ↓ / key →','end','dim sm');
+    for(var j=0;j<n;j++) s+='<text class="dim sm" x="'+(ox+j*c+c/2)+'" y="'+(oy-8)+'" text-anchor="middle">'+toks[j]+'</text>';
+    for(var i=0;i<n;i++){
+      s+='<text class="dim sm" x="'+(ox-8)+'" y="'+(oy+i*c+c/2+4)+'" text-anchor="end">'+toks[i]+'</text>';
+      for(var j2=0;j2<n;j2++){ var v=fn(i,j2);
+        s+='<rect class="b '+(v.ok?'b-att':'b-n')+'" x="'+(ox+j2*c)+'" y="'+(oy+i*c)+'" width="'+c+'" height="'+c+'" style="opacity:'+(v.ok?1:.55)+'"/><text class="mono sm" x="'+(ox+j2*c+c/2)+'" y="'+(oy+i*c+c/2+4)+'" text-anchor="middle">'+v.t+'</text>';
+      }
+    }
+  }
+  grid(70,90,'遮罩 M（加到 QKᵀ/√d_k 上）',function(i,j){return j<=i?{ok:true,t:'0'}:{ok:false,t:'−∞'}});
+  grid(430,90,'softmax 後（假設允許位置的分數相同）',function(i,j){return j<=i?{ok:true,t:(1/(i+1)).toFixed(2)}:{ok:false,t:'0'}});
+  s+=lab(20,380,'第 i 列的 query 只能看見第 1 到第 i 個 key。−∞ 經過 softmax 變成 0，等於切斷由後往前的資訊流。','start','dim sm');
+  return wrap(740,400,s,'因果遮罩矩陣示意圖',680);
+}
+
+/* 圖 6：GPT-3 堆疊 */
+function dGPT(){
+  var s='', cx=330, w=360, y=700, gap=22, pos=[];
+  var items=[
+    {k:'n',l:'輸入 token ID（長度 n）',h:30},
+    {k:'emb',l:'Embedding',sub:'12,288 × 50,257 = 617,558,016',h:50},
+    {k:'att',l:'多頭自注意力（96 頭）',sub:'Q、K、V：每頭 128 × 12,288 ｜ Output：12,288 × 12,288',h:56},
+    {k:'nrm',l:'Add（殘差）',h:30},
+    {k:'ffn',l:'Up-projection',sub:'12,288 → 49,152 ｜ 49,152 × 12,288',h:50},
+    {k:'lin',l:'非線性激活',sub:'表中無參數',h:34},
+    {k:'ffn',l:'Down-projection',sub:'49,152 → 12,288 ｜ 12,288 × 49,152',h:50},
+    {k:'nrm',l:'Add（殘差）',h:30},
+    {k:'emb',l:'Unembedding',sub:'50,257 × 12,288 = 617,558,016',h:50},
+    {k:'sft',l:'Softmax → 下一個 token 機率（50,257）',h:40}
+  ];
+  items.forEach(function(it,i){
+    y-=it.h; pos.push({y:y,h:it.h});
+    s+=box(cx-w/2,y,w,it.h,it.l,it.k,it.sub);
+    if(i<items.length-1){ s+=arrow([[cx,y],[cx,y-gap]]); y-=gap; }
+  });
+  var top=pos[7].y-12, bot=pos[2].y+pos[2].h+12;
+  s='<rect class="grp" x="'+(cx-w/2-18)+'" y="'+top+'" width="'+(w+36)+'" height="'+(bot-top)+'" rx="14"/>'+s;
+  s+=lab(cx-w/2-26,(top+bot)/2,'× 96 層','end','');
+  s+=lab(cx+w/2+26,(top+bot)/2-8,'每層 4 × 14,495,514,624 ÷ 96','start','dim sm')+lab(cx+w/2+26,(top+bot)/2+10,'＋ 2 × 57,982,058,496 ÷ 96','start','dim sm');
+  return wrap(700,720,s,'GPT-3 單層堆疊示意圖',640);
+}
+
+var DIAGS=[
+  {id:'arch',label:'完整架構',prof:false,fn:function(){return dArch()},
+   cap:'<b>資料由下往上流。</b>左側編碼器把來源序列轉成連續表示；右側解碼器一次產生一個 token，並透過交叉注意力讀取編碼器輸出。兩側都由 6 層相同結構堆疊而成，每個子層外都有殘差連接與 LayerNorm。此圖固定顯示論文 base 的維度。'},
+  {id:'sdpa',label:'縮放點積注意力',prof:true,fn:function(p){return dSDPA(p)},
+   cap:'<b>四步完成：</b>Q 與 K 做點積得到 (n, n) 的相似度；除以 √d_k 控制數值大小；選擇性套用遮罩；逐列 softmax 變成權重，再對 V 加權求和。計算全部是矩陣乘法，可在 GPU 上高度平行。'},
+  {id:'mha',label:'多頭注意力',prof:true,fn:function(p){return dMHA(p)},
+   cap:'<b>多個頭看不同子空間。</b>每個頭先用各自學到的線性投影把 d_model 降到 d_k、d_v，再各自做注意力；結果拼接後經 W^O 投影回 d_model。因為每頭維度降低，總計算量與單頭全維度注意力相近，單頭則會因平均而損失資訊。'},
+  {id:'ffn',label:'FFN 與殘差',prof:true,fn:function(p){return dFFN(p)},
+   cap:'<b>先展開、再壓回。</b>FFN 把每個位置的向量放大 4 倍、經非線性後縮回原維度。它占了模型約三分之二的參數（以截圖的 GPT-3 為例）。殘差連接讓子層只需要學習「要修改多少」。'},
+  {id:'mask',label:'因果遮罩',prof:false,fn:function(){return dMask()},
+   cap:'<b>解碼器不能偷看未來。</b>左圖是加到分數上的遮罩，右圖是 softmax 後的結果（此例假設所有允許位置分數相同，只為示意，並非真實模型的權重）。GPT 類模型的每一層注意力都使用這種遮罩。'},
+  {id:'gpt',label:'GPT-3 堆疊',prof:false,fn:function(){return dGPT()},
+   cap:'<b>截圖中的 GPT-3 一層。</b>與論文解碼器相比，少了交叉注意力，只剩「遮罩自注意力 + FFN」，重複 96 次。數字取自截圖參數表；層內的 LayerNorm 與位置參數不在表中，因此未畫出。'}
+];
+function renderDiag(){
+  var d=DIAGS.filter(function(x){return x.id===curDiag})[0];
+  $('diag-box').innerHTML=d.fn(PROF[curProf]);
+  $('diag-cap').innerHTML=d.cap+(d.prof?'':'');
+  $('prof-row').style.display=d.prof?'flex':'none';
+  $('diag-legend').style.display = (d.id==='mask')?'none':'flex';
+}
+(function(){
+  var bar=$('diag-tabs');
+  DIAGS.forEach(function(d){
+    var b=document.createElement('button'); b.type='button'; b.className='tab'; b.setAttribute('role','tab'); b.textContent=d.label;
+    b.setAttribute('aria-selected',d.id===curDiag?'true':'false');
+    b.addEventListener('click',function(){ curDiag=d.id; bar.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false')}); renderDiag(); });
+    bar.appendChild(b);
+  });
+  document.querySelectorAll('#prof-row [data-prof]').forEach(function(b){
+    b.addEventListener('click',function(){ curProf=b.getAttribute('data-prof'); document.querySelectorAll('#prof-row [data-prof]').forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false')}); renderDiag(); });
+  });
+  renderDiag();
+})();
+
+/* ===== 縮放示範 ===== */
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){var u=0,v;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function softmax(z){var m=Math.max.apply(null,z),e=z.map(function(x){return Math.exp(x-m)}),s=e.reduce(function(a,b){return a+b},0);return e.map(function(x){return x/s})}
+var seed=7;
+function demo(){
+  var dk=Math.pow(2,+$('dk-exp').value); $('dk-val').textContent=dk;
+  var r=mulberry(seed*7919+dk), K=8, q=[], keys=[], i, j;
+  for(i=0;i<dk;i++) q.push(gauss(r));
+  for(j=0;j<K;j++){ var k=[]; for(i=0;i<dk;i++) k.push(gauss(r)); keys.push(k); }
+  var raw=keys.map(function(k){var s=0;for(var t=0;t<dk;t++) s+=q[t]*k[t];return s});
+  var sc=raw.map(function(x){return x/Math.sqrt(dk)});
+  var w1=softmax(raw), w2=softmax(sc);
+  var h='';
+  for(j=0;j<K;j++){
+    h+='<div class="barrow"><span>k'+(j+1)+'</span><div><div class="bar a" style="width:'+(w1[j]*100)+'%"></div><div class="bar b" style="width:'+(w2[j]*100)+'%;margin-top:3px"></div></div><span>'+w1[j].toFixed(2)+'<br>'+w2[j].toFixed(2)+'</span></div>';
+  }
+  $('att-bars').innerHTML=h;
+  var r2=mulberry(99+dk), n=600, sum=0, sum2=0;
+  for(var s=0;s<n;s++){ var d=0; for(var t=0;t<dk;t++) d+=gauss(r2)*gauss(r2); sum+=d; sum2+=d*d; }
+  var mean=sum/n, sd=Math.sqrt(sum2/n-mean*mean);
+  $('att-stat').innerHTML='<div>最大權重<br>未縮放 <b>'+Math.max.apply(null,w1).toFixed(2)+'</b> ｜ 縮放後 <b>'+Math.max.apply(null,w2).toFixed(2)+'</b></div>'+
+    '<div>q·k 的標準差（600 次抽樣）<br>實測 <b>'+sd.toFixed(2)+'</b> ｜ 理論 √d_k = <b>'+Math.sqrt(dk).toFixed(2)+'</b></div>'+
+    '<div>縮放後分數的標準差<br>約 <b>'+(sd/Math.sqrt(dk)).toFixed(2)+'</b>，與 d_k 無關</div>';
+}
+$('dk-exp').addEventListener('input',demo);
+$('dk-roll').addEventListener('click',function(){seed++;demo();});
+demo();
+
+/* ===== 頭數圖表（論文表 3 A 列）===== */
+(function(){
+  var rows=[{h:1,dk:512,b:24.9},{h:4,dk:128,b:25.5},{h:8,dk:64,b:25.8,base:true},{h:16,dk:32,b:25.8},{h:32,dk:16,b:25.4}];
+  $('head-chart').innerHTML=rows.map(function(r){
+    var wd=(r.b-24)/(26-24)*100;
+    return '<div class="hbar'+(r.base?' hl':'')+'"><span>h = '+r.h+(r.base?'（base）':'')+'<br><span style="color:var(--muted);font-size:11.5px">d_k = d_v = '+r.dk+'</span></span><i style="width:'+wd+'%"></i><span>'+r.b.toFixed(1)+'</span></div>';
+  }).join('');
+})();
+
+/* ===== 位置編碼熱圖 ===== */
+function hex2rgb(h){h=(h||'').trim();if(h[0]==='#'){if(h.length===4)h='#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}return [128,128,128]}
+function peVal(p,dim,d){ return dim%2===0 ? Math.sin(p/Math.pow(10000,dim/d)) : Math.cos(p/Math.pow(10000,(dim-1)/d)); }
+var peCw=3, peCh=6;
+function drawPE(){
+  var cv=$('pe-canvas'), d=+$('pe-d').value, P=+$('pe-p').value;
+  $('pe-d-val').textContent=d; $('pe-p-val').textContent=P;
+  var avail=Math.max(280,cv.parentElement.clientWidth-4);
+  peCw=Math.max(2,Math.min(8,Math.floor(avail/d))); peCh=Math.max(3,Math.floor(320/P));
+  cv.width=d*peCw; cv.height=P*peCh; cv.style.width=cv.width+'px'; cv.style.height=cv.height+'px';
+  var css=getComputedStyle(document.documentElement);
+  var mid=hex2rgb(css.getPropertyValue('--surface2')), pc=hex2rgb(css.getPropertyValue('--att-bd')), nc=hex2rgb(css.getPropertyValue('--ffn-bd'));
+  var ctx=cv.getContext('2d');
+  for(var p=0;p<P;p++){
+    for(var k=0;k<d;k++){
+      var v=peVal(p,k,d), t=Math.abs(v), tgt=v>=0?pc:nc;
+      ctx.fillStyle='rgb('+Math.round(mid[0]+(tgt[0]-mid[0])*t)+','+Math.round(mid[1]+(tgt[1]-mid[1])*t)+','+Math.round(mid[2]+(tgt[2]-mid[2])*t)+')';
+      ctx.fillRect(k*peCw,p*peCh,peCw,peCh);
+    }
+  }
+  var last=2*Math.PI*Math.pow(10000,(d-2)/d);
+  $('pe-read').textContent='d_model = '+d+'：波長從 2π ≈ 6.28（第 0 維）一路增加到約 '+Math.round(last).toLocaleString('en-US')+'（最後一對維度）。橫軸是維度 i（左邊頻率高），縱軸是位置 pos。移動游標可讀取數值，暖色為正、冷色為負。';
+}
+$('pe-d').addEventListener('input',drawPE);
+$('pe-p').addEventListener('input',drawPE);
+$('pe-canvas').addEventListener('pointermove',function(e){
+  var cv=e.currentTarget, r=cv.getBoundingClientRect(), d=+$('pe-d').value, P=+$('pe-p').value;
+  var k=Math.floor((e.clientX-r.left)/r.width*d), p=Math.floor((e.clientY-r.top)/r.height*P);
+  if(k<0||k>=d||p<0||p>=P) return;
+  $('pe-read').textContent='pos = '+p+'，維度 '+k+'（'+(k%2===0?'sin':'cos')+'，i = '+Math.floor(k/2)+'）：PE = '+peVal(p,k,d).toFixed(4);
+});
+drawPE();
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawPE); }catch(_){}
+new MutationObserver(drawPE).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ===== 計算器 ===== */
+var FIELDS=[['dModel','d_model'],['h','頭數 h'],['dk','d_k'],['dv','d_v'],['dff','d_ff（FFN 寬度）'],['nEnc','編碼器層數'],['nDec','解碼器層數'],['vocab','詞表大小 V']];
+var PRESETS={
+  base:{dModel:512,h:8,dk:64,dv:64,dff:2048,nEnc:6,nDec:6,vocab:37000,arch:'encdec',auto:true,tie:true,bias:true,ln:true},
+  big:{dModel:1024,h:16,dk:64,dv:64,dff:4096,nEnc:6,nDec:6,vocab:37000,arch:'encdec',auto:true,tie:true,bias:true,ln:true},
+  gpt3:{dModel:12288,h:96,dk:128,dv:128,dff:49152,nEnc:0,nDec:96,vocab:50257,arch:'dec',auto:false,tie:false,bias:false,ln:false}
+};
+var lastPreset='base';
+$('calc-fields').innerHTML=FIELDS.map(function(f){return '<label class="field"><span>'+f[1]+'</span><input id="c-'+f[0]+'" type="number" min="1" step="1" inputmode="numeric"></label>'}).join('');
+function setCfg(c){
+  FIELDS.forEach(function(f){$('c-'+f[0]).value=c[f[0]]});
+  $('c-arch').value=c.arch; ['auto','tie','bias','ln'].forEach(function(k){$('c-'+k).checked=c[k]});
+}
+function readCfg(){
+  var c={}; FIELDS.forEach(function(f){var v=parseInt($('c-'+f[0]).value,10); c[f[0]]=isFinite(v)&&v>0?v:(f[0]==='nEnc'?0:1)});
+  c.arch=$('c-arch').value; ['auto','tie','bias','ln'].forEach(function(k){c[k]=$('c-'+k).checked});
+  return c;
+}
+function syncCalc(src){
+  var c=readCfg();
+  if(c.auto && (src==='dModel'||src==='h'||src==='auto'||src==='preset')){ var d=Math.max(1,Math.round(c.dModel/c.h)); $('c-dk').value=d; $('c-dv').value=d; c.dk=d; c.dv=d; }
+  $('c-dk').disabled=c.auto; $('c-dv').disabled=c.auto;
+  $('c-nEnc').disabled=(c.arch==='dec');
+  var r=calcParams(c), tot=r.total;
+  $('c-total').textContent=fmt(tot);
+  $('c-short').textContent='約 '+short(tot)+' 個參數';
+  var cols={emb:'var(--emb-bd)',att:'var(--att-bd)',ffn:'var(--ffn-bd)',ln:'var(--nrm-bd)'};
+  $('c-share').innerHTML=r.parts.map(function(p){return '<span style="width:'+(p.count/tot*100)+'%;background:'+cols[p.key]+'"></span>'}).join('');
+  $('c-share-cap').innerHTML=r.parts.map(function(p){return '<span><i class="sw sw-'+(p.key==='ln'?'nrm':p.key)+'"></i>'+(p.key==='emb'?'嵌入':p.key==='att'?'注意力':p.key==='ffn'?'FFN':'LayerNorm')+' '+pct(p.count,tot)+'</span>'}).join('');
+  $('c-rows').innerHTML=r.parts.map(function(p){return '<tr><td><i class="sw sw-'+(p.key==='ln'?'nrm':p.key)+'"></i>'+esc(p.label)+'</td><td class="num">'+fmt(p.count)+'</td><td class="num">'+pct(p.count,tot)+'</td></tr>'}).join('')+'<tr><td><b>合計</b></td><td class="num"><b>'+fmt(tot)+'</b></td><td class="num">100%</td></tr>';
+  $('c-layers').textContent=(c.arch==='encdec'?'每個編碼器層 '+fmt(r.encLayer)+'；每個解碼器層 '+fmt(r.decLayer)+'。':'每個 decoder 層 '+fmt(r.decLayer)+'。')+' 論文表 3 參考：base 約 65M、big 213M；截圖 GPT-3 為 175,181,291,520。';
+  var ok = tot===175181291520;
+  $('c-check').textContent = ok ? '✓ 與截圖的 GPT-3 總參數量 175,181,291,520 完全一致。' : (tot===63082496 ? '這組設定與頁面「整體參數量核算」一致：63,082,496。' : '');
+}
+document.querySelectorAll('[data-preset]').forEach(function(b){
+  b.addEventListener('click',function(){ lastPreset=b.getAttribute('data-preset'); setCfg(PRESETS[lastPreset]); syncCalc('preset'); });
+});
+FIELDS.forEach(function(f){ $('c-'+f[0]).addEventListener('input',function(){syncCalc(f[0])}); });
+['arch','auto','tie','bias','ln'].forEach(function(k){ $('c-'+k).addEventListener('change',function(){syncCalc(k)}); });
+setCfg(PRESETS.base); syncCalc('preset');
+
+/* ===== 虛擬碼 ===== */
+var CODE=[];
+CODE.push({label:'1 超參數與基本元件',desc:'超參數、嵌入、位置編碼、LayerNorm、Dropout、FFN 與子層包裝。',code:
+"# ===== 超參數（論文 base model）=====\n"+
+"d_model   = 512              # 嵌入與所有子層輸出的維度\n"+
+"h         = 8                # 注意力頭數\n"+
+"d_k = d_v = d_model // h     # 每個頭的維度 = 64\n"+
+"d_ff      = 2048             # FFN 內層寬度\n"+
+"N         = 6                # 編碼器、解碼器各堆疊 6 層\n"+
+"P_drop    = 0.1\n"+
+"V         = 37000            # 共用詞表大小（約略值）\n"+
+"\n"+
+"# ===== 詞嵌入 =====\n"+
+"def embed(token_ids, W_emb):\n"+
+"    # token_ids: (n,)    W_emb: (V, d_model)\n"+
+"    return W_emb[token_ids] * sqrt(d_model)          # (n, d_model)\n"+
+"\n"+
+"# ===== 位置編碼：固定函數，沒有可學習參數 =====\n"+
+"def positional_encoding(n):\n"+
+"    PE = zeros(n, d_model)\n"+
+"    for pos in range(n):\n"+
+"        for i in range(d_model // 2):\n"+
+"            angle = pos / (10000 ** (2 * i / d_model))\n"+
+"            PE[pos, 2*i]     = sin(angle)\n"+
+"            PE[pos, 2*i + 1] = cos(angle)\n"+
+"    return PE                                        # (n, d_model)\n"+
+"\n"+
+"# ===== LayerNorm：對每個位置的 d_model 維做正規化 =====\n"+
+"def layer_norm(x, gamma, beta, eps=1e-6):            # eps：論文未規定，1e-6 為常見實作值\n"+
+"    mu  = mean(x, axis=-1, keepdims=True)\n"+
+"    var = variance(x, axis=-1, keepdims=True)\n"+
+"    return gamma * (x - mu) / sqrt(var + eps) + beta\n"+
+"\n"+
+"def dropout(x, p, training):\n"+
+"    if not training:\n"+
+"        return x\n"+
+"    keep = random_uniform(x.shape) >= p\n"+
+"    return x * keep / (1 - p)\n"+
+"\n"+
+"# ===== 位置獨立前饋網路：兩個線性轉換，中間 ReLU =====\n"+
+"def feed_forward(x, W1, b1, W2, b2):\n"+
+"    # W1: (d_model, d_ff)    W2: (d_ff, d_model)\n"+
+"    hidden = maximum(0, x @ W1 + b1)                 # (n, d_ff)\n"+
+"    return hidden @ W2 + b2                          # (n, d_model)\n"+
+"\n"+
+"# ===== 子層包裝：殘差 + Dropout + LayerNorm =====\n"+
+"def sublayer(x, fn, ln, training):\n"+
+"    # 論文：LayerNorm(x + Sublayer(x))\n"+
+"    return layer_norm(x + dropout(fn(x), P_drop, training), ln.gamma, ln.beta)\n"});
+CODE.push({label:'2 注意力',desc:'縮放點積注意力、因果遮罩與多頭注意力。',code:
+"def softmax(z, axis=-1):\n"+
+"    z = z - max(z, axis=axis, keepdims=True)         # 數值穩定\n"+
+"    e = exp(z)\n"+
+"    return e / sum(e, axis=axis, keepdims=True)\n"+
+"\n"+
+"def causal_mask(n):\n"+
+"    return tril(ones((n, n))) == 1                   # True = 允許注意（只看自己與之前的位置）\n"+
+"\n"+
+"def scaled_dot_product_attention(Q, K, V, mask=None):\n"+
+"    # Q: (n_q, d_k)    K: (n_k, d_k)    V: (n_k, d_v)\n"+
+"    scores = (Q @ K.T) / sqrt(d_k)                   # (n_q, n_k)\n"+
+"    if mask is not None:\n"+
+"        scores = where(mask, scores, -inf)           # 非法連線 -> softmax 後為 0\n"+
+"    weights = softmax(scores, axis=-1)               # 每列和為 1\n"+
+"    return weights @ V                               # (n_q, d_v)\n"+
+"\n"+
+"def multi_head_attention(x_q, x_kv, W, mask=None):\n"+
+"    # x_q: (n_q, d_model)    x_kv: (n_k, d_model)\n"+
+"    # W.Q[i], W.K[i]: (d_model, d_k)    W.V[i]: (d_model, d_v)    W.O: (h*d_v, d_model)\n"+
+"    heads = []\n"+
+"    for i in range(h):                               # 實作上 h 個頭合併成一次大矩陣乘法並行計算\n"+
+"        Q = x_q  @ W.Q[i]                            # (n_q, d_k)\n"+
+"        K = x_kv @ W.K[i]                            # (n_k, d_k)\n"+
+"        V = x_kv @ W.V[i]                            # (n_k, d_v)\n"+
+"        heads.append(scaled_dot_product_attention(Q, K, V, mask))\n"+
+"    return concat(heads, axis=-1) @ W.O              # (n_q, h*d_v) -> (n_q, d_model)\n"});
+CODE.push({label:'3 編碼器與解碼器',desc:'單層與整個堆疊。解碼器多了遮罩自注意力與交叉注意力。',code:
+"def encoder_layer(x, L, training):\n"+
+"    x = sublayer(x, lambda t: multi_head_attention(t, t, L.attn), L.ln1, training)\n"+
+"    x = sublayer(x, lambda t: feed_forward(t, L.W1, L.b1, L.W2, L.b2), L.ln2, training)\n"+
+"    return x\n"+
+"\n"+
+"def encoder(src_ids, P, training):\n"+
+"    x = embed(src_ids, P.W_emb) + positional_encoding(len(src_ids))\n"+
+"    x = dropout(x, P_drop, training)\n"+
+"    for l in range(N):\n"+
+"        x = encoder_layer(x, P.enc[l], training)\n"+
+"    return x                                         # memory: (n_src, d_model)\n"+
+"\n"+
+"def decoder_layer(y, memory, L, training):\n"+
+"    m = causal_mask(len(y))\n"+
+"    # 1) 遮罩自注意力：位置 i 只能看到 i 之前的輸出\n"+
+"    y = sublayer(y, lambda t: multi_head_attention(t, t, L.self_attn, mask=m), L.ln1, training)\n"+
+"    # 2) 交叉注意力：Q 來自解碼器，K 與 V 來自編碼器輸出\n"+
+"    y = sublayer(y, lambda t: multi_head_attention(t, memory, L.cross_attn), L.ln2, training)\n"+
+"    # 3) 前饋網路\n"+
+"    y = sublayer(y, lambda t: feed_forward(t, L.W1, L.b1, L.W2, L.b2), L.ln3, training)\n"+
+"    return y\n"+
+"\n"+
+"def decoder(tgt_in_ids, memory, P, training):\n"+
+"    y = embed(tgt_in_ids, P.W_emb) + positional_encoding(len(tgt_in_ids))\n"+
+"    y = dropout(y, P_drop, training)\n"+
+"    for l in range(N):\n"+
+"        y = decoder_layer(y, memory, P.dec[l], training)\n"+
+"    return y                                         # (m, d_model)\n"});
+CODE.push({label:'4 完整前向傳播',desc:'把所有元件接成一個模型，並列出參數容器的內容。',code:
+"def transformer(src_ids, tgt_in_ids, P, training=False):\n"+
+"    memory = encoder(src_ids, P, training)           # (n, d_model)\n"+
+"    y      = decoder(tgt_in_ids, memory, P, training)  # (m, d_model)\n"+
+"    logits = y @ P.W_emb.T                           # 與嵌入共用權重 -> (m, V)\n"+
+"    return softmax(logits, axis=-1)                  # 每個位置的下一個 token 機率\n"+
+"\n"+
+"# ===== 參數容器 P 包含 =====\n"+
+"#   P.W_emb                        (V, d_model)      共用的嵌入 / 輸出投影\n"+
+"#   P.enc[l].attn                  W.Q[h], W.K[h], W.V[h], W.O\n"+
+"#   P.enc[l].W1, b1, W2, b2        FFN\n"+
+"#   P.enc[l].ln1, ln2              每個 LayerNorm 有 gamma、beta\n"+
+"#   P.dec[l].self_attn, cross_attn 兩組注意力權重\n"+
+"#   P.dec[l].W1, b1, W2, b2, ln1, ln2, ln3\n"+
+"# 初始化方式論文未規定；實作常用 Xavier/Glorot 初始化。\n"+
+"\n"+
+"def count_params(P):\n"+
+"    # base model：嵌入 18,944,000 + 編碼器 6 x 3,152,384 + 解碼器 6 x 4,204,032\n"+
+"    #            = 63,082,496（含 bias 與 LayerNorm）\n"+
+"    return sum(size(w) for w in all_weights(P))\n"});
+CODE.push({label:'5 訓練',desc:'學習率排程、label smoothing 與訓練迴圈（論文 §5）。',code:
+"def lr_schedule(step, d_model=512, warmup_steps=4000):\n"+
+"    step = max(step, 1)\n"+
+"    # 前 warmup_steps 步線性上升，之後與 step 的平方根倒數成正比下降\n"+
+"    return d_model ** -0.5 * min(step ** -0.5, step * warmup_steps ** -1.5)\n"+
+"\n"+
+"def label_smoothing_loss(probs, targets, eps_ls=0.1):\n"+
+"    # probs: (m, V)    targets: (m,)\n"+
+"    target_dist = (1 - eps_ls) * one_hot(targets, V) + eps_ls / V\n"+
+"    return -mean(sum(target_dist * log(probs), axis=-1))\n"+
+"    # 會讓 perplexity 變差（模型被迫保留不確定性），但提升準確率與 BLEU\n"+
+"\n"+
+"def train(P, data, total_steps=100000):             # base：100K 步；big：300K 步\n"+
+"    opt = Adam(P, beta1=0.9, beta2=0.98, eps=1e-9)\n"+
+"    for step in range(1, total_steps + 1):\n"+
+"        src, tgt = next_batch(data)                  # 依長度分組，約 25,000 source + 25,000 target token\n"+
+"        tgt_in  = [BOS] + tgt[:-1]                   # 輸出序列右移一格\n"+
+"        probs   = transformer(src, tgt_in, P, training=True)\n"+
+"        loss    = label_smoothing_loss(probs, tgt, eps_ls=0.1)\n"+
+"        grads   = backward(loss, P)\n"+
+"        opt.lr  = lr_schedule(step)\n"+
+"        opt.step(grads)\n"+
+"        if step % 600 == 0:                          # 約每 10 分鐘存一次檢查點\n"+
+"            save_checkpoint(P)\n"+
+"    # 推論前：base 取最後 5 個檢查點平均，big 取最後 20 個\n"+
+"    return average_checkpoints(last=5)\n"});
+CODE.push({label:'6 推論',desc:'beam search：beam size 4、長度懲罰 α = 0.6、最大長度為輸入長度 + 50。',code:
+"def length_penalty(length, alpha=0.6):\n"+
+"    return ((5 + length) ** alpha) / ((5 + 1) ** alpha)\n"+
+"\n"+
+"def beam_search(src_ids, P, beam_size=4, alpha=0.6):\n"+
+"    memory  = encoder(src_ids, P, training=False)    # 編碼器只需跑一次\n"+
+"    max_len = len(src_ids) + 50\n"+
+"    beams   = [([BOS], 0.0)]                         # (序列, 對數機率總和)\n"+
+"    for t in range(max_len):\n"+
+"        candidates = []\n"+
+"        for seq, logp in beams:\n"+
+"            if seq[-1] == EOS:                       # 已結束的假設保留不變\n"+
+"                candidates.append((seq, logp))\n"+
+"                continue\n"+
+"            y     = decoder(seq, memory, P, training=False)\n"+
+"            probs = softmax(y[-1] @ P.W_emb.T)       # 只取最後一個位置的下一 token 機率\n"+
+"            for tok in top_k(probs, beam_size):\n"+
+"                candidates.append((seq + [tok], logp + log(probs[tok])))\n"+
+"        beams = top_k_by(candidates, beam_size,\n"+
+"                         key=lambda c: c[1] / length_penalty(len(c[0]), alpha))\n"+
+"        if all(seq[-1] == EOS for seq, _ in beams):\n"+
+"            break\n"+
+"    return best(beams, key=lambda c: c[1] / length_penalty(len(c[0]), alpha))[0]\n"});
+CODE.push({label:'7 GPT-3 式 decoder-only',desc:'截圖中的 GPT-3：沒有編碼器與交叉注意力，96 層、96 頭，數字與參數表一致。',code:
+"# ===== GPT-3 規模（取自截圖）=====\n"+
+"d_embed  = 12288\n"+
+"n_heads  = 96\n"+
+"d_head   = 128                # = d_embed / n_heads（表中的 d_query = d_value）\n"+
+"n_layers = 96\n"+
+"n_vocab  = 50257\n"+
+"d_mlp    = 49152              # = 4 * d_embed（表中的 n_neurons）\n"+
+"\n"+
+"def gpt_attention(x, A):\n"+
+"    # A.Q[i], A.K[i], A.V[i]: (d_head, d_embed)    A.O: (d_embed, n_heads * d_head)\n"+
+"    n    = len(x)\n"+
+"    mask = causal_mask(n)\n"+
+"    outs = []\n"+
+"    for i in range(n_heads):\n"+
+"        q = x @ A.Q[i].T                             # (n, d_head)\n"+
+"        k = x @ A.K[i].T\n"+
+"        v = x @ A.V[i].T\n"+
+"        scores  = (q @ k.T) / sqrt(d_head)\n"+
+"        weights = softmax(where(mask, scores, -inf))\n"+
+"        outs.append(weights @ v)\n"+
+"    return concat(outs, axis=-1) @ A.O.T             # (n, d_embed)\n"+
+"\n"+
+"def gpt_block(x, B):\n"+
+"    # GPT 系列把 LayerNorm 移到子層之前（pre-norm），論文原版是子層之後（post-norm）\n"+
+"    x = x + gpt_attention(layer_norm(x, B.ln1.gamma, B.ln1.beta), B.attn)\n"+
+"    hidden = gelu(layer_norm(x, B.ln2.gamma, B.ln2.beta) @ B.W_up.T)   # W_up: (d_mlp, d_embed)\n"+
+"    x = x + hidden @ B.W_down.T                                       # W_down: (d_embed, d_mlp)\n"+
+"    return x\n"+
+"\n"+
+"def gpt(token_ids, G):\n"+
+"    # W_E 在表中寫成 d_embed x n_vocab，這裡轉置存放以便查表；參數量相同\n"+
+"    x = G.W_E[token_ids] + G.W_pos[:len(token_ids)]  # 位置參數不在截圖的參數表內\n"+
+"    for l in range(n_layers):\n"+
+"        x = gpt_block(x, G.blocks[l])\n"+
+"    logits = layer_norm(x[-1], G.ln_f.gamma, G.ln_f.beta) @ G.W_U.T   # Unembedding: (n_vocab, d_embed)\n"+
+"    return softmax(logits)                           # 下一個 token 的機率分佈\n"+
+"\n"+
+"def generate(prompt_ids, G, max_new_tokens):\n"+
+"    ids = list(prompt_ids)\n"+
+"    for _ in range(max_new_tokens):\n"+
+"        ids.append(sample(gpt(ids, G)))              # 也可用 argmax 或 top-p 取樣\n"+
+"    return ids\n"+
+"\n"+
+"# ===== 參數量（與截圖一致）=====\n"+
+"total = ( 2 * n_vocab * d_embed                      # Embedding + Unembedding\n"+
+"        + n_layers * ( 3 * n_heads * d_head * d_embed    # Q、K、V\n"+
+"                     + d_embed * n_heads * d_head        # Output\n"+
+"                     + 2 * d_mlp * d_embed ) )           # Up + Down\n"+
+"# = 175,181,291,520\n"});
+
+function hl(code){
+  return code.split('\n').map(function(line){
+    var i=line.indexOf('#'), c='', k=line;
+    if(i>=0){ c=line.slice(i); k=line.slice(0,i); }
+    k=esc(k).replace(/\b(def|return|for|in|if|else|while|lambda|and|or|not|range|break|continue|all|sum)\b/g,'<span class="kw">$1</span>')
+            .replace(/<span class="kw">def<\/span> (\w+)/g,'<span class="kw">def</span> <span class="fn">$1</span>');
+    return k+(c?'<span class="cm">'+esc(c)+'</span>':'');
+  }).join('\n');
+}
+var codeIdx=0;
+function showCode(i){
+  codeIdx=i;
+  document.querySelectorAll('#code-tabs .tab').forEach(function(b,j){b.setAttribute('aria-selected',j===i?'true':'false')});
+  $('code-desc').textContent=CODE[i].desc;
+  $('code-pre').innerHTML=hl(CODE[i].code);
+}
+(function(){
+  var bar=$('code-tabs');
+  CODE.forEach(function(c,i){ var b=document.createElement('button'); b.type='button'; b.className='tab'; b.setAttribute('role','tab'); b.textContent=c.label; b.addEventListener('click',function(){showCode(i)}); bar.appendChild(b); });
+  showCode(0);
+})();
+function copyText(text,btn,orig){
+  function done(m){ btn.textContent=m; setTimeout(function(){btn.textContent=orig},1800); }
+  function fallback(){ var r=document.createRange(); r.selectNodeContents($('code-pre')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); done('已選取，請按 Ctrl/⌘ + C'); }
+  try{ navigator.clipboard.writeText(text).then(function(){done('已複製')},fallback); }catch(e){ fallback(); }
+}
+$('code-copy').addEventListener('click',function(){ copyText(CODE[codeIdx].code,this,'複製此頁'); });
+$('code-copy-all').addEventListener('click',function(){ copyText(CODE.map(function(c,i){return '# ########## '+c.label+' ##########\n'+c.code}).join('\n\n'),this,'複製全部'); });
+})();
+</script>
+
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：iamkylee</b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>引用的論文、影片與圖表，版權屬原作者，不在上述授權範圍內。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body></html>

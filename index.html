@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>學習空間 · iamkylee</title>
+<meta name="description" content="CNN、Transformer、優化器：三份互動式深度學習筆記，由 Claude 協助產生，作者審閱分享，CC BY 4.0。">
+<meta name="author" content="iamkylee">
+<style>
+:root{--bg:#f4f6fb;--surface:#fff;--ink:#16203a;--muted:#55607a;--line:#d6dcea;--accent:#2347c5;--accent-ink:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1526;--surface:#172038;--ink:#e8ecf7;--muted:#9aa6c4;--line:#2a3558;--accent:#7f9cff;--accent-ink:#0f1526}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header{padding:48px 0 24px}
+h1{margin:0 0 8px;font-size:clamp(28px,6vw,40px);line-height:1.2}
+.lead{color:var(--muted);max-width:42em;margin:0}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:16px 0 8px}
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+.card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+.card h2{margin:6px 0 8px;font-size:20px}
+.card p{margin:0 0 14px;color:var(--muted);font-size:14.5px;flex:1}
+.go{font-weight:700;color:var(--accent)}
+.note{margin:32px 0 0;padding:20px 0 40px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;line-height:1.8}
+.note p{margin:.4em 0}.note a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>學習空間</h1>
+  <p class="lead">把學習深度學習時整理的筆記做成可以點、可以算、可以玩的網頁。每一份都是單一檔案，手機和電腦都能閱讀。</p>
+</header>
+<main>
+<div class="grid">
+  <a class="card" href="notes/cnn-convolution.html">
+    <span class="tag">CNN</span><h2>CNN 卷積筆記</h2>
+    <p>從一張圖怎麼變成分類結果開始，整理卷積、感受野、參數量、輸出尺寸、Pooling、BatchNorm、反卷積與經典架構；附網路計算器與練習題。</p>
+    <span class="go">開始閱讀 →</span>
+  </a>
+  <a class="card" href="notes/transformer-anatomy.html">
+    <span class="tag">TRANSFORMER</span><h2>Transformer 解剖圖</h2>
+    <p>對照 GPT-3 參數表與 Vaswani 等人 2017 年原論文，逐層說明矩陣形狀、參數量與作用；附架構圖、參數量計算器、完整虛擬碼，以及 3Blue1Brown 延伸觀看連結。</p>
+    <span class="go">開始閱讀 →</span>
+  </a>
+  <a class="card" href="notes/optimizers-map.html">
+    <span class="tag">OPTIMIZER</span><h2>優化器學習地圖</h2>
+    <p>同一座山，五種下山法：SGD、Momentum、RMSprop、Adam、Adagrad 放在同一張損失地圖上比較；附學習率排程、選用指南與小測驗。</p>
+    <span class="go">開始閱讀 →</span>
+  </a>
+</div>
+</main>
+<footer class="note">
+  <p><b>作者：iamkylee</b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a>：歡迎使用與改作，請標示作者 iamkylee 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，有修改請註明。程式碼採 MIT 授權。引用的論文與影片版權屬原作者。</p>
+  <p>發現錯誤或有建議：<a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> · <a href="https://github.com/iamkylee/learning-space" target="_blank" rel="noopener">原始碼</a></p>
+</footer>
+</div>
+</body>
+</html>

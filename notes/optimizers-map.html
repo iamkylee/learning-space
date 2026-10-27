@@ -1,0 +1,1230 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>優化器學習地圖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+/* Layout concept: a topographic field notebook. A live loss-landscape map leads the page,
+   followed by plain reference sections on cool paper-grey with one navy ink and
+   Okabe-Ito-style data colours reserved for the five optimizers. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --surface2:#E9EEF4;
+  --ink:#0F1B27; --ink2:#46586A; --line:#CCD6E0;
+  --accent:#12356B; --on-accent:#FFFFFF;
+  --map-lo:#C6DAF0; --map-hi:#F8FAFC; --map-line:#8DA2B8;
+  --c-sgd:#0072B2; --c-mom:#D99100; --c-rms:#009E73; --c-adam:#D55E00; --c-ada:#B4508C;
+  --good:#17714F; --warn:#A8481A;
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C131A; --surface:#131D27; --surface2:#1A2733;
+    --ink:#E7EEF5; --ink2:#9DB0C2; --line:#27384A;
+    --accent:#8FB4F2; --on-accent:#0C131A;
+    --map-lo:#1D3B5E; --map-hi:#0E1721; --map-line:#3E5B78;
+    --c-sgd:#56B4E9; --c-mom:#F0B429; --c-rms:#2FD3A2; --c-adam:#FF8A4C; --c-ada:#E8A0CB;
+    --good:#4CC38F; --warn:#F0985F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C131A; --surface:#131D27; --surface2:#1A2733;
+  --ink:#E7EEF5; --ink2:#9DB0C2; --line:#27384A;
+  --accent:#8FB4F2; --on-accent:#0C131A;
+  --map-lo:#1D3B5E; --map-hi:#0E1721; --map-line:#3E5B78;
+  --c-sgd:#56B4E9; --c-mom:#F0B429; --c-rms:#2FD3A2; --c-adam:#FF8A4C; --c-ada:#E8A0CB;
+  --good:#4CC38F; --warn:#F0985F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1rem;line-height:1.75;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+h1,h2,h3,h4,p,ul,dl,pre{margin:0}
+.wrap{width:100%;max-width:1120px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:1rem;height:52px}
+.brand{font:700 1rem/1 var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.nav{display:flex;gap:.2rem;overflow-x:auto;min-width:0;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:.35rem .7rem;border-radius:999px;color:var(--ink2);text-decoration:none;font-size:.875rem;line-height:1.4;white-space:nowrap}
+.nav a:hover{background:var(--surface2);color:var(--ink)}
+section[id]{scroll-margin-top:64px}
+
+/* hero */
+.hero{padding-block:clamp(2rem,6vw,3.75rem) 2.25rem}
+.eyebrow{font:500 .75rem/1 var(--f-mono);letter-spacing:.14em;color:var(--ink2);text-transform:uppercase}
+h1{font:900 clamp(2.1rem,1.3rem+3.6vw,3.6rem)/1.18 var(--f-display);margin:.9rem 0 1rem;text-wrap:balance}
+.lead{max-width:40em;color:var(--ink2);font-size:1.0625rem}
+.take{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem;margin-top:2rem;padding-top:1.25rem;border-top:1px solid var(--line)}
+.take h2{font:500 .8rem/1.4 var(--f-mono);letter-spacing:.06em;color:var(--ink2);margin-bottom:.35rem}
+.take p{font-size:.95rem;line-height:1.7}
+.take b{font-weight:700}
+.kicker{font:500 .75rem/1 var(--f-mono);letter-spacing:.12em;color:var(--ink2);text-transform:uppercase;margin-bottom:.9rem}
+
+/* sections */
+.block{padding-block:clamp(2.25rem,5vw,3.5rem);border-top:1px solid var(--line)}
+h2.sec{font:700 clamp(1.45rem,1.1rem+1.2vw,1.95rem)/1.3 var(--f-display);text-wrap:balance}
+.sec-lead{max-width:44em;color:var(--ink2);margin-top:.6rem}
+h3{font-size:1.125rem;line-height:1.45;font-weight:700}
+h4{font:500 .8rem/1.4 var(--f-mono);letter-spacing:.08em;color:var(--ink2);margin:1rem 0 .35rem}
+
+/* buttons / chips */
+.btn{font:500 .875rem/1.2 var(--f-body);padding:.55rem .95rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;cursor:pointer;min-height:38px}
+.btn:hover{border-color:var(--ink2)}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.seg{display:flex;flex-wrap:wrap;gap:.4rem}
+.seg button{font:500 .875rem/1.2 var(--f-body);padding:.5rem .9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;cursor:pointer;min-height:38px}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.chip{display:inline-block;font:500 .78rem/1 var(--f-mono);padding:.32rem .5rem;border:1px solid var(--line);border-radius:4px;color:var(--ink2);white-space:nowrap}
+.chip.main{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1.75rem;margin-top:1.5rem}
+@media (max-width:900px){.sim{grid-template-columns:minmax(0,1fr)}}
+.sim-main,.sim-side{min-width:0;display:flex;flex-direction:column;gap:.9rem}
+.tip{color:var(--ink2);font-size:.95rem;min-height:3.4em}
+.canvas-box{border:1px solid var(--line);background:var(--surface)}
+#map{display:block;width:100%;aspect-ratio:3/2;cursor:crosshair}
+#lossChart{display:block;width:100%;height:200px}
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.transport .grow{flex:1}
+.transport select{font:500 .875rem var(--f-body);padding:.5rem .6rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;min-height:38px}
+.stepout{font:500 .85rem var(--f-mono);color:var(--ink2);min-width:6.5em;text-align:right}
+.cap{font-size:.85rem;color:var(--ink2)}
+.panel{background:var(--surface);border:1px solid var(--line);padding:1rem 1.1rem}
+.orow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .75rem;padding:.7rem 0;border-top:1px solid var(--line)}
+.orow:first-of-type{border-top:0;padding-top:.2rem}
+.chk{display:flex;align-items:flex-start;gap:.55rem;cursor:pointer;min-width:0}
+.chk input{margin:.4rem 0 0;accent-color:var(--accent)}
+.chk .dot{margin-top:.45rem}
+.oname{display:block;font-weight:700;line-height:1.5}
+.osub{display:block;font-size:.8rem;line-height:1.4;color:var(--ink2)}
+.ostat{text-align:right;font-family:var(--f-mono);font-size:.85rem;line-height:1.5}
+.ostat .stat{display:block;color:var(--ink2);min-height:1.5em}
+.ostat .stat.bad{color:var(--warn)}
+.lrbox{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) 4.5em;align-items:center;gap:.6rem}
+.lrlab{font-size:.8rem;color:var(--ink2)}
+.lrv{font:500 .85rem var(--f-mono);text-align:right}
+.noisebox{display:grid;grid-template-columns:auto minmax(0,1fr) 3.5em;align-items:center;gap:.6rem;padding-top:.8rem;border-top:1px solid var(--line)}
+.notes{display:grid;gap:.55rem;padding-left:1.1rem;font-size:.94rem;line-height:1.7}
+.notes li::marker{color:var(--ink2)}
+
+/* lineage */
+.lineage{margin-top:1.5rem;border-top:1px solid var(--ink)}
+.lrow{display:grid;grid-template-columns:5rem 8rem minmax(0,1fr) minmax(0,1fr);gap:.25rem 1.25rem;padding:.95rem 0;border-bottom:1px solid var(--line)}
+.lrow .yr{font:500 .85rem/1.9 var(--f-mono);color:var(--ink2)}
+.lrow .nm{font-weight:700}
+.lrow .lab{display:none;font:500 .72rem var(--f-mono);letter-spacing:.06em;color:var(--ink2)}
+.lrow .fix,.lrow .left{font-size:.94rem;line-height:1.7}
+.lrow .left{color:var(--ink2)}
+@media (max-width:760px){
+  .lrow{grid-template-columns:4.2rem minmax(0,1fr)}
+  .lrow .fix,.lrow .left{grid-column:1/-1}
+  .lrow .lab{display:block}
+}
+
+/* learning-rate layers */
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.5rem}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+.layer{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem}
+.layer h3{margin:.3rem 0 .5rem}
+.layer p{font-size:.94rem;line-height:1.75}
+.verdicts{display:grid;gap:0;margin-top:.8rem;border-top:1px solid var(--ink)}
+.vd{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:.4rem 1.5rem;padding:.9rem 0;border-bottom:1px solid var(--line)}
+@media (max-width:760px){.vd{grid-template-columns:minmax(0,1fr)}}
+.vq{font-weight:700;line-height:1.6}
+.vt{font-size:.94rem;line-height:1.75}
+.tag{display:inline-block;font:500 .75rem/1 var(--f-mono);padding:.3rem .5rem;border-radius:4px;margin-right:.6rem;border:1px solid var(--line);vertical-align:1px}
+.tag.mid{color:var(--warn);border-color:var(--warn)}
+.tag.no{color:var(--warn);border-color:var(--warn)}
+.sched{margin-top:.3rem}
+.gamma{display:grid;grid-template-columns:auto minmax(0,1fr) 3.5em;align-items:center;gap:.6rem;margin-top:.9rem;max-width:520px}
+.sched .cap{margin-top:.5rem}
+.sw{display:inline-block;vertical-align:middle;margin-right:.4rem}
+.codes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;margin-top:1.4rem}
+@media (max-width:900px){.codes{grid-template-columns:minmax(0,1fr)}}
+.codes h4{margin-top:0}
+.ax{font:400 11px var(--f-mono);fill:var(--ink2)}
+
+/* detail tabs */
+#detailPanel{margin-top:1.1rem;background:var(--surface);border:1px solid var(--line);padding:1.25rem 1.35rem}
+.dhead{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.85rem}
+.dhead .yr{font:500 .8rem var(--f-mono);color:var(--ink2)}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1.5rem}
+@media (max-width:820px){.dgrid{grid-template-columns:minmax(0,1fr)}}
+.idea{line-height:1.8}
+.formula{font:400 .88rem/1.95 var(--f-mono);background:var(--surface2);padding:.8rem 1rem;margin-top:1rem;overflow-x:auto;white-space:pre;border-radius:4px}
+.hat{position:relative;display:inline-block}
+.hat::after{content:"^";position:absolute;left:0;right:0;text-align:center;top:-.5em;line-height:1}
+.kv{display:grid;grid-template-columns:5.5rem minmax(0,1fr);gap:.4rem 1rem;margin-top:1rem;font-size:.92rem;line-height:1.7}
+.kv dt{font:500 .78rem/1.9 var(--f-mono);color:var(--ink2)}
+.kv dd{margin:0}
+.kv dd.mono{font:400 .85rem/1.8 var(--f-mono)}
+.pros,.cons{padding-left:1.4rem;display:grid;gap:.35rem;font-size:.94rem;line-height:1.7}
+.pros li::marker{content:"＋ ";color:var(--good);font-weight:700}
+.cons li::marker{content:"－ ";color:var(--warn);font-weight:700}
+.vlist{display:grid;margin-top:1rem}
+.vrow{display:grid;grid-template-columns:9.5rem minmax(0,1fr) minmax(0,1fr);gap:.2rem 1.25rem;padding:.7rem 0;border-top:1px solid var(--line);font-size:.93rem;line-height:1.7}
+.vrow .vname{font-weight:700}
+.vrow .vwhen{color:var(--ink2)}
+@media (max-width:760px){.vrow{grid-template-columns:minmax(0,1fr)}}
+
+/* compare table */
+.tablewrap{margin-top:1.4rem;overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:780px;font-size:.92rem;line-height:1.6}
+th{font:500 .75rem/1.4 var(--f-mono);letter-spacing:.05em;color:var(--ink2);text-align:left;padding:.75rem .9rem;border-bottom:1px solid var(--ink);white-space:nowrap}
+td{padding:.8rem .9rem;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.nm{font-weight:700;white-space:nowrap}
+td .dot{margin-right:.45rem;vertical-align:-1px}
+.pips{display:inline-flex;gap:3px;vertical-align:middle}
+.pip{width:11px;height:11px;border-radius:2px;background:var(--line)}
+.pip.on{background:var(--accent)}
+
+/* scenes */
+.filters{margin-top:1.3rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:1rem;margin-top:1.2rem}
+.card{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.15rem;display:flex;flex-direction:column;gap:.7rem;min-width:0}
+.card .sub{font-size:.85rem;color:var(--ink2);line-height:1.5;margin-top:.1rem}
+.card .chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.card .why{font-size:.94rem;line-height:1.75}
+.card .hp{font:400 .82rem/1.75 var(--f-mono);background:var(--surface2);padding:.55rem .7rem;border-radius:4px;overflow-wrap:anywhere}
+.card .watch{font-size:.88rem;line-height:1.65;color:var(--ink2)}
+.card .watch b{font-weight:700;color:var(--ink)}
+
+/* picker */
+.picker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:1.75rem;margin-top:1.5rem}
+@media (max-width:860px){.picker{grid-template-columns:minmax(0,1fr)}}
+fieldset{border:0;margin:0 0 1.1rem;padding:0;min-width:0}
+legend{font:500 .78rem/1.4 var(--f-mono);letter-spacing:.06em;color:var(--ink2);padding:0;margin-bottom:.5rem}
+.opts{display:flex;flex-wrap:wrap;gap:.4rem}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:block;font-size:.9rem;line-height:1.4;padding:.5rem .85rem;border:1px solid var(--line);background:var(--surface);border-radius:999px;min-height:38px}
+.opt input:checked+span{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.result{background:var(--surface);border:1px solid var(--line);padding:1.3rem 1.4rem;align-self:start}
+.rec-label{font:500 .75rem var(--f-mono);letter-spacing:.1em;color:var(--ink2)}
+.rec{font:700 1.55rem/1.35 var(--f-display);margin-top:.2rem;text-wrap:balance}
+
+/* memory */
+.memo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:1.75rem;margin-top:1.5rem}
+@media (max-width:860px){.memo{grid-template-columns:minmax(0,1fr)}}
+.big{font:700 2rem/1.2 var(--f-display)}
+.presets{display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0 1rem}
+.bars{display:grid;gap:.7rem}
+.bar{display:grid;grid-template-columns:minmax(0,7.5rem) minmax(0,1fr) 5.2rem;gap:.7rem;align-items:center;font-size:.9rem}
+.bar .track{height:18px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);min-width:2px;transition:width .25s}
+.bar.ref .fill{background:var(--ink2)}
+.bar .val{font:500 .85rem var(--f-mono);text-align:right}
+.bar .lab small{display:block;font-size:.75rem;color:var(--ink2);line-height:1.3}
+
+/* pitfalls */
+.pit{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:0 2.5rem;margin-top:1.4rem;border-top:1px solid var(--ink)}
+.pit>div{padding:1rem 0;border-bottom:1px solid var(--line)}
+.pit p{font-size:.94rem;line-height:1.75;margin-top:.25rem}
+
+/* quiz */
+.qwrap{display:grid;gap:1rem;margin-top:1.4rem}
+.q{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem}
+.qn{font:500 .75rem var(--f-mono);letter-spacing:.08em;color:var(--ink2)}
+.qt{font-weight:700;margin:.25rem 0 .8rem;line-height:1.65}
+.qopts{display:grid;gap:.45rem}
+.qo{text-align:left;font:400 .93rem/1.6 var(--f-body);padding:.6rem .85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;cursor:pointer}
+.qo:hover:not(:disabled){border-color:var(--ink2)}
+.qo:disabled{cursor:default}
+.qo.right{border-color:var(--good);background:var(--surface2)}
+.qo.right::before{content:"✓ ";color:var(--good);font-weight:700}
+.qo.wrong{border-color:var(--warn)}
+.qo.wrong::before{content:"✗ ";color:var(--warn);font-weight:700}
+.qx{margin-top:.8rem;font-size:.92rem;line-height:1.75;color:var(--ink2)}
+.score{display:flex;align-items:center;gap:1rem;margin-top:1.2rem;flex-wrap:wrap}
+.score output{font:500 .95rem var(--f-mono)}
+
+/* sources */
+.src{columns:2 340px;column-gap:2.5rem;margin-top:1.2rem;padding-left:1.1rem;font-size:.9rem;line-height:1.65}
+.src li{break-inside:avoid;margin-bottom:.4rem}
+footer{border-top:1px solid var(--line);padding-block:1.75rem 2.5rem;color:var(--ink2);font-size:.88rem}
+
+@media (max-width:760px){
+  .take{grid-template-columns:minmax(0,1fr);gap:1rem}
+  .top .wrap{gap:.6rem}
+}
+</style>
+<meta name="description" content="把 SGD、Momentum、RMSprop、Adam、Adagrad 放在同一張損失地圖上比較；附下山模擬器、學習率排程、選用指南與小測驗。">
+<meta name="author" content="iamkylee">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+</head><body>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span>iamkylee 分享</span></div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">優化器學習地圖</a>
+    <nav class="nav" aria-label="章節">
+      <a href="#sim">模擬器</a><a href="#lineage">演進</a><a href="#lr">學習率</a><a href="#detail">拆解</a><a href="#compare">比較</a><a href="#scenes">情境</a><a href="#picker">選擇器</a><a href="#memory">記憶體</a><a href="#pitfalls">常見陷阱</a><a href="#quiz">測驗</a><a href="#sources">來源</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">SGD · Momentum · RMSprop · Adam</div>
+      <h1>同一座山，五種下山法</h1>
+      <p class="lead">把 SGD、Momentum、RMSprop、Adam、Adagrad 放在同一張損失地圖上。拖動學習率、加入噪聲、點地圖換起點，看它們各自怎麼走。後面再整理原理、適合的模型與情境，以及為什麼這樣選。</p>
+      <div class="take">
+        <div><h2>影像 CNN</h2><p><b>SGD + Momentum</b>。沒有額外狀態，搭配學習率排程，長時間訓練後常有很好的測試表現。</p></div>
+        <div><h2>Transformer、LLM、擴散模型</h2><p><b>AdamW</b>。逐參數調整步長，解耦 weight decay，是現在的預設選擇。</p></div>
+        <div><h2>RNN、強化學習、GAN</h2><p><b>RMSprop，或調低 β₁ 的 Adam</b>。目標會隨訓練改變，要避免累積過時的方向。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="sim">
+    <div class="wrap">
+      <div class="kicker">動手玩</div>
+      <h2 class="sec">下山模擬器</h2>
+      <p class="sec-lead">每條彩線是一個優化器，從同一個起點出發，用同樣的 300 步下山。右側可以逐一調整學習率，調整後會重新開始。地圖上的圈圈是最低點。</p>
+      <div class="sim">
+        <div class="sim-main">
+          <div class="seg" id="landTabs"></div>
+          <p class="tip" id="landTip"></p>
+          <div class="canvas-box" id="mapBox"><canvas id="map" role="img" aria-label="損失地圖：等高線代表損失大小，彩色線條是各優化器的路徑"></canvas></div>
+          <div class="transport">
+            <button type="button" class="btn primary" id="play">暫停</button>
+            <button type="button" class="btn" id="replay">重播</button>
+            <button type="button" class="btn" id="resetStart">預設起點</button>
+            <label class="cap" for="speed">速度</label>
+            <select id="speed"><option value="20">慢</option><option value="60" selected>中</option><option value="180">快</option></select>
+            <span class="grow"></span>
+            <span class="stepout" id="stepOut">0 / 300</span>
+          </div>
+          <p class="cap">點擊地圖可以換起點。</p>
+          <div>
+            <div class="cap" style="margin-bottom:.3rem">損失與步數（縱軸為對數刻度，線越快往下，收斂越快）</div>
+            <div class="canvas-box"><canvas id="lossChart" role="img" aria-label="各優化器的損失隨步數變化的折線圖，縱軸為對數刻度"></canvas></div>
+          </div>
+        </div>
+        <div class="sim-side">
+          <div class="panel">
+            <div id="optRows"></div>
+            <div class="noisebox">
+              <label class="lrlab" for="noise">梯度噪聲</label>
+              <input type="range" id="noise" min="0" max="100" step="5" value="0">
+              <output class="lrv" id="noiseOut">0%</output>
+            </div>
+            <div style="margin-top:.9rem"><button type="button" class="btn" id="resetLr">學習率恢復建議值</button></div>
+          </div>
+          <div>
+            <h3>這張圖要看什麼</h3>
+            <ul class="notes" id="landNotes" style="margin-top:.6rem"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="lineage">
+    <div class="wrap">
+      <div class="kicker">演進</div>
+      <h2 class="sec">從 SGD 到 AdamW，每一步都在修上一步的問題</h2>
+      <p class="sec-lead">先知道每個優化器是為了解決什麼才出現，後面比較與選擇就有脈絡。</p>
+      <div class="lineage" id="lineageRows"></div>
+    </div>
+  </section>
+
+  <section class="block" id="lr">
+    <div class="wrap">
+      <div class="kicker">釐清觀念</div>
+      <h2 class="sec">學習率有兩層：優化器內建的，與你另外排程的</h2>
+      <p class="sec-lead">「只有 SGD 不調整學習率，所以 SGD 搭配 ExponentialLR」把兩件事混在一起了。分開來看，就能判斷任何優化器該怎麼搭配排程。</p>
+      <div class="two">
+        <div class="layer"><div class="rec-label">第一層 · 優化器內建</div><h3>逐參數自適應</h3><p>Adagrad、RMSprop、Adam 會用梯度平方的歷史，替每個參數算出不同的縮放：梯度一直很大的參數步長縮小，梯度很小的參數步長放大。調整的是「參數與參數之間的相對步長」。SGD 與 Momentum 沒有這一層，所有參數共用同一個 lr。</p></div>
+        <div class="layer"><div class="rec-label">第二層 · 外部排程</div><h3>學習率排程（scheduler）</h3><p>由你指定基準 lr 隨訓練進度怎麼變：先小後大（warmup）、逐步衰減、餘弦下降。調整的是「整體的 lr(t)」。這一層與優化器種類無關，任何優化器都能搭配，包括 Adam。</p></div>
+      </div>
+      <pre class="formula">第 t 步的更新 ≈ lr(t) × [ 方向 ÷ 縮放 ]
+
+lr(t)   第二層：你設的基準學習率，排程器讓它隨 t 改變
+方向    SGD 是梯度 g；Momentum 是速度 v；Adam 是 m（動量，經偏差修正）
+縮放    SGD／Momentum 是 1；RMSprop／Adam 是 √v；Adagrad 是 √G    ← 第一層</pre>
+
+      <h3 style="margin-top:2rem">你的兩句話，逐句校正</h3>
+      <div class="verdicts">
+        <div class="vd"><div class="vq">「只有 SGD 不會調整 LR，其他都會」</div><div class="vt"><span class="tag mid">接近，但要修正</span>沒有逐參數自適應的是 SGD 與 Momentum 兩個。另外，Adagrad、RMSprop、Adam 也不是「自己決定 lr」：基準 lr 還是要你選，它們只是在這個基準上再逐參數縮放。Adam 的 lr 太大一樣會發散。</div></div>
+        <div class="vd"><div class="vq">「所以 SGD 會搭配 ExponentialLR」</div><div class="vt"><span class="tag no">因果不成立</span>排程與有沒有自適應是兩回事。SGD 可以搭 ExponentialLR，但更常見的是 StepLR、MultiStepLR 或 Cosine。Adam／AdamW 也常搭排程，warmup + cosine 幾乎是 Transformer 訓練的標配。</div></div>
+      </div>
+
+      <h3 style="margin-top:2rem">各優化器與排程的實際搭配</h3>
+      <div class="tablewrap"><table id="lrTable" style="min-width:720px">
+        <thead><tr><th>優化器</th><th>逐參數自適應</th><th>有效步長會自己變嗎</th><th>常搭配的排程</th></tr></thead>
+        <tbody>
+          <tr><td class="nm"><span class="dot" style="background:var(--c-sgd)"></span>SGD</td><td>否</td><td>不會，由 lr 與梯度大小決定</td><td>StepLR、MultiStepLR、Cosine、ExponentialLR 都有人用</td></tr>
+          <tr><td class="nm"><span class="dot" style="background:var(--c-mom)"></span>Momentum</td><td>否</td><td>不會；動量讓有效步長放大約 1/(1−μ) 倍</td><td>與 SGD 相同；CNN 常用 StepLR 或 Cosine</td></tr>
+          <tr><td class="nm"><span class="dot" style="background:var(--c-ada)"></span>Adagrad</td><td>是</td><td>只降不升，自己就會衰減</td><td>常不另外排程，或用較大的初始 lr</td></tr>
+          <tr><td class="nm"><span class="dot" style="background:var(--c-rms)"></span>RMSprop</td><td>是</td><td>隨近期梯度大小調整，不保證衰減</td><td>可搭配 StepLR 或 ExponentialLR；強化學習常固定 lr</td></tr>
+          <tr><td class="nm"><span class="dot" style="background:var(--c-adam)"></span>Adam／AdamW</td><td>是</td><td>隨梯度尺度調整，不會隨訓練進度衰減</td><td>Warmup + Cosine 或線性衰減；微調常用線性衰減</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3 style="margin-top:2rem">排程曲線長什麼樣</h3>
+      <p class="sec-lead" style="margin-top:.4rem">縱軸是 lr(t) 除以起始 lr。勾選要比較的排程，拖動 γ 看 ExponentialLR 衰減多快。</p>
+      <div class="sched">
+        <div class="seg" id="schedTabs" style="margin-top:.9rem"></div>
+        <div class="canvas-box" style="margin-top:.9rem"><svg id="schedSvg" viewBox="0 0 640 250" role="img" aria-label="各種學習率排程在 100 個 epoch 內的曲線" style="display:block;width:100%;height:auto"></svg></div>
+        <div class="gamma">
+          <label class="lrlab" for="gamma">ExponentialLR 的 γ</label>
+          <input type="range" id="gamma" min="0.85" max="0.995" step="0.005" value="0.95">
+          <output class="lrv" id="gammaOut"></output>
+        </div>
+        <p class="cap" id="gammaNote"></p>
+      </div>
+      <div class="codes">
+        <div><h4>SGD + Momentum 搭 ExponentialLR（PyTorch）</h4><pre class="formula">opt = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+sched = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=0.95)
+
+for epoch in range(100):
+    train_one_epoch(model, opt)
+    sched.step()          # 每個 epoch 結束呼叫一次</pre></div>
+        <div><h4>AdamW 搭 Warmup + Cosine</h4><pre class="formula">from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
+
+opt = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.1)
+warm = LinearLR(opt, start_factor=0.01, total_iters=1000)
+cos  = CosineAnnealingLR(opt, T_max=total_steps - 1000)
+sched = SequentialLR(opt, [warm, cos], milestones=[1000])
+
+# 每個 step（不是 epoch）呼叫一次 sched.step()</pre></div>
+      </div>
+
+      <h3 style="margin-top:2rem">Gemini 那段整理的校對</h3>
+      <ul class="notes" style="margin-top:.7rem">
+        <li><b>大致正確：</b>SGD 在峽谷震盪、Momentum 讓左右分量互相抵銷、Adagrad 把歷史梯度平方累積在分母、RMSprop 改用移動平均、Adam 結合 Momentum 與 RMSprop，這幾項都對。</li>
+        <li><b>Adagrad 的「學習率歸零」：</b>嚴格說是趨近於零。分母單調變大，步長愈來愈小，後期幾乎學不動，但不會等於 0。</li>
+        <li><b>SGD 的「卡住不動」：</b>更精確的說法是步長正比於梯度，平緩區梯度小，所以走得很慢。加上動量或自適應縮放可以改善。</li>
+        <li><b>Adam 的「快速收斂」：</b>指的是早期下降快。最後的測試表現不一定勝過調好的 SGD。</li>
+        <li><b>Adam 的「自動調整最適合的學習率」：</b>容易誤解成不用調 lr。實際上基準 lr 仍然要選，大模型也仍然要搭排程。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" id="detail">
+    <div class="wrap">
+      <div class="kicker">逐一拆解</div>
+      <h2 class="sec">公式、直覺、優缺點與常見起點</h2>
+      <p class="sec-lead">每個優化器一張，最後一張收錄較新的變體。公式中的 g 是目前這一步的梯度，θ 是參數，η 是學習率。</p>
+      <div class="seg" id="detailTabs" style="margin-top:1.2rem"></div>
+      <div id="detailPanel"></div>
+    </div>
+  </section>
+
+  <section class="block" id="compare">
+    <div class="wrap">
+      <div class="kicker">比較</div>
+      <h2 class="sec">一張表比較六個常見優化器</h2>
+      <p class="sec-lead">方塊愈多代表程度愈高。調參敏感度愈高愈難調，早期收斂愈高愈快。這是經驗法則，實際表現取決於模型、資料與學習率排程。</p>
+      <div class="tablewrap"><table id="cmpTable"></table></div>
+    </div>
+  </section>
+
+  <section class="block" id="scenes">
+    <div class="wrap">
+      <div class="kicker">模型與情境</div>
+      <h2 class="sec">哪些模型用哪個優化器，為什麼</h2>
+      <p class="sec-lead">每張卡片包含常見選擇、起手超參數、背後的理由與要留意的地方。超參數是常見起點，不是保證。</p>
+      <div class="seg filters" id="sceneFilters"></div>
+      <div class="cards" id="sceneCards"></div>
+    </div>
+  </section>
+
+  <section class="block" id="picker">
+    <div class="wrap">
+      <div class="kicker">選擇器</div>
+      <h2 class="sec">告訴我你的情況，我給你起手式</h2>
+      <p class="sec-lead">選三個條件，右邊會給出建議的優化器、起手設定與理由。</p>
+      <div class="picker">
+        <div id="pickForm"></div>
+        <div class="result" id="pickOut" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="memory">
+    <div class="wrap">
+      <div class="kicker">為什麼大模型偏愛省記憶體的優化器</div>
+      <h2 class="sec">優化器狀態要吃多少記憶體</h2>
+      <p class="sec-lead">SGD 不需要額外狀態，Momentum 多一份，Adam／AdamW 多兩份（m 與 v）。拖動模型大小看差距。這裡只算優化器狀態，不含梯度、啟用值與混合精度訓練時的 fp32 主權重副本。</p>
+      <div class="memo">
+        <div>
+          <div class="cap">模型參數量</div>
+          <div class="big" id="pSize">7B</div>
+          <input type="range" id="pSlider" min="8" max="11.3" step="0.02" value="9.845" aria-label="模型參數量（對數刻度）">
+          <div class="presets" id="pPresets"></div>
+          <fieldset>
+            <legend>狀態精度</legend>
+            <div class="opts" id="precOpts"></div>
+          </fieldset>
+        </div>
+        <div>
+          <div class="bars" id="memBars"></div>
+          <p class="cap" style="margin-top:1rem" id="memNote"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="pitfalls">
+    <div class="wrap">
+      <div class="kicker">實作提醒</div>
+      <h2 class="sec">六個常見陷阱</h2>
+      <div class="pit" id="pitGrid"></div>
+    </div>
+  </section>
+
+  <section class="block" id="quiz">
+    <div class="wrap">
+      <div class="kicker">自我檢查</div>
+      <h2 class="sec">八題小測驗</h2>
+      <p class="sec-lead">選一個答案會立刻顯示解析。可以重做。</p>
+      <div class="qwrap" id="quizHost"></div>
+      <div class="score"><output id="scoreOut">尚未作答</output><button type="button" class="btn" id="quizReset">重新作答</button></div>
+    </div>
+  </section>
+
+  <section class="block" id="sources">
+    <div class="wrap">
+      <div class="kicker">延伸閱讀</div>
+      <h2 class="sec">原始論文與資料</h2>
+      <ul class="src" id="srcList"></ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">最後更新：2026 年 10 月。模擬器中的 RMSprop 使用 α = 0.9，Adam 使用 β = (0.9, 0.999)，Momentum 使用 μ = 0.9，皆為無 weight decay 的簡化版本。</div>
+</footer>
+
+<script>
+/* ===== core: landscapes + optimizers (shared by page and node test) ===== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r){var u=0,v;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+
+var LANDSCAPES = {
+  valley: {
+    label: '狹長山谷',
+    tip: '一個方向很陡、另一個方向很平。SGD 會在陡的方向來回鋸齒，平的方向前進緩慢。',
+    f: function(x,y){return 0.02*x*x+2.5*y*y;},
+    g: function(x,y){return [0.04*x,5*y];},
+    view: [-7,7,-4.667,4.667], start: [-6,2.2], minima: [[0,0]], noise: 2, cs: 0.3, ck: 2.2,
+    lr: {sgd:0.3, mom:0.05, rms:0.1, adam:0.3, ada:1.0}
+  },
+  banana: {
+    label: '香蕉谷',
+    tip: '最低點藏在一條彎曲的窄谷底。梯度方向常指向谷壁而不是谷底，考驗各方法沿谷前進的能力。',
+    f: function(x,y){var a=1-x,b=y-x*x;return a*a+10*b*b;},
+    g: function(x,y){var b=y-x*x;return [-2*(1-x)-40*x*b,20*b];},
+    view: [-2.7,2.7,-1.0,2.6], start: [-1.8,1.6], minima: [[1,1]], noise: 4, cs: 0.5, ck: 2.2,
+    lr: {sgd:0.012, mom:0.002, rms:0.03, adam:0.12, ada:1.0}
+  },
+  saddle: {
+    label: '鞍點與雙谷',
+    tip: '原點是鞍點：x 方向向上彎、y 方向向下彎。起點貼近鞍點的山脊，梯度很小，看誰先滑進兩側的谷底。',
+    f: function(x,y){return 0.5*x*x+0.5*Math.pow(y*y-1,2);},
+    g: function(x,y){return [x,2*y*(y*y-1)];},
+    view: [-3,3,-2,2], start: [2.2,0.0002], minima: [[0,1],[0,-1]], noise: 1, cs: 0.1, ck: 2.2,
+    lr: {sgd:0.05, mom:0.02, rms:0.03, adam:0.05, ada:0.3}
+  },
+  himmel: {
+    label: '四個山谷',
+    tip: '有四個一樣深的最低點。同一個起點，不同優化器可能落進不同的谷。',
+    f: function(x,y){var a=x*x+y-11,b=x+y*y-7;return a*a+b*b;},
+    g: function(x,y){var a=x*x+y-11,b=x+y*y-7;return [4*x*a+2*b,2*a+4*y*b];},
+    view: [-6,6,-4,4], start: [1,-1], minima: [[3,2],[-2.805118,3.131312],[-3.77931,-3.283186],[3.584428,-1.848126]], noise: 20, cs: 2, ck: 1.8,
+    lr: {sgd:0.008, mom:0.0015, rms:0.06, adam:0.1, ada:0.6}
+  }
+};
+
+var OPTIMIZERS = {
+  sgd:  {name:'SGD',          init:function(){return {};},
+         step:function(s,p,g,lr){p[0]-=lr*g[0];p[1]-=lr*g[1];}},
+  mom:  {name:'SGD + Momentum',init:function(){return {v:[0,0]};},
+         step:function(s,p,g,lr){for(var i=0;i<2;i++){s.v[i]=0.9*s.v[i]+g[i];p[i]-=lr*s.v[i];}}},
+  rms:  {name:'RMSprop',      init:function(){return {s:[0,0]};},
+         step:function(s,p,g,lr){for(var i=0;i<2;i++){s.s[i]=0.9*s.s[i]+0.1*g[i]*g[i];p[i]-=lr*g[i]/(Math.sqrt(s.s[i])+1e-8);}}},
+  adam: {name:'Adam',         init:function(){return {m:[0,0],v:[0,0],t:0};},
+         step:function(s,p,g,lr){s.t++;var b1=0.9,b2=0.999;for(var i=0;i<2;i++){s.m[i]=b1*s.m[i]+(1-b1)*g[i];s.v[i]=b2*s.v[i]+(1-b2)*g[i]*g[i];var mh=s.m[i]/(1-Math.pow(b1,s.t)),vh=s.v[i]/(1-Math.pow(b2,s.t));p[i]-=lr*mh/(Math.sqrt(vh)+1e-8);}}},
+  ada:  {name:'Adagrad',      init:function(){return {G:[0,0]};},
+         step:function(s,p,g,lr){for(var i=0;i<2;i++){s.G[i]+=g[i]*g[i];p[i]-=lr*g[i]/(Math.sqrt(s.G[i])+1e-8);}}}
+};
+
+/* one optimizer run; returns {pos, hist(loss), path} advanced by Run.step() */
+function makeRun(key, land, lr, noisePct, seed, start){
+  var o=OPTIMIZERS[key];
+  return {
+    key:key, land:land, lr:lr, st:o.init(), p:[start[0],start[1]], t:0, dead:false,
+    rng:mulberry32(seed), path:[[start[0],start[1]]], loss:[land.f(start[0],start[1])],
+    step:function(){
+      if(this.dead)return;
+      var g=land.g(this.p[0],this.p[1]);
+      if(noisePct>0){var sig=noisePct/100*land.noise;g=[g[0]+sig*gauss(this.rng),g[1]+sig*gauss(this.rng)];}
+      OPTIMIZERS[key].step(this.st,this.p,g,this.lr);
+      this.t++;
+      var L=land.f(this.p[0],this.p[1]);
+      if(!isFinite(L)||Math.abs(this.p[0])>1e3||Math.abs(this.p[1])>1e3||L>1e12){this.dead=true;}
+      this.path.push([this.p[0],this.p[1]]);this.loss.push(this.dead?NaN:L);
+    }
+  };
+}
+if(typeof module!=='undefined'){module.exports={LANDSCAPES:LANDSCAPES,OPTIMIZERS:OPTIMIZERS,makeRun:makeRun};}
+
+</script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s);};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+var KEYS=['sgd','mom','rms','adam','ada'];
+var NAMES={sgd:'SGD',mom:'SGD + Momentum',rms:'RMSprop',adam:'Adam',ada:'Adagrad'};
+var SUBS={sgd:'固定步長 η·g',mom:'加上慣性，μ = 0.9',rms:'梯度平方的滑動平均，α = 0.9',adam:'動量 + RMSprop，β = 0.9 / 0.999',ada:'累積梯度平方，只增不減'};
+var MAXT=300, SEED=11;
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- content data ---------- */
+var LAND_NOTES={
+ valley:[
+  '<b>SGD</b>：只有一個學習率。對陡的方向（上下）來說太大，所以每步跳過谷底再彈回；對平的方向（左右）又太小，前進很慢。把 SGD 的 η 拉到 0.4 以上，陡的方向就會發散。',
+  '<b>Momentum</b>：累積一致方向的速度，來回的分量互相抵消，沿谷前進比 SGD 快。',
+  '<b>RMSprop、Adam、Adagrad</b>：每個方向各自縮放步長，陡與平被拉到相近的尺度，幾乎直接朝最低點走。RMSprop 沒有衰減機制，接近終點時步長仍約等於 η，會在最低點附近抖動。'],
+ banana:[
+  '谷底是彎的，梯度大多指向谷壁而不是谷底。SGD 需要小學習率才不會被震出去，沿谷底前進很慢。',
+  '<b>Momentum</b> 累積沿谷方向的速度，在預設設定下最快到達。',
+  '<b>Adam、RMSprop、Adagrad</b> 每步大小約等於學習率，不會因為陡坡暴衝，但長距離需要更多步。把它們的 η 調高，可以看到它們也能追上。'],
+ saddle:[
+  '起點在 y ≈ 0 的山脊上，y 方向的梯度極小。預設學習率下，SGD 約 80 步、Momentum 約 50 步才滑下去；RMSprop 與 Adam 約 10 步，Adagrad 約 2 步。',
+  '原因：RMSprop、Adam、Adagrad 把梯度除以自己的歷史大小，小梯度也被放大成約一個學習率的步長，所以不容易被卡在平坦區。',
+  '真實網路的損失面有大量鞍點與平坦區，這是自適應方法在深度學習中好用的原因之一。'],
+ himmel:[
+  '四個谷一樣深，標示為 A 到 D。同一個起點，預設設定下 SGD 與 Momentum 滑進 D，RMSprop、Adam、Adagrad 滑進 A。',
+  '沒有哪個谷比較好，但在真實網路中，不同的谷可能有不同的泛化表現。優化器的選擇會影響你落進哪一個。',
+  '調學習率、加噪聲或點地圖換起點，終點可能再變。']
+};
+
+var LINEAGE=[
+ ['1951','SGD','用小批次的梯度近似整體梯度，每步成本低，可以處理大資料。','所有參數共用一個學習率；遇到陡峭與平緩並存的地形會鋸齒或龜速。'],
+ ['1964','Momentum','累積過去的梯度形成慣性，抵消來回震盪，沿一致方向加速。','仍然共用學習率；要和 μ 一起調，可能衝過頭。'],
+ ['2011','Adagrad','每個參數累積梯度平方：常更新的步長變小，少見特徵的步長相對大。','累積只增不減，學習率單調下降，深度網路後期幾乎學不動。'],
+ ['2012','RMSprop','把累積改成滑動平均，只記得最近的梯度大小，步長不再無限衰減。由 Hinton 的課程講義提出。','沒有動量與偏差修正，初期步長可能偏大。'],
+ ['2014','Adam','同時有動量（一階）與 RMSprop（二階），加上偏差修正，預設值就能跑。','和 L2 正則的交互作用不乾淨；部分任務泛化略遜；理論上有不收斂的反例。'],
+ ['2017','AdamW','把 weight decay 從梯度中拆出來，直接縮小權重。','仍是 2 份狀態；大模型要另外調 β₂、ε 與 warmup。'],
+ ['2018 起','各種變體','AMSGrad、RAdam、Adafactor、LARS／LAMB、Lion、Shampoo、Muon，各自針對收斂保證、warmup、記憶體、大批次或矩陣結構。','還在發展中，預設設定不如 AdamW 成熟。']
+];
+
+var DETAILS={
+ sgd:{title:'SGD',year:'1951 年起',color:'--c-sgd',
+  idea:'沿著目前（小批次）梯度的反方向走一步。每個參數用同一個學習率，單純、省記憶體。梯度裡的噪聲也被認為有一點正則化的效果。',
+  formula:'g = ∇L(θ; 小批次)\nθ ← θ − η · g',
+  pros:['沒有額外狀態，記憶體最省','實作簡單，行為好預測','影像分類等任務搭配排程，常有很好的測試表現'],
+  cons:['對學習率很敏感，需要認真調','各方向共用步長，遇到陡峭與平緩並存的地形會鋸齒或龜速','在鞍點與平坦區前進很慢'],
+  start:'η 依批次大小而定（例：batch 256 時 0.1），搭配 cosine 或階梯式衰減',
+  where:'凸問題（邏輯迴歸、線性 SVM）、經典 CNN 配方'},
+ mom:{title:'SGD + Momentum',year:'Polyak 1964',color:'--c-mom',
+  idea:'把過去的梯度累積成速度。梯度方向一致的維度越走越快，來回震盪的維度互相抵消，像一顆往山下滾的球。Nesterov 版本先沿速度預看一步，再在預看的位置算梯度，通常更穩。',
+  formula:'v ← μ · v + g\nθ ← θ − η · v          （μ 常用 0.9）\n\nNesterov：g 改在 θ − η·μ·v 處計算',
+  pros:['在狹長山谷中明顯比純 SGD 快、鋸齒少','幾乎不增加成本（1 份狀態）','CNN 影像分類的標準搭配'],
+  cons:['多了 μ，要和 η 一起調','動量太大時會衝過頭再繞回來','同樣所有參數共用學習率'],
+  start:'μ = 0.9。有效步長約放大 1/(1−μ) 倍，所以 η 常比純 SGD 小',
+  where:'ResNet 等 CNN、追求最佳最終精度的視覺任務'},
+ rms:{title:'RMSprop',year:'Hinton 2012',color:'--c-rms',
+  idea:'為每個參數記錄梯度平方的滑動平均，再用它的平方根去除梯度。最近梯度大的方向步長縮小，梯度小的方向步長放大，各方向被拉到相近的尺度。它出自 Hinton 2012 年的課程講義，沒有正式論文。',
+  formula:'s ← α · s + (1−α) · g²\nθ ← θ − η · g / (√s + ε)\n（α 常用 0.9 或 0.99）',
+  pros:['對梯度尺度不敏感','適合目標會改變的問題（非平穩）','只有 1 份狀態'],
+  cons:['原版沒有動量與偏差修正，s 從 0 起算，起步步長偏大','接近最低點時步長仍約等於 η，會在附近抖動（模擬器中看得到）','α 與 ε 會影響穩定性'],
+  start:'η = 1e-3 左右（PyTorch 預設 1e-2，常偏大），α = 0.9 ~ 0.99，ε = 1e-8',
+  where:'RNN／LSTM、早期 DQN 與 A3C、原版 WGAN'},
+ ada:{title:'Adagrad',year:'Duchi 等 2011',color:'--c-ada',
+  idea:'把整個訓練期間的梯度平方累積起來。常被更新的參數步長越來越小，很少出現的特徵保留較大的步長，所以特別適合稀疏資料。',
+  formula:'G ← G + g²\nθ ← θ − η · g / (√G + ε)',
+  pros:['不必為每個參數手動調學習率','稀疏特徵（詞向量、點擊預測）表現好','凸問題有清楚的理論保證'],
+  cons:['G 只增不減，學習率單調下降，深度網路後期幾乎學不動','起始 η 仍然要選','大型稠密模型少用'],
+  start:'η = 0.01 ~ 0.5（稀疏任務常用較大的值）',
+  where:'GloVe 詞向量、Wide & Deep 的深側、稀疏線性模型'},
+ adam:{title:'Adam',year:'Kingma & Ba 2014',color:'--c-adam',
+  idea:'把 Momentum（一階動量 m）和 RMSprop（二階動量 v）合在一起，再加上偏差修正，補償 m 與 v 從 0 起算造成的低估。預設超參數在大部分問題上都能直接跑。',
+  formula:'m ← β₁ · m + (1−β₁) · g\nv ← β₂ · v + (1−β₂) · g²\n<span class="hat">m</span> = m / (1−β₁^t)     <span class="hat">v</span> = v / (1−β₂^t)\nθ ← θ − η · <span class="hat">m</span> / (√<span class="hat">v</span> + ε)',
+  pros:['預設值（η = 1e-3，β = 0.9 / 0.999）常常就能用','對各參數梯度尺度差異大的模型很穩健','Transformer、GAN、強化學習廣泛採用'],
+  cons:['每個參數 2 份狀態，記憶體是 SGD 的數倍','L2 正則會被自適應分母扭曲，這是 AdamW 的動機','部分任務的最終泛化略遜於調好的 SGD（仍有爭議）','早期 v 的估計不穩，大模型常需要 warmup'],
+  start:'η = 1e-3，β = (0.9, 0.999)，ε = 1e-8。Transformer 常把 β₂ 降到 0.95 ~ 0.98',
+  where:'快速基準、GAN、強化學習，以及 AdamW 形式的 Transformer 預訓練'},
+ adamw:{title:'AdamW',year:'Loshchilov & Hutter 2017',color:'--c-adam',
+  idea:'與 Adam 相同，只改一件事：weight decay 不再混進梯度，而是每步直接把權重往 0 縮一點。這樣衰減強度不會被 √v 這個分母逐參數改寫，正則化行為一致，η 與 λ 也比較能分開調。',
+  formula:'θ ← θ − η · ( <span class="hat">m</span> / (√<span class="hat">v</span> + ε) + λ · θ )\n（<span class="hat">m</span>、<span class="hat">v</span> 的算法與 Adam 相同；λ 是 weight decay）',
+  pros:['正則化效果穩定、可預期','Transformer、LLM、ViT、擴散模型的事實標準','η 與 λ 較能分開調'],
+  cons:['仍是 2 份狀態','λ、warmup、學習率排程要一起設計','bias 與 LayerNorm 的參數通常要排除在 decay 之外'],
+  start:'η = 1e-4 ~ 1e-3（模型越大越小），λ = 0.01 ~ 0.1，warmup + cosine 衰減，梯度裁剪 1.0',
+  where:'GPT／Llama 類預訓練、ViT、BERT 微調、擴散模型'},
+ more:{title:'進階變體',year:'2018 年起',color:null,
+  idea:'這些方法大多是在 Adam 之上針對一個具體問題做修補。前五個解決收斂、warmup、記憶體或大批次的工程問題，後三個則嘗試利用參數矩陣的結構。',
+  variants:[
+   ['AMSGrad','讓 v 不再下降，補上 Adam 的收斂反例。','理論上需要收斂保證時；實務收益有限。'],
+   ['RAdam','自動修正訓練初期 v 變異過大的問題。','不想手動設計 warmup 時。'],
+   ['Adafactor','把二階動量用行、列因式分解近似，狀態從 n×m 降到 n+m。','記憶體吃緊；T5 採用。'],
+   ['8-bit Adam','把 m、v 量化成 8 bit，狀態記憶體約為 fp32 的四分之一。','直接替換 AdamW 以省記憶體。'],
+   ['LARS／LAMB','逐層用權重範數與更新範數的比值縮放步長。','超大批次（ResNet-50、BERT）。'],
+   ['Lion','只用動量的符號更新，只有 1 份狀態，由 Google 以程式搜尋發現。','想比 AdamW 省記憶體時；η 要比 AdamW 小。'],
+   ['Shampoo／SOAP','用矩陣形式的前處理器，利用參數矩陣的結構。','追求更少步數收斂；AlgoPerf 中以 Shampoo 為基礎的方法在外部調參賽道勝出。'],
+   ['Muon','對 2D 權重矩陣的動量更新做正交化（Newton–Schulz 迭代）；embedding、bias、norm 仍用 AdamW。','LLM 預訓練的新選項；Moonshot 的論文展示它可擴展，但預設設定不如 AdamW 成熟。']]}
+};
+var DETAIL_ORDER=[['sgd','SGD'],['mom','Momentum'],['rms','RMSprop'],['ada','Adagrad'],['adam','Adam'],['adamw','AdamW'],['more','進階變體']];
+
+var CMP=[
+ ['sgd','SGD',0,3,1,'凸問題、CNN（搭配排程）','各方向共用步長；學習率敏感'],
+ ['mom','SGD + Momentum',1,3,2,'CNN 影像分類的標準搭配','要與 η 一起調；可能衝過頭'],
+ ['rms','RMSprop',1,2,3,'RNN、強化學習、非平穩目標','無偏差修正；α、ε 要留意'],
+ ['ada','Adagrad',1,1,3,'稀疏特徵（詞向量、CTR）','學習率只降不升，深網路後期變慢'],
+ ['adam','Adam',2,1,3,'快速基準、GAN、強化學習','L2 正則被分母扭曲；2 份狀態'],
+ ['adam','AdamW',2,1,3,'Transformer、LLM、ViT、擴散、微調','2 份狀態；λ 與排程要一起設計']
+];
+
+var DOMAINS=[['all','全部'],['vision','影像'],['nlp','語言'],['gen','生成模型'],['seq','序列與強化學習'],['sparse','稀疏與推薦'],['scale','大規模與省記憶體'],['classic','傳統機器學習']];
+var SCENES=[
+ {d:'vision',name:'影像分類 CNN',sub:'ResNet、VGG、EfficientNet',main:'SGD + Momentum',alt:['AdamW'],
+  hp:'μ 0.9 · η 0.1（batch 256）· λ 1e-4 ~ 5e-4 · 階梯或 cosine 衰減',
+  why:'BatchNorm 已經替各層做了尺度正規化，自適應步長的優勢縮小。SGD 沒有額外狀態，配上長時間的學習率排程，在影像分類上常有很好的測試表現。ResNet 的原始配方就是這樣。',
+  watch:'η 與排程要認真調；趕時間時先用 AdamW 取得基準。'},
+ {d:'vision',name:'Vision Transformer',sub:'ViT、DeiT、Swin',main:'AdamW',alt:['SGD + Momentum（微調）'],
+  hp:'η 5e-4 × (批次/512) · λ 0.05 · warmup 5 ~ 20 epoch + cosine',
+  why:'注意力與 LayerNorm 讓各參數的梯度尺度差很多，訓練初期也不穩。逐參數縮放步長加上 warmup 才好訓。AdamW 解耦的 weight decay 讓強正則（λ 0.05 ~ 0.1）真的生效。',
+  watch:'ViT 原論文在下游微調時改用 SGD + Momentum，兩種做法都有人用。'},
+ {d:'nlp',name:'大型語言模型預訓練',sub:'GPT、Llama 類',main:'AdamW',alt:['Lion','Muon（實驗中）'],
+  hp:'β = (0.9, 0.95) · λ 0.1 · η 峰值 6e-5 ~ 6e-4（模型越大越小）· warmup 後 cosine 衰減 · 梯度裁剪 1.0',
+  why:'參數量巨大，各層與各 token 的梯度尺度差異懸殊，稀有 token 的 embedding 梯度又稀疏。AdamW 逐參數縮放步長最穩。把 β₂ 從 0.999 降到 0.95，讓分母更快跟上梯度變化，可減少損失突然飆高（loss spike）。',
+  watch:'優化器狀態是權重的 2 倍（fp32），需要 ZeRO／FSDP 分片或 8-bit 狀態。'},
+ {d:'nlp',name:'BERT 等預訓練模型微調',sub:'文字分類、問答',main:'AdamW',alt:[],
+  hp:'η 2e-5 ~ 5e-5 · batch 16 ~ 32 · 2 ~ 4 epoch · 10% warmup + 線性衰減 · λ 0.01',
+  why:'預訓練權重已經在不錯的位置，只需要小步微調。Adam 類方法對各層梯度尺度自動適應，用很小的 η 就穩。實務上換成 SGD 要重新摸索 η，也不如 AdamW 省事。',
+  watch:'η 太大會破壞預訓練知識，先從 2e-5 試起。'},
+ {d:'nlp',name:'LoRA／QLoRA 微調 LLM',sub:'只訓練新增的低秩矩陣',main:'AdamW',alt:['8-bit／paged AdamW'],
+  hp:'η 1e-4 ~ 2e-4 · λ 0 ~ 0.01 · 線性或 cosine 衰減',
+  why:'只訓練少量新增參數，優化器狀態很小，沿用 Transformer 的 AdamW 慣例即可。LoRA 的 η 通常比全參數微調大約一個數量級。基底模型被量化凍結後，記憶體壓力主要在基底模型本身。',
+  watch:'QLoRA 使用 paged AdamW，在記憶體尖峰時把狀態換到 CPU 記憶體。'},
+ {d:'gen',name:'擴散模型',sub:'DDPM、Stable Diffusion、DiT',main:'AdamW（或 Adam）',alt:[],
+  hp:'η 1e-4 左右 · β = (0.9, 0.999) · 權重 EMA ≈ 0.9999',
+  why:'每步的噪聲與時間步都是隨機抽的，梯度噪聲很大。Adam 的動量與二階平滑讓更新穩定，再用權重的指數移動平均（EMA）進一步抑制殘餘噪聲，取 EMA 權重當最終模型。',
+  watch:'EMA 不是優化器，但幾乎是這類模型的標配，記得一併保存。'},
+ {d:'gen',name:'GAN',sub:'DCGAN、StyleGAN、WGAN',main:'Adam（β₁ = 0.5）',alt:['RMSprop（原版 WGAN）'],
+  hp:'η 2e-4 · β = (0.5, 0.999) · 生成器與判別器各一個優化器',
+  why:'兩個網路互相對抗，每個網路面對的目標都在變。降低 β₁ 讓動量不要累積過時的方向，是 DCGAN 以來的常見做法。原版 WGAN 論文甚至建議不用動量，改用 RMSprop。',
+  watch:'判別器與生成器的 η 可以不同（TTUR）。'},
+ {d:'seq',name:'深度強化學習',sub:'DQN、A3C、PPO',main:'Adam／RMSprop',alt:[],
+  hp:'PPO：Adam η 3e-4，ε 1e-5 · DQN（2015）：RMSprop η 2.5e-4',
+  why:'資料分佈隨策略改變，梯度尺度會大幅起伏。RMSprop 與 Adam 用梯度平方的滑動平均自動調整步長，避免單次大梯度毀掉策略。早期的 DQN 與 A3C 用 RMSprop，之後 PPO 等方法大多用 Adam。',
+  watch:'常搭配梯度裁剪；ε 常取 1e-5，比預設的 1e-8 穩。'},
+ {d:'seq',name:'RNN／LSTM／GRU',sub:'語音、時間序列',main:'Adam／RMSprop',alt:['SGD + 梯度裁剪（老配方）'],
+  hp:'η 1e-3 · 梯度範數裁剪 1 ~ 5',
+  why:'沿時間展開後，同一組權重被重複使用，梯度可能爆炸，各參數的梯度尺度差異也大。自適應優化器吸收尺度差，梯度裁剪處理爆炸，兩者通常一起用。',
+  watch:'優化器解不了梯度消失，LSTM／GRU 的門控結構才是關鍵。'},
+ {d:'sparse',name:'稀疏特徵：詞向量、推薦、CTR',sub:'巨大的 embedding 表',main:'Adagrad',alt:['稀疏 Adam','FTRL'],
+  hp:'η 0.05 ~ 0.5 · 稀疏 Adam：torch.optim.SparseAdam + Embedding(sparse=True)',
+  why:'每一步只有少數 embedding 列有梯度。Adagrad 讓很少出現的特徵累積的梯度平方小、步長相對大，常出現的特徵步長逐漸縮小。GloVe 與 Wide & Deep 的深側都用過 Adagrad。',
+  watch:'稠密 Adam 每步會碰整張表與兩份狀態，大表很吃資源，要用稀疏版本。'},
+ {d:'classic',name:'邏輯迴歸、線性 SVM',sub:'凸問題',main:'SGD（遞減 η）',alt:['L-BFGS'],
+  hp:'η_t ∝ 1/t 類的遞減排程',
+  why:'凸問題有理論保證，簡單 SGD 配遞減學習率就會收斂。資料很大時，一次只看一小批比每次掃完全部便宜得多。',
+  watch:'資料放得進記憶體時，L-BFGS 常更快，而且不用調 η。'},
+ {d:'classic',name:'小型表格資料 MLP、快速原型',sub:'先要一個可用的基準',main:'Adam',alt:['SGD（之後比較）'],
+  hp:'η 1e-3 · β = (0.9, 0.999)',
+  why:'預設值幾乎不用調，先得到可用的基準線，把時間留給資料與模型設計。基準穩定後，再用 SGD 比較，看值不值得換。',
+  watch:'不同優化器要各自調學習率才公平，不要只比預設值。'},
+ {d:'scale',name:'超大批次訓練',sub:'ResNet-50 批次 32K、BERT 批次 64K',main:'LARS／LAMB',alt:['SGD + 線性縮放 + warmup'],
+  hp:'η 依批次放大 · warmup 數 epoch · 逐層信賴比 ‖θ‖ / ‖更新量‖',
+  why:'批次放大時 η 也要跟著放大，但不同層的權重範數與梯度範數比例差很多，同一個 η 對某些層太大。LARS／LAMB 逐層縮放更新量，讓大 η 不發散。',
+  watch:'批次只有幾百到幾千時不需要，SGD 或 AdamW 就夠。'},
+ {d:'scale',name:'記憶體吃緊的大模型',sub:'T5、數十億參數以上',main:'Adafactor／8-bit Adam',alt:['Lion'],
+  hp:'Adafactor 常搭配隨步數衰減的 η · 8-bit Adam 可直接替換 AdamW',
+  why:'fp32 Adam 的兩份狀態是權重的 2 倍。Adafactor 把二階動量用行、列因式分解近似，狀態從 n×m 降到 n+m；8-bit Adam 把狀態量化成 1 byte；Lion 只留一份動量。',
+  watch:'省下的記憶體要拿穩定性去驗證，先做小規模對照。'},
+ {d:'scale',name:'新方法：Muon 與矩陣型優化器',sub:'2024 年起的 LLM 實驗',main:'Muon（+ AdamW）',alt:['Shampoo／SOAP'],
+  hp:'2D 權重矩陣用 Muon · embedding、bias、norm 參數仍用 AdamW',
+  why:'Muon 把動量更新用 Newton–Schulz 迭代做正交化，利用「權重是矩陣」的結構。Moonshot 的論文〈Muon is Scalable for LLM Training〉在大型語言模型上展示它可擴展。AlgoPerf 競賽中，以 Shampoo 為基礎的方法在外部調參賽道勝出。',
+  watch:'仍是快速發展中的研究方向，穩定的預設設定不如 AdamW 成熟。'}
+];
+
+var Q1=[['cnn','影像分類 CNN'],['tfm','Transformer／LLM／ViT／擴散'],['seq','RNN／強化學習'],['gan','GAN'],['sparse','稀疏特徵（詞向量、推薦）'],['linear','線性模型／傳統機器學習']];
+var Q2=[['normal','沒有特別限制'],['mem','記憶體吃緊'],['big','超大批次（≥ 8K）']];
+var Q3=[['easy','先要一個可用的基準'],['best','願意花時間調到最好']];
+var PICK={
+ cnn:{easy:{opt:'AdamW',hp:'η 1e-3 · λ 0.05 · cosine 衰減',why:'Adam 類不需要先摸索學習率的尺度，能很快得到可用基準。ConvNeXt 等現代 CNN 配方也使用 AdamW。'},
+      best:{opt:'SGD + Momentum',hp:'μ 0.9 · η 0.1（batch 256）· λ 5e-4 · warmup + cosine',why:'BatchNorm 已替各層做尺度正規化，自適應步長的優勢縮小。SGD + Momentum 搭配長時間排程，常在影像分類上得到很好的測試表現。代價是要認真調 η 與排程。'},
+      mem:'SGD + Momentum 只有 1 份狀態，本來就是省記憶體的選擇。',
+      big:'改用 LARS，或沿用 SGD 並依批次線性放大 η、加長 warmup（Goyal 等人 2017）。'},
+ tfm:{easy:{opt:'AdamW',hp:'η 3e-4 ~ 1e-3（模型越大越小）· β = (0.9, 0.95 ~ 0.999) · λ 0.01 ~ 0.1 · warmup + cosine · 梯度裁剪 1.0',why:'Transformer 各層與各 token 的梯度尺度差異大，稀有 token 的 embedding 梯度稀疏。逐參數縮放步長讓訓練穩定，AdamW 又讓 weight decay 的效果一致。'},
+      best:{opt:'AdamW（再評估 Muon、Lion）',hp:'在 easy 的設定上調 β₂、ε、λ 與排程；Muon 只用在 2D 權重矩陣',why:'AdamW 仍是最成熟的基準。想再榨效率時，把 β₂ 降到 0.95 減少損失尖峰，並與 Muon、Lion 做小規模對照。'},
+      mem:'改用 8-bit AdamW、Adafactor 或 Lion 降低狀態記憶體，並搭配 ZeRO／FSDP 分片。',
+      big:'改用 LAMB（BERT 曾以 64K 批次訓練），或放大 η 並加長 warmup。'},
+ seq:{easy:{opt:'Adam',hp:'η 3e-4 ~ 1e-3 · ε 1e-5（強化學習常用）· 梯度裁剪 0.5 ~ 5',why:'資料分佈與梯度尺度會隨策略或時間展開劇烈變化。Adam 用二階動量自動調整步長，避免單次大梯度破壞模型。'},
+      best:{opt:'RMSprop 或 Adam（兩者都試）',hp:'RMSprop：η 2.5e-4 ~ 1e-3，α 0.95 ~ 0.99 · Adam：β₁ 可降到 0.5 ~ 0.9',why:'目標非平穩時，沒有動量的 RMSprop 不會累積過時的方向；Adam 則可把 β₁ 調低來達到類似效果。'},
+      mem:'RMSprop 只有 1 份狀態；這類模型通常不大，記憶體很少是瓶頸。',
+      big:'強化學習常靠增加並行環境來放大批次；放大時同步調高 η 並確認梯度裁剪。'},
+ gan:{easy:{opt:'Adam（β₁ = 0.5）',hp:'η 2e-4 · β = (0.5, 0.999) · 生成器與判別器各一個優化器',why:'兩個網路互相對抗，目標一直在變。降低 β₁ 讓動量不要累積過時的方向，是 DCGAN 以來的標準做法。'},
+      best:{opt:'依損失選：WGAN 用 RMSprop，或 β₁ 很小的 Adam',hp:'原版 WGAN：RMSprop η 5e-5 · WGAN-GP：Adam η 1e-4，β₁ 設 0 ~ 0.5',why:'WGAN 論文觀察到帶動量的方法偶爾造成不穩，改用 RMSprop；後續工作也有用 β₁ 很小的 Adam。可再試判別器與生成器用不同 η（TTUR）。'},
+      mem:'兩個網路各一份優化器狀態；可以考慮 8-bit Adam。',
+      big:'批次放大後，兩個網路的學習率要一起重調，並留意判別器是否壓過生成器。'},
+ sparse:{easy:{opt:'Adagrad',hp:'η 0.05 ~ 0.5（embedding 常用較大的值）',why:'每步只有少數 embedding 列有梯度。Adagrad 讓少見特徵保留較大的步長，常見特徵的步長逐漸縮小。'},
+      best:{opt:'稀疏版 Adam／Adagrad；寬側線性模型用 FTRL',hp:'η 1e-3 ~ 1e-2 · PyTorch：SparseAdam + Embedding(sparse=True)',why:'稠密 Adam 每步要碰整張表和兩份狀態，成本高；稀疏版只更新被用到的列。Wide & Deep 就是寬側 FTRL、深側 Adagrad 的組合。'},
+      mem:'大表的優化器狀態很可觀：Adagrad 只有 1 份，Adam 有 2 份；也可把 embedding 表分片到多台機器。',
+      big:'稀疏特徵配大批次時，要確認少見特徵仍保有足夠大的步長；Adagrad 已自動處理一部分。'},
+ linear:{easy:{opt:'SGD（遞減學習率）',hp:'η_t ∝ 1/t 類排程，或直接用 scikit-learn 的 SGDClassifier 預設',why:'凸問題有理論保證，簡單 SGD 搭配遞減學習率就會收斂。資料很大時，一次只看一小批比每次掃完全部便宜得多。'},
+      best:{opt:'資料放得進記憶體用 L-BFGS；很大再用 SGD／Adagrad',hp:'L-BFGS 不用調 η（scikit-learn 的 LogisticRegression 預設 solver）',why:'資料放得進記憶體時，L-BFGS 在凸問題上收斂快又不用調學習率。'},
+      mem:'線性模型的參數少，記憶體通常不是問題。',
+      big:'SGD 依批次放大 η；資料夠大時也可改用 mini-batch 的 Adagrad。'}
+};
+
+var PITFALLS=[
+ ['Adam + L2 不等於 weight decay','在 Adam 裡把 L2 項加進梯度，會被自適應的分母逐參數縮放，等效衰減變得不一致。要正則化就用 AdamW 這種解耦版本。'],
+ ['初期要 warmup','Adam 的 v 在最初幾步只看過很少的梯度，估計不穩，步長可能太大。大模型通常先用幾百到幾千步把 η 從 0 拉到峰值，或改用 RAdam。'],
+ ['ε 不是小事','預設 1e-8 在 fp16／bf16 或梯度極小時可能造成不穩。強化學習常用 1e-5，有些大模型訓練也會調大 ε。'],
+ ['排程常比換優化器影響更大','warmup、cosine 或線性衰減的設計，常常比 Adam 換成 SGD 的差距更明顯。比較優化器時，每個都要有自己調過的 η 與排程。'],
+ ['梯度裁剪是搭檔','RNN、Transformer 與強化學習常搭配範數裁剪（例如 1.0）。它處理的是偶發的巨大梯度，優化器本身處理不了。'],
+ ['別拿預設值比輸贏','Wilson 等人（2017）指出自適應方法可能泛化較差，Schmidt 等人（2021）的大規模比較則顯示沒有一個優化器全面勝出。結論取決於有沒有認真調參。']
+];
+
+var QUIZ=[
+ {q:'在狹長山谷中，純 SGD 為什麼會鋸齒？',o:['每一步的學習率都是隨機的','所有參數共用同一個學習率，對陡的方向來說太大','梯度裡有噪聲','沒有使用 weight decay'],a:1,
+  x:'陡方向的曲率大，同樣的步長讓它每步都跳過谷底再彈回；但同樣的步長對平緩方向又太小。RMSprop 與 Adam 逐參數縮放步長，就是在處理這件事。噪聲會讓路徑更亂，但不是鋸齒的原因。'},
+ {q:'Adam 相比 RMSprop，多了哪兩樣東西？',o:['學習率衰減與梯度裁剪','二階動量與 weight decay','一階動量與偏差修正','逐層信賴比與正交化'],a:2,
+  x:'RMSprop 已經有二階的梯度平方平均。Adam 再加上一階動量 m，並對 m 與 v 做偏差修正。'},
+ {q:'訓練大型 Transformer 時，為什麼常用 AdamW，而不是 Adam 加 L2 正則？',o:['L2 項會被自適應分母逐參數縮放，AdamW 把衰減獨立出來','AdamW 的優化器狀態比 Adam 少一份','AdamW 不需要設定學習率','L2 正則在 Transformer 上會讓梯度變成 0'],a:0,
+  x:'AdamW 把 weight decay 從梯度中拆開，直接縮小權重，強度不受 √v 影響。狀態仍然是 2 份，學習率也仍要設。'},
+ {q:'訓練 GAN 時，為何常把 Adam 的 β₁ 從 0.9 調成 0.5（甚至 0）？',o:['為了省記憶體','β₁ 越小，有效學習率越大','為了讓偏差修正失效','生成器與判別器互相對抗、目標一直在變，動量太大會累積過時的方向而造成振盪'],a:3,
+  x:'GAN 的目標是非平穩的。降低 β₁ 讓更新更依賴最近的梯度，是 DCGAN 以來的常見做法。'},
+ {q:'一個 7B（70 億）參數的模型，用 fp32 的 Adam／AdamW，只算 m 與 v 兩份狀態，大約需要多少記憶體？',o:['14 GB','28 GB','56 GB','112 GB'],a:2,
+  x:'7×10⁹ 個參數 × 2 份 × 4 bytes = 56 GB。這還不含權重、梯度與啟用值。可以到「記憶體」那一節自己拖動看看。'},
+ {q:'推薦系統的 embedding 表很大，每步只用到少數列。為什麼常選 Adagrad 或稀疏版優化器？',o:['Adagrad 的學習率會越來越大','少見特徵累積的梯度平方小、步長相對大；稀疏版只更新用到的列','稀疏資料無法計算梯度','因為一定需要動量'],a:1,
+  x:'Adagrad 對少見特徵保留較大的步長；稀疏版 Adam 則避免每步都碰整張表。'},
+ {q:'下面哪個說法最正確？',o:['只有 SGD 沒有自適應學習率，所以只有 SGD 需要學習率排程','Adam 會自動調整每個參數的步長，所以不需要再選基準學習率，也不需要排程','SGD 與 Adam 都能搭配學習率排程：排程控制整體 lr 隨訓練的變化，自適應控制各參數之間的相對步長','ExponentialLR 是 SGD 專用的排程器'],a:2,
+  x:'兩層是獨立的。Adam 的基準 lr 仍要選，大模型更幾乎一定搭 warmup + 衰減；SGD 也不是只能用 ExponentialLR，StepLR 與 Cosine 更常見。'},
+ {q:'ImageNet 上經典的 ResNet 訓練配方，用的是哪一種優化器設定？',o:['SGD + Momentum 0.9，搭配 weight decay 與學習率衰減','Adam，β = (0.9, 0.999)','RMSprop','Adagrad'],a:0,
+  x:'ResNet 原論文使用 SGD、μ = 0.9、η 從 0.1 起並在平台期降低、weight decay 1e-4。'}
+];
+
+var SOURCES=[
+ ['Kingma & Ba, Adam: A Method for Stochastic Optimization','https://arxiv.org/abs/1412.6980'],
+ ['Loshchilov & Hutter, Decoupled Weight Decay Regularization（AdamW）','https://arxiv.org/abs/1711.05101'],
+ ['Hinton 等, Lecture 6e：RMSprop 的課程講義','https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf'],
+ ['Duchi, Hazan & Singer, Adaptive Subgradient Methods（Adagrad）','https://jmlr.org/papers/v12/duchi11a.html'],
+ ['Wilson 等, The Marginal Value of Adaptive Gradient Methods','https://arxiv.org/abs/1705.08292'],
+ ['Schmidt 等, Descending through a Crowded Valley','https://arxiv.org/abs/2007.01547'],
+ ['Reddi 等, On the Convergence of Adam and Beyond（AMSGrad）','https://arxiv.org/abs/1904.09237'],
+ ['Shazeer & Stern, Adafactor','https://arxiv.org/abs/1804.04235'],
+ ['Dettmers 等, 8-bit Optimizers via Block-wise Quantization','https://arxiv.org/abs/2110.02861'],
+ ['You 等, LARS（Large Batch Training of Convolutional Networks）','https://arxiv.org/abs/1708.03888'],
+ ['You 等, LAMB（Large Batch Optimization for Deep Learning）','https://arxiv.org/abs/1904.00962'],
+ ['Goyal 等, Accurate, Large Minibatch SGD','https://arxiv.org/abs/1706.02677'],
+ ['Chen 等, Lion（Symbolic Discovery of Optimization Algorithms）','https://arxiv.org/abs/2302.06675'],
+ ['Liu 等, Muon is Scalable for LLM Training','https://arxiv.org/abs/2502.16982'],
+ ['Kasimbeg 等, Accelerating Neural Network Training: An Analysis of the AlgoPerf Competition','https://arxiv.org/abs/2502.15015'],
+ ['He 等, Deep Residual Learning（ResNet）','https://arxiv.org/abs/1512.03385'],
+ ['Touvron 等, DeiT','https://arxiv.org/abs/2012.12877'],
+ ['Devlin 等, BERT','https://arxiv.org/abs/1810.04805'],
+ ['Dettmers 等, QLoRA','https://arxiv.org/abs/2305.14314'],
+ ['Ho 等, Denoising Diffusion Probabilistic Models','https://arxiv.org/abs/2006.11239'],
+ ['Radford 等, DCGAN','https://arxiv.org/abs/1511.06434'],
+ ['Arjovsky 等, Wasserstein GAN','https://arxiv.org/abs/1701.07875'],
+ ['Cheng 等, Wide & Deep Learning for Recommender Systems','https://arxiv.org/abs/1606.07792']
+];
+
+/* ---------- small helpers ---------- */
+function li(a){return a.map(function(t){return '<li>'+t+'</li>';}).join('');}
+function fmtLoss(v){if(!isFinite(v))return '—';if(v>=100)return v.toFixed(0);if(v>=1)return v.toFixed(2);if(v===0)return '0';return v.toExponential(1);}
+function fmtLr(v){return v>=0.1?v.toFixed(2).replace(/0+$/,'').replace(/\.$/,''):v.toPrecision(2);}
+function hex(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+
+/* ---------- simulator ---------- */
+var S={land:'valley',on:{sgd:true,mom:true,rms:true,adam:true,ada:false},lr:{},noise:0,start:null,runs:{},t:0,playing:true,sps:60,acc:0,last:0,initLoss:1};
+var cv=$('#map'),ctx=cv.getContext('2d'),cc=$('#lossChart'),cx=cc.getContext('2d');
+var bg=null,dpr=1,C={};
+
+function readColors(){
+  var cs=getComputedStyle(document.documentElement);
+  function g(n){return cs.getPropertyValue(n).trim();}
+  C={bg:g('--bg'),ink:g('--ink'),ink2:g('--ink2'),line:g('--line'),surface:g('--surface'),
+     sgd:g('--c-sgd'),mom:g('--c-mom'),rms:g('--c-rms'),adam:g('--c-adam'),ada:g('--c-ada'),
+     lo:hex(g('--map-lo')),hi:hex(g('--map-hi')),ml:hex(g('--map-line')),mono:g('--f-mono')};
+}
+
+function buildBg(){
+  var L=LANDSCAPES[S.land],pw=cv.width,ph=cv.height;
+  if(!pw||!ph)return;
+  var off=document.createElement('canvas');off.width=pw;off.height=ph;
+  var oc=off.getContext('2d'),img=oc.createImageData(pw,ph),d=img.data;
+  var x0=L.view[0],x1=L.view[1],y0=L.view[2],y1=L.view[3];
+  var sx=(x1-x0)/pw,sy=(y1-y0)/ph;
+  var h=new Float32Array(pw*ph),lev=new Int16Array(pw*ph),hmax=1,i,j,p;
+  for(j=0;j<ph;j++){var y=y1-(j+0.5)*sy;for(i=0;i<pw;i++){var x=x0+(i+0.5)*sx;var v=Math.log1p(L.f(x,y)/L.cs)*L.ck;p=j*pw+i;h[p]=v;lev[p]=Math.floor(v);if(v>hmax)hmax=v;}}
+  var lw=Math.max(1,Math.round(dpr)),lo=C.lo,hi=C.hi,ml=C.ml;
+  for(j=0;j<ph;j++){for(i=0;i<pw;i++){
+    p=j*pw+i;
+    var t=1-Math.exp(-h[p]/7);
+    var r=lo[0]+(hi[0]-lo[0])*t,gC=lo[1]+(hi[1]-lo[1])*t,b=lo[2]+(hi[2]-lo[2])*t;
+    var edge=(i+lw<pw&&lev[p]!==lev[p+lw])||(j+lw<ph&&lev[p]!==lev[p+lw*pw]);
+    if(edge){r=ml[0];gC=ml[1];b=ml[2];}
+    var q=p*4;d[q]=r;d[q+1]=gC;d[q+2]=b;d[q+3]=255;
+  }}
+  oc.putImageData(img,0,0);bg=off;
+}
+
+function P(x,y){var L=LANDSCAPES[S.land];return [(x-L.view[0])/(L.view[1]-L.view[0])*cv.width,(L.view[3]-y)/(L.view[3]-L.view[2])*cv.height];}
+
+function drawMap(){
+  if(!bg)return;
+  var L=LANDSCAPES[S.land];
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(bg,0,0);
+  ctx.lineWidth=1.5*dpr;ctx.strokeStyle=C.ink2;ctx.fillStyle=C.ink2;ctx.font='500 '+(12*dpr)+'px '+C.mono;
+  L.minima.forEach(function(m,i){var q=P(m[0],m[1]);ctx.beginPath();ctx.arc(q[0],q[1],7*dpr,0,6.2832);ctx.stroke();if(L.minima.length>1){ctx.fillText('ABCD'.charAt(i),q[0]+10*dpr,q[1]-9*dpr);}});
+  KEYS.forEach(function(k){
+    var r=S.runs[k];if(!r)return;
+    ctx.strokeStyle=C[k];ctx.lineWidth=2.4*dpr;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
+    for(var n=0;n<r.path.length;n++){var q=P(r.path[n][0],r.path[n][1]);if(n===0)ctx.moveTo(q[0],q[1]);else ctx.lineTo(q[0],q[1]);}
+    ctx.stroke();
+    if(!r.dead){var e=r.path[r.path.length-1],qq=P(e[0],e[1]);ctx.fillStyle=C[k];ctx.beginPath();ctx.arc(qq[0],qq[1],5.5*dpr,0,6.2832);ctx.fill();ctx.strokeStyle=C.surface;ctx.lineWidth=1.6*dpr;ctx.stroke();}
+  });
+  var s=P(S.start[0],S.start[1]);
+  ctx.fillStyle=C.ink;ctx.strokeStyle=C.surface;ctx.lineWidth=1.5*dpr;
+  ctx.beginPath();ctx.rect(s[0]-4.5*dpr,s[1]-4.5*dpr,9*dpr,9*dpr);ctx.fill();ctx.stroke();
+}
+
+function drawChart(){
+  var w=cc.width,h=cc.height;if(!w||!h)return;
+  cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,w,h);
+  var padL=46*dpr,padR=12*dpr,padT=10*dpr,padB=24*dpr,pw=w-padL-padR,ph=h-padT-padB;
+  var top=Math.ceil(Math.log10(Math.max(S.initLoss,1e-6))),bot=-8;
+  if(top<=bot+2)top=bot+2;
+  function Y(v){var e=Math.log10(Math.max(v,1e-8));return padT+ph*(1-(e-bot)/(top-bot));}
+  function X(t){return padL+pw*t/MAXT;}
+  cx.font='400 '+(10.5*dpr)+'px '+C.mono;cx.textBaseline='middle';cx.textAlign='right';
+  cx.strokeStyle=C.line;cx.fillStyle=C.ink2;cx.lineWidth=1*dpr;
+  for(var e=bot;e<=top;e+=2){var yy=Y(Math.pow(10,e));cx.beginPath();cx.moveTo(padL,yy);cx.lineTo(w-padR,yy);cx.stroke();cx.fillText('1e'+e,padL-6*dpr,yy);}
+  cx.textAlign='center';cx.textBaseline='top';
+  for(var t=0;t<=MAXT;t+=100){cx.fillText(String(t),X(t),h-padB+6*dpr);}
+  KEYS.forEach(function(k){
+    var r=S.runs[k];if(!r)return;
+    cx.strokeStyle=C[k];cx.lineWidth=2*dpr;cx.lineJoin='round';cx.beginPath();var started=false;
+    for(var n=0;n<r.loss.length;n++){var v=r.loss[n];if(!isFinite(v))break;var px=X(n),py=Y(v);if(!started){cx.moveTo(px,py);started=true;}else cx.lineTo(px,py);}
+    cx.stroke();
+  });
+}
+
+function nearestMin(L,p){var best=-1,bd=1e9;L.minima.forEach(function(m,i){var d=Math.hypot(m[0]-p[0],m[1]-p[1]);if(d<bd){bd=d;best=i;}});return bd<0.35?best:-1;}
+
+function updateStats(){
+  var L=LANDSCAPES[S.land];
+  KEYS.forEach(function(k){
+    var le=$('#loss-'+k),se=$('#stat-'+k),r=S.runs[k];
+    if(!r){le.textContent='—';se.textContent='';se.className='stat';return;}
+    var v=r.loss[r.loss.length-1];
+    le.textContent=r.dead?'—':fmtLoss(v);
+    var s='';
+    if(r.dead)s='發散';
+    else if(S.t>=MAXT&&L.minima.length>1){var ix=nearestMin(L,r.p);if(ix>=0)s='→ '+'ABCD'.charAt(ix);}
+    se.textContent=s;se.className='stat'+(r.dead?' bad':'');
+  });
+  $('#stepOut').textContent=S.t+' / '+MAXT;
+  $('#play').textContent=S.playing?'暫停':(S.t>=MAXT?'重播':'播放');
+}
+
+function drawAll(){drawMap();drawChart();updateStats();}
+
+function rebuild(autoplay){
+  var L=LANDSCAPES[S.land];
+  if(!S.start)S.start=L.start.slice();
+  S.runs={};
+  KEYS.forEach(function(k){if(S.on[k])S.runs[k]=makeRun(k,L,S.lr[k],S.noise,SEED,S.start);});
+  S.t=0;S.acc=0;S.initLoss=L.f(S.start[0],S.start[1]);
+  S.playing=autoplay!==false;
+  if(reduce){for(var n=0;n<MAXT;n++){for(var k in S.runs)S.runs[k].step();S.t++;}S.playing=false;}
+  drawAll();
+}
+
+function tick(ts){
+  if(!S.last)S.last=ts;
+  var dt=Math.min(100,ts-S.last)/1000;S.last=ts;
+  if(S.playing){
+    S.acc+=dt*S.sps;var n=Math.floor(S.acc);S.acc-=n;
+    while(n-->0&&S.t<MAXT){for(var k in S.runs)S.runs[k].step();S.t++;}
+    if(S.t>=MAXT)S.playing=false;
+    drawAll();
+  }
+  requestAnimationFrame(tick);
+}
+
+function syncSliders(){
+  KEYS.forEach(function(k){
+    $('#lr-'+k).value=Math.log10(S.lr[k]);
+    $('#lrv-'+k).textContent=fmtLr(S.lr[k]);
+  });
+}
+function resetLr(){S.lr={};var L=LANDSCAPES[S.land];KEYS.forEach(function(k){S.lr[k]=L.lr[k];});syncSliders();}
+
+function buildSimUI(){
+  $('#optRows').innerHTML=KEYS.map(function(k){
+    return '<div class="orow">'+
+      '<label class="chk"><input type="checkbox" id="on-'+k+'"'+(S.on[k]?' checked':'')+'><span class="dot" style="background:var(--c-'+k+')"></span><span><span class="oname">'+NAMES[k]+'</span><span class="osub">'+SUBS[k]+'</span></span></label>'+
+      '<div class="ostat"><span id="loss-'+k+'">—</span><span class="stat" id="stat-'+k+'"></span></div>'+
+      '<div class="lrbox"><span class="lrlab">學習率 η</span><input type="range" id="lr-'+k+'" min="-4" max="0.7" step="0.02" aria-label="'+NAMES[k]+' 的學習率（對數刻度）"><output class="lrv" id="lrv-'+k+'"></output></div>'+
+    '</div>';
+  }).join('');
+  KEYS.forEach(function(k){
+    $('#on-'+k).addEventListener('change',function(e){S.on[k]=e.target.checked;rebuild();});
+    $('#lr-'+k).addEventListener('input',function(e){S.lr[k]=Math.pow(10,parseFloat(e.target.value));$('#lrv-'+k).textContent=fmtLr(S.lr[k]);rebuild();});
+  });
+  $('#noise').addEventListener('input',function(e){S.noise=parseInt(e.target.value,10);$('#noiseOut').textContent=S.noise+'%';rebuild();});
+  $('#resetLr').addEventListener('click',function(){resetLr();rebuild();});
+  $('#play').addEventListener('click',function(){
+    if(S.t>=MAXT){rebuild();return;}
+    S.playing=!S.playing;updateStats();
+  });
+  $('#replay').addEventListener('click',function(){rebuild();});
+  $('#resetStart').addEventListener('click',function(){S.start=null;rebuild();});
+  $('#speed').addEventListener('change',function(e){S.sps=parseInt(e.target.value,10);});
+  cv.addEventListener('click',function(e){
+    var L=LANDSCAPES[S.land],r=cv.getBoundingClientRect();
+    var fx=(e.clientX-r.left)/r.width,fy=(e.clientY-r.top)/r.height;
+    S.start=[L.view[0]+fx*(L.view[1]-L.view[0]),L.view[3]-fy*(L.view[3]-L.view[2])];
+    rebuild();
+  });
+  var tabs=$('#landTabs');
+  tabs.innerHTML=Object.keys(LANDSCAPES).map(function(id){return '<button type="button" data-id="'+id+'" aria-pressed="'+(id===S.land)+'">'+LANDSCAPES[id].label+'</button>';}).join('');
+  $$('button',tabs).forEach(function(b){b.addEventListener('click',function(){setLand(b.dataset.id);});});
+}
+
+function setLand(id){
+  S.land=id;S.start=null;
+  $$('#landTabs button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.id===id));});
+  $('#landTip').textContent=LANDSCAPES[id].tip;
+  $('#landNotes').innerHTML=LAND_NOTES[id].map(function(t){return '<li>'+t+'</li>';}).join('');
+  resetLr();buildBg();rebuild();
+}
+
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,3);
+  var w=Math.max(200,Math.round($('#mapBox').clientWidth));
+  cv.width=Math.round(w*dpr);cv.height=Math.round(w/1.5*dpr);
+  cc.width=Math.round(Math.max(200,$('#lossChart').parentElement.clientWidth)*dpr);cc.height=Math.round(200*dpr);
+  buildBg();drawAll();
+}
+
+function themeChanged(){readColors();buildBg();drawAll();}
+
+/* ---------- static sections ---------- */
+function buildLineage(){
+  $('#lineageRows').innerHTML=LINEAGE.map(function(r){
+    return '<div class="lrow"><div class="yr">'+r[0]+'</div><div class="nm">'+r[1]+'</div>'+
+      '<div class="fix"><span class="lab">解決什麼</span>'+r[2]+'</div>'+
+      '<div class="left"><span class="lab">留下什麼問題</span>'+r[3]+'</div></div>';
+  }).join('');
+}
+
+function renderDetail(id){
+  var d=DETAILS[id],host=$('#detailPanel'),dot=d.color?'<span class="dot" style="background:var('+d.color+')"></span>':'';
+  var head='<div class="dhead">'+dot+'<h3>'+d.title+'</h3><span class="yr">'+d.year+'</span></div>';
+  if(d.variants){
+    host.innerHTML=head+'<p class="idea">'+d.idea+'</p><div class="vlist">'+d.variants.map(function(v){
+      return '<div class="vrow"><div class="vname">'+v[0]+'</div><div>'+v[1]+'</div><div class="vwhen">'+v[2]+'</div></div>';
+    }).join('')+'</div>';
+    return;
+  }
+  host.innerHTML=head+'<div class="dgrid"><div><p class="idea">'+d.idea+'</p><pre class="formula">'+d.formula+'</pre>'+
+    '<dl class="kv"><dt>常見起點</dt><dd class="mono">'+d.start+'</dd><dt>常出現在</dt><dd>'+d.where+'</dd></dl></div>'+
+    '<div><h4>優點</h4><ul class="pros">'+li(d.pros)+'</ul><h4>限制</h4><ul class="cons">'+li(d.cons)+'</ul></div></div>';
+}
+function buildDetail(){
+  var tabs=$('#detailTabs');
+  tabs.setAttribute('role','tablist');
+  tabs.innerHTML=DETAIL_ORDER.map(function(o,i){return '<button type="button" role="tab" data-id="'+o[0]+'" aria-selected="'+(i===0)+'" tabindex="'+(i===0?0:-1)+'">'+o[1]+'</button>';}).join('');
+  var btns=$$('button',tabs);
+  function pick(id,focus){btns.forEach(function(b){var on=b.dataset.id===id;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on&&focus)b.focus();});renderDetail(id);}
+  btns.forEach(function(b,i){
+    b.addEventListener('click',function(){pick(b.dataset.id);});
+    b.addEventListener('keydown',function(e){var j=-1;if(e.key==='ArrowRight')j=(i+1)%btns.length;else if(e.key==='ArrowLeft')j=(i-1+btns.length)%btns.length;if(j>=0){e.preventDefault();pick(btns[j].dataset.id,true);}});
+  });
+  renderDetail('sgd');
+}
+
+function pips(n){var s='';for(var i=1;i<=3;i++)s+='<span class="pip'+(i<=n?' on':'')+'"></span>';return '<span class="pips" role="img" aria-label="'+n+' / 3">'+s+'</span>';}
+function buildTable(){
+  var head='<thead><tr><th>優化器</th><th>優化器狀態（每參數）</th><th>調參敏感度</th><th>早期收斂</th><th>擅長</th><th>留意</th></tr></thead>';
+  var body='<tbody>'+CMP.map(function(r){
+    return '<tr><td class="nm"><span class="dot" style="background:var(--c-'+r[0]+')"></span>'+r[1]+'</td><td class="mono">'+r[2]+' 份</td><td>'+pips(r[3])+'</td><td>'+pips(r[4])+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td></tr>';
+  }).join('')+'</tbody>';
+  $('#cmpTable').innerHTML=head+body;
+}
+
+function buildScenes(){
+  var f=$('#sceneFilters'),cur='all';
+  f.innerHTML=DOMAINS.map(function(d){return '<button type="button" data-d="'+d[0]+'" aria-pressed="'+(d[0]==='all')+'">'+d[1]+'</button>';}).join('');
+  function render(){
+    $('#sceneCards').innerHTML=SCENES.filter(function(s){return cur==='all'||s.d===cur;}).map(function(s){
+      return '<article class="card"><div><h3>'+s.name+'</h3>'+(s.sub?'<div class="sub">'+s.sub+'</div>':'')+'</div>'+
+        '<div class="chips"><span class="chip main">'+s.main+'</span>'+s.alt.map(function(a){return '<span class="chip">'+a+'</span>';}).join('')+'</div>'+
+        '<p class="why">'+s.why+'</p><div class="hp">'+s.hp+'</div><p class="watch"><b>留意：</b>'+s.watch+'</p></article>';
+    }).join('');
+  }
+  $$('button',f).forEach(function(b){b.addEventListener('click',function(){cur=b.dataset.d;$$('button',f).forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});render();});});
+  render();
+}
+
+function radios(name,list,checked){
+  return list.map(function(o){return '<label class="opt"><input type="radio" name="'+name+'" value="'+o[0]+'"'+(o[0]===checked?' checked':'')+'><span>'+o[1]+'</span></label>';}).join('');
+}
+function renderPick(){
+  var q1=$('input[name=q1]:checked').value,q2=$('input[name=q2]:checked').value,q3=$('input[name=q3]:checked').value;
+  var P_=PICK[q1],b=P_[q3],extra='',lab='';
+  if(q2==='mem'){extra=P_.mem;lab='記憶體';}else if(q2==='big'){extra=P_.big;lab='大批次';}
+  $('#pickOut').innerHTML='<div class="rec-label">建議</div><div class="rec">'+b.opt+'</div>'+
+    '<dl class="kv"><dt>起手設定</dt><dd class="mono">'+b.hp+'</dd><dt>為什麼</dt><dd>'+b.why+'</dd>'+(extra?'<dt>'+lab+'</dt><dd>'+extra+'</dd>':'')+'</dl>';
+}
+function buildPicker(){
+  $('#pickForm').innerHTML='<fieldset><legend>模型或任務</legend><div class="opts">'+radios('q1',Q1,'tfm')+'</div></fieldset>'+
+    '<fieldset><legend>資源限制</legend><div class="opts">'+radios('q2',Q2,'normal')+'</div></fieldset>'+
+    '<fieldset><legend>目標</legend><div class="opts">'+radios('q3',Q3,'easy')+'</div></fieldset>';
+  $$('#pickForm input').forEach(function(i){i.addEventListener('change',renderPick);});
+  renderPick();
+}
+
+var MEM={e:9.845,bytes:4};
+var MEM_ROWS=[['ref','權重（fp32，參考）',null],['sgd','SGD',0],['mom','Momentum',1],['rms','RMSprop／Adagrad',1],['lion','Lion',1],['adam','Adam／AdamW',2]];
+function fmtParams(n){if(n>=1e9){var b=n/1e9;return (b>=10?b.toFixed(0):b.toFixed(1).replace(/\.0$/,''))+'B';}return Math.round(n/1e6)+'M';}
+function fmtGB(g){if(g>=1000)return (g/1000).toFixed(1)+' TB';if(g>=100)return g.toFixed(0)+' GB';if(g>=10)return g.toFixed(0)+' GB';if(g===0)return '0 GB';return g.toFixed(1)+' GB';}
+function renderMem(){
+  var n=Math.pow(10,MEM.e),bytes=MEM.bytes;
+  $('#pSize').textContent=fmtParams(n);
+  var vals=MEM_ROWS.map(function(r){return r[2]===null?n*4/1e9:n*r[2]*bytes/1e9;});
+  var mx=Math.max.apply(null,vals);
+  $('#memBars').innerHTML=MEM_ROWS.map(function(r,i){
+    var pct=mx>0?vals[i]/mx*100:0;
+    return '<div class="bar'+(r[0]==='ref'?' ref':'')+'"><div class="lab">'+r[1]+(r[2]!==null?'<small>'+r[2]+' 份狀態</small>':'')+'</div><div class="track"><div class="fill" style="width:'+(vals[i]===0?0:pct)+'%"></div></div><div class="val">'+fmtGB(vals[i])+'</div></div>';
+  }).join('');
+  var adamGB=n*2*bytes/1e9;
+  $('#memNote').textContent='以 '+fmtParams(n)+' 參數、'+(bytes===4?'fp32':bytes===2?'bf16':'8-bit')+' 狀態計算，Adam／AdamW 的 m 與 v 需要約 '+fmtGB(adamGB)+'。Adafactor 把 v 因式分解，狀態遠小於 1 份，圖中未列。';
+}
+function buildMemory(){
+  $('#pPresets').innerHTML=[['125M',125e6],['1.3B',1.3e9],['7B',7e9],['70B',70e9]].map(function(p){return '<button type="button" class="btn" data-n="'+p[1]+'">'+p[0]+'</button>';}).join('');
+  $$('#pPresets button').forEach(function(b){b.addEventListener('click',function(){MEM.e=Math.log10(parseFloat(b.dataset.n));$('#pSlider').value=MEM.e;renderMem();});});
+  $('#pSlider').addEventListener('input',function(e){MEM.e=parseFloat(e.target.value);renderMem();});
+  $('#precOpts').innerHTML=radios('prec',[['4','fp32'],['2','bf16'],['1','8-bit']],'4');
+  $$('#precOpts input').forEach(function(i){i.addEventListener('change',function(){MEM.bytes=parseInt(i.value,10);renderMem();});});
+  renderMem();
+}
+
+function buildPitfalls(){
+  $('#pitGrid').innerHTML=PITFALLS.map(function(p){return '<div><h3>'+p[0]+'</h3><p>'+p[1]+'</p></div>';}).join('');
+}
+
+var ans={};
+function renderScore(){
+  var n=Object.keys(ans).length,k=0;Object.keys(ans).forEach(function(i){if(ans[i])k++;});
+  $('#scoreOut').textContent=n===0?'尚未作答':'已答 '+n+' / '+QUIZ.length+'，答對 '+k+' 題';
+}
+function buildQuiz(){
+  ans={};
+  $('#quizHost').innerHTML=QUIZ.map(function(q,i){
+    return '<div class="q"><div class="qn">第 '+(i+1)+' 題</div><p class="qt">'+q.q+'</p><div class="qopts">'+
+      q.o.map(function(t,j){return '<button type="button" class="qo" data-q="'+i+'" data-o="'+j+'">'+t+'</button>';}).join('')+
+      '</div><div class="qx" hidden></div></div>';
+  }).join('');
+  $$('.qo').forEach(function(b){b.addEventListener('click',function(){
+    var i=+b.dataset.q,j=+b.dataset.o,q=QUIZ[i],card=b.closest('.q');
+    if(ans.hasOwnProperty(i))return;
+    ans[i]=(j===q.a);
+    $$('.qo',card).forEach(function(x,idx){x.disabled=true;if(idx===q.a)x.classList.add('right');else if(idx===j)x.classList.add('wrong');});
+    var ex=$('.qx',card);ex.hidden=false;ex.innerHTML=(j===q.a?'答對了。':'答案是第 '+'ABCD'.charAt(q.a)+' 個選項。')+q.x;
+    renderScore();
+  });});
+  renderScore();
+}
+
+function buildSources(){
+  $('#srcList').innerHTML=SOURCES.map(function(s){return '<li><a href="'+s[1]+'" target="_blank" rel="noopener">'+s[0]+'</a></li>';}).join('');
+}
+
+/* ---------- learning-rate schedules ---------- */
+function buildLR(){
+  var T=100,W=640,H=250,pl=40,pr=14,pt=12,pb=28,pw=W-pl-pr,ph=H-pt-pb;
+  var G={g:0.95,on:{konst:true,exp:true,step:true,cos:true,wc:false}};
+  var DEF=[['konst','固定 lr（無排程）','var(--ink2)','2 4'],['exp','ExponentialLR','var(--accent)',''],['step','StepLR（每 30 步 ×0.1）','var(--warn)',''],['cos','CosineAnnealingLR','var(--good)',''],['wc','Warmup 5 步 + Cosine','var(--ink)','9 4']];
+  function val(k,t){
+    if(k==='konst')return 1;
+    if(k==='exp')return Math.pow(G.g,t);
+    if(k==='step')return Math.pow(0.1,Math.floor(t/30));
+    if(k==='cos')return 0.5*(1+Math.cos(Math.PI*t/T));
+    if(t<5)return 0.01+0.99*t/5;
+    return 0.5*(1+Math.cos(Math.PI*(t-5)/(T-5)));
+  }
+  function X(t){return pl+pw*t/T;}
+  function Y(v){return pt+ph*(1-v);}
+  function draw(){
+    var s='',i;
+    [0,0.5,1].forEach(function(v){s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" style="stroke:var(--line)" stroke-width="1"/><text class="ax" x="'+(pl-6)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>';});
+    [0,25,50,75,100].forEach(function(t){s+='<text class="ax" x="'+X(t)+'" y="'+(H-8)+'" text-anchor="middle">'+t+'</text>';});
+    DEF.forEach(function(d){
+      if(!G.on[d[0]])return;
+      var p='';for(i=0;i<=T;i++){p+=(i===0?'M':'L')+X(i).toFixed(1)+' '+Y(val(d[0],i)).toFixed(1)+' ';}
+      s+='<path d="'+p+'" fill="none" style="stroke:'+d[2]+'" stroke-width="2.4" stroke-linejoin="round"'+(d[3]?' stroke-dasharray="'+d[3]+'"':'')+'/>';
+    });
+    $('#schedSvg').innerHTML=s;
+    var g=G.g,half=Math.log(0.5)/Math.log(g),end=Math.pow(g,100)*100;
+    $('#gammaOut').textContent=g.toFixed(3).replace(/0$/,'');
+    $('#gammaNote').textContent='γ = '+g.toFixed(3).replace(/0$/,'')+'：每 '+half.toFixed(1)+' 步 lr 減半，第 100 步'+(end<0.01?'幾乎降到 0（不到起始值的 0.01%）':'只剩起始值的 '+(end>=1?end.toFixed(0):end.toFixed(2))+'%')+'。γ 愈接近 1 衰減愈慢。橫軸的「步」可以是 epoch，也可以是 iteration，看你的 scheduler.step() 呼叫頻率。';
+  }
+  var tabs=$('#schedTabs');
+  tabs.innerHTML=DEF.map(function(d){return '<button type="button" data-k="'+d[0]+'" aria-pressed="'+G.on[d[0]]+'"><svg class="sw" width="28" height="8" aria-hidden="true"><line x1="1" x2="27" y1="4" y2="4" style="stroke:'+d[2]+'" stroke-width="2.6"'+(d[3]?' stroke-dasharray="'+d[3]+'"':'')+'/></svg>'+d[1]+'</button>';}).join('');
+  $$('button',tabs).forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.k;G.on[k]=!G.on[k];b.setAttribute('aria-pressed',String(G.on[k]));draw();});});
+  $('#gamma').addEventListener('input',function(e){G.g=parseFloat(e.target.value);draw();});
+  draw();
+}
+
+/* ---------- boot ---------- */
+readColors();
+buildSimUI();
+buildLineage();buildLR();buildDetail();buildTable();buildScenes();buildPicker();buildMemory();buildPitfalls();buildQuiz();buildSources();
+$('#quizReset').addEventListener('click',buildQuiz);
+$('#landTip').textContent=LANDSCAPES[S.land].tip;
+$('#landNotes').innerHTML=LAND_NOTES[S.land].map(function(t){return '<li>'+t+'</li>';}).join('');
+resetLr();
+rebuild();resize();
+if(window.ResizeObserver){new ResizeObserver(function(){resize();}).observe($('#mapBox'));}
+else{window.addEventListener('resize',resize);}
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',themeChanged);}catch(e){}
+try{new MutationObserver(themeChanged).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});}catch(e){}
+requestAnimationFrame(tick);
+})();
+</script>
+
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：iamkylee</b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>引用的論文、影片與圖表，版權屬原作者，不在上述授權範圍內。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body></html>
