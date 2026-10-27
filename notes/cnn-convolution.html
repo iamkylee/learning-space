@@ -469,7 +469,7 @@ Pooling 也算：      用它的 k 和 s 一起代進去</div>
           <button type="button" id="vChainClear" hidden>清除串接</button>
         </div>
         <div class="chain" id="vChain" hidden></div>
-        <p style="font-size:14px;color:var(--muted)">池化也用同一個公式（膨脹填 1）。想整個網路一層層算，請到 <a class="inline" href="#steps">逐層實作</a>。</p>
+        <p style="font-size:14px;color:var(--muted)">k′ 是有效 kernel，說明在 <a class="inline" href="#dilation">06 膨脹卷積</a>。池化也用同一個公式（膨脹填 1）。想整個網路一層層算，請到 <a class="inline" href="#steps">逐層實作</a>。</p>
       </div>
 
       <div class="table-wrap"><table>
@@ -1186,7 +1186,7 @@ k=4,s=2,p=1 → ×2</div></div>
     }
     viz.append(r1, r2);
     $('vizOut').innerHTML =
-      '有效 kernel k′ = ' + d + '×(' + k + '−1)+1 = ' + eff + '\n' +
+      '有效 kernel k′ = d×(k−1)+1 = ' + d + '×(' + k + '−1)+1 = ' + eff + (d === 1 ? '　（d=1 沒有膨脹，k′ 就等於 k）' : '　（k 個點、k−1 個間隔，每個間隔 ' + d + ' 格）') + '\n' +
       '輸出 = ⌊(' + N + ' + 2×' + p + ' − ' + eff + ') / ' + s + '⌋ + 1 = ⌊' + (L - eff) + '/' + s + '⌋ + 1 = <span class="big">' + out + '</span>';
   }
   ['vN', 'vK', 'vS', 'vP', 'vD'].forEach((id) => $(id).addEventListener('input', () => { sel = 0; drawViz(); }));
