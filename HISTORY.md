@@ -1,5 +1,8 @@
 # HISTORY
 
+## v0.2.1 — 2026-10-30
+- 署名由 iamkylee 改為 iamkylee@gmail.com（各頁頁尾、LICENSE、LICENSE-CONTENT.md、README、meta author），並新增「需要引用請聯絡」。
+
 ## v0.2.0 — 2026-10-30
 - 新增筆記「從機率到 KL 散度」（`notes/kl-divergence.html`）：根據 Artem Kirsanov 影片整理；加入目錄列、署名／授權頁尾、影片出處說明，首頁新增卡片。
 
