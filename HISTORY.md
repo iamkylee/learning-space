@@ -1,5 +1,8 @@
 # HISTORY
 
+## v0.2.0 — 2026-10-30
+- 新增筆記「從機率到 KL 散度」（`notes/kl-divergence.html`）：根據 Artem Kirsanov 影片整理；加入目錄列、署名／授權頁尾、影片出處說明，首頁新增卡片。
+
 ## v0.1.3 — 2026-10-27
 - CNN 筆記「反卷積」一節大幅擴充：蓋印章的看法、一維互動示意、輸出長度公式的推導與 padding／膨脹／output_padding 的影響。
 

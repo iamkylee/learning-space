@@ -1,6 +1,6 @@
 # 學習空間 Learning Space
 
-三份互動式深度學習筆記：**CNN 卷積筆記**、**Transformer 解剖圖**、**優化器學習地圖**。
+四份互動式學習筆記：**CNN 卷積筆記**、**Transformer 解剖圖**、**優化器學習地圖**、**從機率到 KL 散度**。
 
 - 線上閱讀：<https://iamkylee.github.io/learning-space/>
 - 作者：iamkylee ｜ 由 Claude 協助產生分享，作者審閱分享。
@@ -10,7 +10,7 @@
 
 ```
 index.html            目錄首頁
-notes/                三份筆記（單一 HTML 檔，英文檔名）
+notes/                四份筆記（單一 HTML 檔，英文檔名）
 LICENSE / LICENSE-CONTENT.md
 HISTORY.md            變更紀錄
 .github/workflows/    只部署 index.html 與 notes/
