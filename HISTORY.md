@@ -1,5 +1,8 @@
 # HISTORY
 
+## v0.2.2 — 2026-10-30
+- 首頁說明文字「深度學習」改為「AI」。
+
 ## v0.2.1 — 2026-10-30
 - 署名由 iamkylee 改為 iamkylee@gmail.com（各頁頁尾、LICENSE、LICENSE-CONTENT.md、README、meta author），並新增「需要引用請聯絡」。
 
