@@ -1,0 +1,1238 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>機率統計與 AI 筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 與線代筆記同一套方格筆記本版型；藍色＝模型／理論，琥珀色＝資料／觀測 */
+:root{
+  --paper:#F5F7F4; --sheet:#FFFFFF; --sunk:#ECF0EC; --ink:#1B2430; --muted:#5A6672; --rule:#D8E0DA; --grid:#E3EAE5;
+  --row:#2560B5; --row-soft:#DCE8F8; --col:#B8620E; --col-soft:#F8E6D0;
+  --pen:#B2382E; --pen-soft:#F6DFDC; --good:#2E7A4F; --good-soft:#DCEFE3; --violet:#6750A4; --violet-soft:#E9E4F5;
+  --f-display:"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+    --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+    --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+  --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+  --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+a{color:var(--row)}
+:focus-visible{outline:2px solid var(--row);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.r{color:var(--row);font-weight:600}.c{color:var(--col);font-weight:600}.pen{color:var(--pen)}
+
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;box-sizing:border-box;max-height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;overscroll-behavior:contain;padding-block:28px 40px}
+.side .brand{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.3}
+.side .sub{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
+.toc{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc .part{font-size:12px;letter-spacing:.08em;color:var(--muted);padding:14px 8px 4px;font-weight:500}
+.toc a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:5px 8px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.45}
+.toc a:hover{background:var(--sunk)}
+.toc a.on{background:var(--row-soft)}
+.toc .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+main{min-width:0;padding-block:12px 80px}
+.mbar{display:none}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .side{display:none}
+  .mbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);padding-block:8px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .mbar select{width:100%;font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);color:var(--ink)}
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+
+.hero{padding-block:36px 20px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero h1{font-size:clamp(32px,5vw,48px)}
+.hero .lead{margin-top:14px;color:var(--muted);max-width:36em}
+.hero .lead b{color:var(--ink)}
+.hero-fig{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:16px;overflow-x:auto}
+@media (max-width:720px){.hero{grid-template-columns:minmax(0,1fr)}}
+
+.part-head{margin-top:56px;padding:22px 22px;border-radius:14px;background:var(--row-soft);display:grid;gap:6px}
+.part-head.b{background:var(--col-soft)}
+.part-head .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.part-head h2{font-size:clamp(26px,3.6vw,34px)}
+.part-head p{max-width:62ch}
+
+section.sec{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:28px clamp(16px,3vw,32px);margin-top:28px;scroll-margin-top:16px}
+@media (max-width:900px){section.sec{scroll-margin-top:60px}}
+.sec .label{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.sec h2{font-size:clamp(23px,3vw,29px);margin-bottom:16px}
+.sec h3{font-size:19px;margin:30px 0 10px}
+.prose{max-width:68ch;display:grid;gap:12px}
+.prose>*,.box>*,.steps>div>div,.prose li{min-width:0;overflow-wrap:break-word}
+.prose ul,.prose ol{margin:0;padding-left:1.4em;display:grid;gap:6px}
+.formula{overflow-x:auto;padding:8px 0;max-width:100%}
+.formula mjx-container{margin:0!important}
+.box{border-radius:10px;padding:14px 16px;display:grid;gap:6px;max-width:68ch;font-size:15px;margin-top:14px}
+.box b.t{font-size:13px;letter-spacing:.04em}
+.box.key{background:var(--row-soft)} .box.warn{background:var(--pen-soft)} .box.tip{background:var(--good-soft)} .box.amber{background:var(--col-soft)}
+.tbl{overflow-x:auto;max-width:100%;margin-top:10px}
+table{border-collapse:collapse;font-size:14.5px;min-width:100%}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:700}
+td.num{font-family:var(--f-mono);white-space:nowrap}
+code{font-family:var(--f-mono);font-size:.9em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+pre{margin:0;overflow-x:auto;background:var(--sunk);border-radius:10px;padding:14px 16px;font-family:var(--f-mono);font-size:13px;line-height:1.65}
+pre code{background:none;padding:0}
+.cm{color:var(--muted)}
+.steps{counter-reset:s;display:grid;gap:10px;margin-top:10px;max-width:72ch}
+.steps>div{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px}
+.steps>div::before{counter-increment:s;content:counter(s);font-family:var(--f-mono);font-size:13px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--sheet);display:flex;align-items:center;justify-content:center;margin-top:4px}
+
+/* demo */
+.demo{border:1.5px dashed var(--rule);border-radius:12px;padding:16px;margin-top:22px;display:grid;gap:12px;background:var(--paper)}
+.demo>*{min-width:0}
+.demo h4{font-size:17px}
+.demo .hint{font-size:14px;color:var(--muted);max-width:70ch}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.ctrl{display:flex;align-items:center;gap:8px;font-size:13.5px;min-width:0}
+.ctrl label{color:var(--muted);white-space:nowrap}
+.ctrl input[type=range]{width:130px;accent-color:var(--row)}
+.ctrl output{font-family:var(--f-mono);font-size:13px;min-width:3.6em}
+.btn{font:inherit;font-size:13.5px;padding:6px 12px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1.3}
+.btn:hover{border-color:var(--row)}
+.btn[aria-pressed="true"]{background:var(--row-soft);border-color:var(--row)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.out{font-family:var(--f-mono);font-size:13.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;overflow-x:auto;line-height:1.7}
+.cv{width:100%;min-width:0}
+.cv canvas{display:block;width:100%;border-radius:8px;background:var(--sheet);border:1px solid var(--rule)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}}
+.chip{display:inline-block;font-size:12.5px;font-weight:500;padding:1px 9px;border-radius:999px;font-family:var(--f-body)}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.bad{background:var(--pen-soft);color:var(--pen)} .chip.info{background:var(--row-soft);color:var(--row)}
+
+/* matrix widgets */
+.mx{display:inline-grid;gap:3px;padding:4px 7px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;vertical-align:middle}
+.mx input,.mx .cell{width:44px;height:34px;box-sizing:border-box;text-align:center;font-family:var(--f-mono);font-size:14px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);color:var(--ink);padding:0}
+.mx .cell{display:flex;align-items:center;justify-content:center}
+.mx button.cell{cursor:pointer}
+.mx .hr{background:var(--row-soft);border-color:var(--row);color:var(--row);font-weight:700}
+.mx .hc{background:var(--col-soft);border-color:var(--col);color:var(--col);font-weight:700}
+.mx .ho{background:var(--violet-soft);border-color:var(--violet);color:var(--violet);font-weight:700}
+.mxrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--f-mono)}
+.mxlab{display:grid;gap:4px;justify-items:center;font-size:12.5px;color:var(--muted)}
+
+/* quiz */
+.quiz{display:grid;gap:16px;margin-top:20px}
+.q{display:grid;gap:8px;border-top:1px dashed var(--rule);padding-top:14px}
+.q .qt{font-weight:500}
+.q .opts{display:grid;gap:6px}
+.q .opt{text-align:left;font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);color:var(--ink);cursor:pointer}
+.q .opt:hover:not(:disabled){border-color:var(--row)}
+.q .opt.right{background:var(--good-soft);border-color:var(--good)} .q .opt.wrong{background:var(--pen-soft);border-color:var(--pen)}
+.q .ex{font-size:14.5px;background:var(--sunk);border-radius:8px;padding:9px 12px}
+.score{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+</style>
+<meta name="description" content="從「機率是什麼」重新開始，到貝氏定理、常見分佈、中央極限定理、最大概似估計，再串起熵、交叉熵、KL 散度、採樣與生成模型。">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>:root{--line:var(--rule);--accent:var(--row);--bg:var(--paper);--surface2:var(--sunk)}.ls-foot{max-width:960px}</style>
+</head><body>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span>iamkylee@gmail.com</span></div>
+<div class="shell">
+<aside class="side" aria-label="目錄">
+  <div class="brand">機率統計<br>與 AI 筆記</div>
+  <div class="sub">從擲骰子開始，到看懂交叉熵、KL 與 ELBO</div>
+  <ol class="toc" id="toc"></ol>
+</aside>
+
+<main>
+  <div class="mbar"><select id="jump" aria-label="跳到章節"></select></div>
+
+  <header class="hero">
+    <div>
+      <h1>機率統計與 AI 筆記</h1>
+      <p class="lead">寫給機率和統計都忘得差不多、卻要看懂機器學習的人。<b>上篇</b>從「機率是什麼」重新開始，到貝氏定理、常見分佈、多維常態與中央極限定理；<b>中篇</b>講統計推論，重點是最大概似估計，以及它為什麼就是深度學習的損失函數；<b>下篇</b>把熵、交叉熵、KL 散度、採樣、VAE、評估指標一次串起來。</p>
+      <p class="lead">顏色約定：<span class="r">藍色是模型／理論</span>，<span class="c">琥珀色是資料／觀測</span>，<span class="pen">紅色是常見錯誤</span>。每個例子的數字都用 Python 驗算過。</p>
+    </div>
+    <div class="hero-fig" aria-label="三個 AI 損失函數和對應的機率分佈">
+      <div class="tbl" style="margin:0"><table>
+        <thead><tr><th>假設資料來自</th><th>最大概似 ⇒ 損失</th></tr></thead>
+        <tbody>
+          <tr><td>常態分佈</td><td>均方誤差 MSE</td></tr>
+          <tr><td>伯努利分佈</td><td>二元交叉熵 BCE</td></tr>
+          <tr><td>類別分佈</td><td>交叉熵 CE</td></tr>
+          <tr><td>＋常態先驗</td><td>＋L2 權重衰減</td></tr>
+        </tbody>
+      </table></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px">整份筆記最重要的一張表，第 14、15 節推導。</div>
+    </div>
+  </header>
+
+  <!-- ================= 上篇 ================= -->
+  <div class="part-head" id="partA">
+    <div class="eyebrow">上篇</div>
+    <h2>機率基礎</h2>
+    <p>機率是描述「不確定性」的語言。先把規則、條件機率、隨機變數、分佈這些基本詞彙找回來。</p>
+  </div>
+
+  <section class="sec" id="s1">
+    <div class="label">第 1 節</div>
+    <h2>為什麼 AI 需要機率</h2>
+    <div class="prose">
+      <p>深度學習看起來是一堆矩陣乘法，但「要最佳化什麼」幾乎都是機率決定的：</p>
+      <ul>
+        <li><strong>模型輸出是機率</strong>：分類器輸出「是貓的機率 0.92」；語言模型輸出「下一個字是每個詞的機率」。</li>
+        <li><strong>損失函數來自機率</strong>：交叉熵、均方誤差都是「讓資料出現的機率最大」推出來的（第 14 節）。</li>
+        <li><strong>生成就是採樣</strong>：ChatGPT 每一步從機率分佈抽一個詞；擴散模型從雜訊一步步採樣出圖片（第 21、22 節）。</li>
+        <li><strong>訓練本身是隨機的</strong>：隨機初始化、隨機小批次（SGD）、dropout（第 23 節）。</li>
+        <li><strong>評估要懂統計</strong>：準確率 92% 和 91% 差別是真的還是運氣？（第 16、24 節）</li>
+      </ul>
+    </div>
+    <div class="box key"><b class="t">兩種看機率的觀點</b>
+      <p><strong>頻率學派</strong>（frequentist）：機率是重複很多次之後的比例，例如擲硬幣一萬次、正面約佔一半。<strong>貝氏學派</strong>（Bayesian）：機率是「相信程度」，可以隨著證據更新，例如「明天下雨的機率 70%」。兩種在機器學習都會用到：MLE 是頻率學派的方法，MAP 和貝氏推論是貝氏學派的方法（第 13、15 節）。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s2">
+    <div class="label">第 2 節</div>
+    <h2>樣本空間、事件與機率規則</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>名詞</th><th>英文</th><th>意思</th><th>擲一顆骰子的例子</th></tr></thead>
+      <tbody>
+        <tr><td>樣本空間</td><td>sample space \(\Omega\)</td><td>所有可能結果的集合</td><td>\(\{1,2,3,4,5,6\}\)</td></tr>
+        <tr><td>事件</td><td>event</td><td>樣本空間的子集合</td><td>「偶數」\(=\{2,4,6\}\)</td></tr>
+        <tr><td>機率</td><td>probability \(P\)</td><td>給每個事件一個 0 到 1 的數</td><td>\(P(\text{偶數})=3/6=0.5\)</td></tr>
+      </tbody>
+    </table></div>
+    <h3>三條公理（Kolmogorov）</h3>
+    <div class="prose"><ol>
+      <li>\(P(A)\ge0\)：機率不會是負的。</li>
+      <li>\(P(\Omega)=1\)：一定會發生某個結果。</li>
+      <li>若 \(A\)、\(B\) 互斥（不會同時發生），\(P(A\cup B)=P(A)+P(B)\)。</li>
+    </ol><p>其他規則都從這三條推出來：</p></div>
+    <div class="formula">\[ P(A^c)=1-P(A),\qquad P(A\cup B)=P(A)+P(B)-P(A\cap B) \]</div>
+    <div class="prose"><p>第二條叫加法規則（排容原理）：\(A\) 和 \(B\) 重疊的部分被算了兩次，要扣掉一次。例：骰子「偶數或大於 4」\(=3/6+2/6-1/6=4/6\)（重疊的是 6）。</p></div>
+    <div class="box warn"><b class="t">互斥不等於獨立</b>
+      <p><strong>互斥</strong>（mutually exclusive）：不能同時發生，\(P(A\cap B)=0\)。<strong>獨立</strong>（independent）：一個發生不影響另一個的機率，\(P(A\cap B)=P(A)P(B)\)。兩個機率都大於 0 的事件如果互斥，就一定<strong>不</strong>獨立，因為知道 A 發生，B 的機率就變成 0 了。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3">
+    <div class="label">第 3 節</div>
+    <h2>條件機率與獨立</h2>
+    <div class="prose"><p>「已知 B 發生，A 發生的機率」寫成 \(P(A\mid B)\)，讀作「given B」。意思是把世界縮小到 B 裡面，再看 A 佔多少：</p></div>
+    <div class="formula">\[ P(A\mid B)=\frac{P(A\cap B)}{P(B)}\qquad\Longleftrightarrow\qquad P(A\cap B)=P(A\mid B)\,P(B)\ (\text{乘法規則}) \]</div>
+    <div class="prose">
+      <p>例：擲一顆骰子，已知是偶數，是 6 的機率？\(P(6\mid\text{偶數})=\frac{1/6}{3/6}=\frac13\)。世界縮小成 \(\{2,4,6\}\)，6 是其中之一。</p>
+      <p><strong>獨立</strong>就是「知道 B 不改變 A 的機率」：\(P(A\mid B)=P(A)\)，等價於 \(P(A\cap B)=P(A)P(B)\)。</p>
+      <p><strong>連鎖規則</strong>（chain rule of probability）把乘法規則重複使用：</p>
+    </div>
+    <div class="formula">\[ P(x_1,x_2,\dots,x_T)=P(x_1)\,P(x_2\mid x_1)\,P(x_3\mid x_1,x_2)\cdots P(x_T\mid x_1,\dots,x_{T-1}) \]</div>
+    <div class="box key"><b class="t">這一行就是語言模型</b>
+      <p>GPT 這類模型做的事情就是學 \(P(\text{下一個詞}\mid\text{前面所有詞})\)。一整句話的機率等於每一步條件機率相乘。訓練時最大化這個乘積（取 log 變成相加），生成時一個詞一個詞往下採樣。</p>
+    </div>
+    <div class="box amber"><b class="t">條件獨立</b>
+      <p>\(P(A,B\mid C)=P(A\mid C)P(B\mid C)\)：知道 C 之後，A 和 B 互不相干。樸素貝氏分類器（Naive Bayes）假設「已知類別後，每個特徵條件獨立」，於是 \(P(x_1,\dots,x_d\mid y)=\prod_iP(x_i\mid y)\)，大幅簡化計算。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s4">
+    <div class="label">第 4 節</div>
+    <h2>全機率公式與貝氏定理</h2>
+    <div class="prose"><p>如果 \(B_1,\dots,B_k\) 把所有情況切成互不重疊的幾塊，A 的機率就是每一塊各自貢獻的總和（<strong>全機率公式</strong>）：</p></div>
+    <div class="formula">\[ P(A)=\sum_iP(A\mid B_i)\,P(B_i) \]</div>
+    <div class="prose"><p>把乘法規則從兩個方向寫：\(P(A\cap B)=P(A\mid B)P(B)=P(B\mid A)P(A)\)，移項就是<strong>貝氏定理</strong>：</p></div>
+    <div class="formula">\[ \underbrace{P(H\mid D)}_{\text{後驗 posterior}}=\frac{\overbrace{P(D\mid H)}^{\text{概似 likelihood}}\ \overbrace{P(H)}^{\text{先驗 prior}}}{\underbrace{P(D)}_{\text{證據 evidence}}} \]</div>
+    <div class="prose"><p>H 是假設（hypothesis），D 是資料（data）。貝氏定理把「在假設下看到資料的機率」翻轉成「看到資料後假設成立的機率」。</p></div>
+    <h3>經典例子：檢驗陽性，真的生病嗎？</h3>
+    <div class="prose"><p>某疾病盛行率 1%。檢驗的靈敏度 99%（有病的人 99% 驗出陽性），偽陽性率 5%（沒病的人 5% 也驗出陽性）。驗出陽性，真的有病的機率是多少？</p></div>
+    <div class="formula">\[ P(\text{病}\mid+)=\frac{0.99\times0.01}{0.99\times0.01+0.05\times0.99}=\frac{0.0099}{0.0099+0.0495}\approx16.7\% \]</div>
+    <div class="prose"><p>只有六分之一！因為沒病的人太多了，5% 的偽陽性人數（495 人／萬人）遠多於真陽性（99 人／萬人）。忽略先驗（盛行率）而高估結果，叫做<strong>基本率謬誤</strong>（base rate fallacy）。如果再驗一次又是陽性，把 16.7% 當成新的先驗再算一次，會升到約 79.8%。<strong>後驗變成下一次的先驗</strong>，這就是貝氏更新。</p></div>
+    <div class="demo">
+      <h4>貝氏計算器</h4>
+      <p class="hint">每一格代表一萬人裡的若干人。調整盛行率和檢驗品質，看陽性的人裡面真的有病的比例（<span class="c">琥珀色</span>）佔多少。AI 的異常偵測、詐騙偵測都有一樣的問題：正例很稀少時，精確率很難高（第 24 節）。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="by-p">盛行率</label><input type="range" id="by-p" min="0.1" max="30" step="0.1" value="1"><output id="by-pv"></output></div>
+        <div class="ctrl"><label for="by-s">靈敏度</label><input type="range" id="by-s" min="50" max="100" step="0.5" value="99"><output id="by-sv"></output></div>
+        <div class="ctrl"><label for="by-f">偽陽性率</label><input type="range" id="by-f" min="0" max="30" step="0.5" value="5"><output id="by-fv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-bayes" aria-label="一萬人的檢驗結果分佈"></canvas></div>
+        <div class="out" id="by-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s5">
+    <div class="label">第 5 節</div>
+    <h2>隨機變數：PMF、PDF、CDF</h2>
+    <div class="prose">
+      <p><strong>隨機變數</strong>（random variable）是把隨機結果變成數字的規則，習慣用大寫 \(X\)，它實際取到的值用小寫 \(x\)。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>離散（discrete）</th><th>連續（continuous）</th></tr></thead>
+      <tbody>
+        <tr><td>例子</td><td>骰子點數、類別標籤、詞</td><td>身高、像素值、權重</td></tr>
+        <tr><td>描述方式</td><td>機率質量函數 PMF：\(p(x)=P(X=x)\)</td><td>機率密度函數 PDF：\(f(x)\)</td></tr>
+        <tr><td>總和為 1</td><td>\(\sum_xp(x)=1\)</td><td>\(\int f(x)\,dx=1\)</td></tr>
+        <tr><td>某範圍的機率</td><td>把 \(p(x)\) 加起來</td><td>曲線下面積 \(\int_a^bf(x)\,dx\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box warn"><b class="t">密度不是機率</b>
+      <p>連續變數剛好等於某一個值的機率是 0（例如身高剛好 170.000… 公分）。\(f(x)\) 是「密度」，乘上一小段寬度 \(dx\) 才是機率，所以 \(f(x)\) <strong>可以大於 1</strong>。例如寬度 0.1 的均勻分佈，密度是 10。神經網路裡的「負對數概似」用在連續資料時可以是負數，就是這個原因。</p>
+    </div>
+    <h3>累積分佈函數 CDF</h3>
+    <div class="formula">\[ F(x)=P(X\le x),\qquad \text{連續時 }F'(x)=f(x),\qquad P(a&lt;X\le b)=F(b)-F(a) \]</div>
+    <div class="prose"><p>CDF 從 0 單調上升到 1。它的反函數 \(F^{-1}\) 可以把均勻亂數轉成任何分佈的亂數（第 21 節的反函數採樣法）。</p></div>
+  </section>
+
+  <section class="sec" id="s6">
+    <div class="label">第 6 節</div>
+    <h2>期望值與變異數</h2>
+    <div class="formula">\[ \mathbb E[X]=\sum_xx\,p(x)\ \ \text{或}\ \int x\,f(x)\,dx,\qquad \mathbb E[g(X)]=\sum_xg(x)\,p(x) \]</div>
+    <div class="prose"><p>期望值（expectation）是「用機率加權的平均」，也是重複很多次之後的長期平均。骰子：\(\mathbb E[X]=(1+2+\cdots+6)/6=3.5\)。</p></div>
+    <div class="formula">\[ \operatorname{Var}(X)=\mathbb E\big[(X-\mu)^2\big]=\mathbb E[X^2]-(\mathbb E[X])^2,\qquad \sigma=\sqrt{\operatorname{Var}(X)} \]</div>
+    <div class="prose"><p>變異數（variance）衡量離平均多散。骰子：\(\mathbb E[X^2]=91/6\)，\(\operatorname{Var}=91/6-3.5^2=35/12\approx2.917\)，標準差約 1.708。</p></div>
+    <h3>一定要會的性質</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>性質</th><th>條件</th><th>在 AI 的用途</th></tr></thead>
+      <tbody>
+        <tr><td>\(\mathbb E[aX+b]=a\,\mathbb E[X]+b\)</td><td>永遠成立</td><td>正規化 \((x-\mu)/\sigma\) 後平均變 0</td></tr>
+        <tr><td>\(\mathbb E[X+Y]=\mathbb E[X]+\mathbb E[Y]\)</td><td><strong>永遠成立</strong>（不用獨立）</td><td>小批次梯度是全體梯度的不偏估計</td></tr>
+        <tr><td>\(\operatorname{Var}(aX+b)=a^2\operatorname{Var}(X)\)</td><td>永遠成立</td><td>除以 \(\sigma\) 後變異數變 1</td></tr>
+        <tr><td>\(\operatorname{Var}(X+Y)=\operatorname{Var}X+\operatorname{Var}Y+2\operatorname{Cov}(X,Y)\)</td><td>獨立時 Cov = 0</td><td>權重初始化（第 23 節）</td></tr>
+        <tr><td>\(\mathbb E[XY]=\mathbb E[X]\,\mathbb E[Y]\)</td><td>需要獨立（或不相關）</td><td>dropout 的期望值</td></tr>
+        <tr><td>\(\operatorname{Var}(\bar X)=\sigma^2/n\)</td><td>n 個獨立同分佈平均</td><td>批次越大，梯度雜訊越小</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><b class="t">最後一條很重要</b>
+      <p>平均 n 個獨立樣本，變異數變成 \(1/n\)，標準差變成 \(1/\sqrt n\)。批次大小從 32 變 128（4 倍），梯度估計的雜訊只降一半（\(\sqrt4=2\)）。這也是第 16 節「標準誤 \(\sigma/\sqrt n\)」的來源。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s7">
+    <div class="label">第 7 節</div>
+    <h2>常見分佈</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>分佈</th><th>PMF / PDF</th><th>平均</th><th>變異數</th><th>在 AI 的用途</th></tr></thead>
+      <tbody>
+        <tr><td>伯努利 Bernoulli(\(p\))</td><td>\(p^x(1-p)^{1-x},\ x\in\{0,1\}\)</td><td>\(p\)</td><td>\(p(1-p)\)</td><td>二元分類、dropout 遮罩</td></tr>
+        <tr><td>二項 Binomial(\(n,p\))</td><td>\(\binom nkp^k(1-p)^{n-k}\)</td><td>\(np\)</td><td>\(np(1-p)\)</td><td>n 次中成功幾次、A/B 測試</td></tr>
+        <tr><td>類別 Categorical(\(\boldsymbol p\))</td><td>\(P(X=k)=p_k\)</td><td>—</td><td>—</td><td>多類分類、語言模型下一個詞</td></tr>
+        <tr><td>卜瓦松 Poisson(\(\lambda\))</td><td>\(\frac{\lambda^ke^{-\lambda}}{k!}\)</td><td>\(\lambda\)</td><td>\(\lambda\)</td><td>單位時間的事件次數</td></tr>
+        <tr><td>均勻 Uniform(\(a,b\))</td><td>\(\frac1{b-a}\)</td><td>\(\frac{a+b}2\)</td><td>\(\frac{(b-a)^2}{12}\)</td><td>初始化、隨機數的起點</td></tr>
+        <tr><td>常態 Normal(\(\mu,\sigma^2\))</td><td>\(\frac1{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\)</td><td>\(\mu\)</td><td>\(\sigma^2\)</td><td>雜訊、初始化、VAE、擴散模型</td></tr>
+        <tr><td>指數 Exponential(\(\lambda\))</td><td>\(\lambda e^{-\lambda x},\ x\ge0\)</td><td>\(1/\lambda\)</td><td>\(1/\lambda^2\)</td><td>等待時間</td></tr>
+        <tr><td>Beta(\(\alpha,\beta\))</td><td>\(\propto x^{\alpha-1}(1-x)^{\beta-1}\)</td><td>\(\frac{\alpha}{\alpha+\beta}\)</td><td>—</td><td>「機率的機率」，貝氏先驗（第 15 節）</td></tr>
+        <tr><td>拉普拉斯 Laplace(\(\mu,b\))</td><td>\(\frac1{2b}e^{-\lvert x-\mu\rvert/b}\)</td><td>\(\mu\)</td><td>\(2b^2\)</td><td>對應 L1 正則化、MAE 損失</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>例：擲 10 次公平硬幣剛好 7 次正面：\(\binom{10}{7}0.5^{10}=120/1024\approx0.117\)。平均每小時 3 通電話，某小時剛好 2 通：\(3^2e^{-3}/2!\approx0.224\)。</p></div>
+    <div class="box key"><b class="t">常態分佈的 68–95–99.7 規則</b>
+      <p>落在平均 ±1σ 內約 68.3%，±2σ 內約 95.4%，±3σ 內約 99.7%。常用的 1.96 是讓兩側合起來剛好 95% 的值（第 16 節信賴區間）。</p>
+    </div>
+    <div class="demo">
+      <h4>分佈探索器</h4>
+      <p class="hint">選一個分佈、調參數，看 PMF / PDF 的形狀和平均、變異數怎麼變。<span class="r">藍色</span>是 PMF / PDF，紫色虛線是 CDF（右側刻度 0–1）。</p>
+      <div class="btns" id="ds-pick"></div>
+      <div class="ctrls" id="ds-ctrls"></div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-dist" aria-label="分佈圖"></canvas></div>
+        <div class="out" id="ds-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s8">
+    <div class="label">第 8 節</div>
+    <h2>多個隨機變數：聯合、邊際、條件、共變異數</h2>
+    <div class="prose"><p>兩個變數一起看。例：天氣 \(W\) 與是否帶傘 \(U\) 的<strong>聯合分佈</strong>（joint）：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>帶傘</th><th>沒帶</th><th>邊際 \(P(W)\)</th></tr></thead>
+      <tbody>
+        <tr><td>下雨</td><td class="num">0.24</td><td class="num">0.06</td><td class="num"><b>0.30</b></td></tr>
+        <tr><td>晴天</td><td class="num">0.14</td><td class="num">0.56</td><td class="num"><b>0.70</b></td></tr>
+        <tr><td>邊際 \(P(U)\)</td><td class="num"><b>0.38</b></td><td class="num"><b>0.62</b></td><td class="num">1</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><ul>
+      <li><strong>邊際分佈</strong>（marginal）：把另一個變數加總掉，\(P(W=\text{雨})=0.24+0.06=0.30\)。連續版是積分：\(p(x)=\int p(x,y)\,dy\)。</li>
+      <li><strong>條件分佈</strong>：\(P(U=\text{帶}\mid W=\text{雨})=0.24/0.30=0.8\)。只看「下雨」那一列，再除以那一列的總和。</li>
+      <li><strong>獨立嗎？</strong>\(P(\text{雨})P(\text{帶})=0.30\times0.38=0.114\ne0.24\)，不獨立。</li>
+    </ul></div>
+    <div class="box amber"><b class="t">「加總掉」在 AI 裡叫 marginalize</b>
+      <p>生成模型常寫 \(p(x)=\int p(x\mid z)\,p(z)\,dz\)：資料 x 由看不到的潛在變數 z 產生，要算 x 的機率就得把所有可能的 z 加總掉。這個積分通常算不出來，所以才需要 VAE 的 ELBO（第 22 節）。</p>
+    </div>
+    <h3>共變異數與相關係數</h3>
+    <div class="formula">\[ \operatorname{Cov}(X,Y)=\mathbb E\big[(X-\mu_X)(Y-\mu_Y)\big]=\mathbb E[XY]-\mathbb E[X]\,\mathbb E[Y],\qquad \rho=\frac{\operatorname{Cov}(X,Y)}{\sigma_X\sigma_Y}\in[-1,1] \]</div>
+    <div class="prose">
+      <p>共變異數為正：一個大時另一個也傾向大。相關係數 \(\rho\) 是標準化後的版本，只衡量<strong>線性</strong>關係。</p>
+      <p><strong>不相關 ≠ 獨立</strong>：\(X\) 在 \(\{-1,0,1\}\) 均勻，\(Y=X^2\)。\(Y\) 完全由 \(X\) 決定，但 \(\operatorname{Cov}(X,Y)=\mathbb E[X^3]-\mathbb E[X]\mathbb E[X^2]=0-0=0\)。獨立一定不相關，反過來不一定。</p>
+    </div>
+    <h3>共變異數矩陣</h3>
+    <div class="prose"><p>向量 \(x\in\mathbb R^d\) 的 \(d\times d\) 共變異數矩陣，第 \((i,j)\) 格是 \(\operatorname{Cov}(x_i,x_j)\)：</p></div>
+    <div class="formula">\[ \Sigma=\mathbb E\big[(x-\mu)(x-\mu)^\top\big]\quad(\text{外積的期望值}),\qquad \text{樣本估計 }\hat\Sigma=\tfrac1n X_c^\top X_c \]</div>
+    <div class="prose"><p>\(X_c\) 是每一欄減掉平均後的資料矩陣。\(\Sigma\) 一定對稱、半正定（線代筆記第 8 節）。它的特徵向量就是 PCA 的主成分方向。線性變換 \(y=Ax\) 之後：\(\mathbb E[y]=A\mu\)，\(\operatorname{Cov}(y)=A\Sigma A^\top\)。</p></div>
+  </section>
+
+  <section class="sec" id="s9">
+    <div class="label">第 9 節</div>
+    <h2>多維常態分佈</h2>
+    <div class="formula">\[ \mathcal N(x;\mu,\Sigma)=\frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\exp\Big(-\tfrac12(x-\mu)^\top\Sigma^{-1}(x-\mu)\Big) \]</div>
+    <div class="prose">
+      <p>指數裡是一個<strong>二次型</strong>（線代筆記第 7 節）。等高線是橢圓：橢圓的軸方向是 \(\Sigma\) 的特徵向量，軸長正比於特徵值的平方根。\(\Sigma=\sigma^2I\) 時是正圓。</p>
+      <p>取 log 之後：\(\log\mathcal N=-\tfrac12(x-\mu)^\top\Sigma^{-1}(x-\mu)-\tfrac12\log\lvert\Sigma\rvert-\tfrac d2\log2\pi\)。第 14 節會看到，\(\Sigma=\sigma^2I\) 時第一項就是均方誤差。</p>
+      <p><strong>重要性質</strong>：常態的線性變換還是常態；邊際分佈、條件分佈也都是常態。若 \(\varepsilon\sim\mathcal N(0,I)\)，則 \(\mu+L\varepsilon\sim\mathcal N(\mu,LL^\top)\)，這就是用標準常態亂數產生任意常態樣本的方法（VAE 的重參數化技巧，第 22 節）。</p>
+    </div>
+    <div class="demo">
+      <h4>二維常態分佈</h4>
+      <p class="hint">調整兩個標準差和相關係數 \(\rho\)，看 600 個樣本和 1σ、2σ 橢圓怎麼變。<span class="r">藍色</span>和<span class="c">琥珀色</span>箭頭是 \(\Sigma\) 的兩個特徵向量，長度是 \(\sqrt{\lambda}\)。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="g2-sx">σ₁</label><input type="range" id="g2-sx" min="0.3" max="2" step="0.05" value="1.2"><output id="g2-sxv"></output></div>
+        <div class="ctrl"><label for="g2-sy">σ₂</label><input type="range" id="g2-sy" min="0.3" max="2" step="0.05" value="0.8"><output id="g2-syv"></output></div>
+        <div class="ctrl"><label for="g2-r">ρ</label><input type="range" id="g2-r" min="-0.95" max="0.95" step="0.05" value="0.6"><output id="g2-rv"></output></div>
+        <button class="btn" id="g2-re">重新抽樣</button>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-g2" aria-label="二維常態分佈樣本"></canvas></div>
+        <div class="out" id="g2-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s10">
+    <div class="label">第 10 節</div>
+    <h2>大數法則與中央極限定理</h2>
+    <div class="prose">
+      <p><strong>大數法則</strong>（law of large numbers）：獨立同分佈（i.i.d.）樣本的平均 \(\bar X_n\)，在 \(n\) 越來越大時會趨近真正的期望值 \(\mu\)。這是「用樣本平均估計期望值」的理論依據，也就是蒙地卡羅方法、小批次梯度、訓練損失能代表期望損失的原因。</p>
+      <p><strong>中央極限定理</strong>（central limit theorem, CLT）：不管原本的分佈長什麼樣子（只要變異數有限），樣本平均的分佈會越來越接近常態：</p>
+    </div>
+    <div class="formula">\[ \bar X_n\ \approx\ \mathcal N\Big(\mu,\ \frac{\sigma^2}{n}\Big)\qquad\Longleftrightarrow\qquad \frac{\bar X_n-\mu}{\sigma/\sqrt n}\ \approx\ \mathcal N(0,1) \]</div>
+    <div class="prose"><p>這解釋了為什麼常態分佈到處都是：很多小因素加總的結果都會接近常態。也是信賴區間、假設檢定能用常態近似的原因。</p></div>
+    <div class="demo">
+      <h4>中央極限定理實驗</h4>
+      <p class="hint">選一個原始分佈（就算很歪也可以），每次抽 n 個取平均，重複 3000 次，畫出平均的直方圖。紅線是 CLT 預測的常態曲線。n 越大，直方圖越像常態、也越窄（寬度正比於 \(1/\sqrt n\)）。</p>
+      <div class="btns" id="clt-pick"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="clt-n">每次平均幾個 n</label><input type="range" id="clt-n" min="1" max="50" step="1" value="1"><output id="clt-nv"></output></div>
+        <button class="btn" id="clt-re">重新模擬</button>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-clt" aria-label="樣本平均的直方圖"></canvas></div>
+        <div class="out" id="clt-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 中篇 ================= -->
+  <div class="part-head b" id="partB">
+    <div class="eyebrow">中篇</div>
+    <h2>統計推論</h2>
+    <p>機率是「已知模型，問資料」；統計是反過來：「已知資料，推回模型」。機器學習的訓練就是統計推論。</p>
+  </div>
+
+  <section class="sec" id="s11">
+    <div class="label">第 11 節</div>
+    <h2>描述統計</h2>
+    <div class="prose"><p>例：資料 \(\{2,4,4,4,5,5,7,9\}\)，\(n=8\)。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>量</th><th>公式</th><th>例子</th><th>備註</th></tr></thead>
+      <tbody>
+        <tr><td>平均 mean</td><td>\(\bar x=\frac1n\sum_ix_i\)</td><td class="num">5</td><td>受極端值影響大</td></tr>
+        <tr><td>中位數 median</td><td>排序後中間的值</td><td class="num">4.5</td><td>比較穩健（robust）</td></tr>
+        <tr><td>眾數 mode</td><td>出現最多次的值</td><td class="num">4</td><td></td></tr>
+        <tr><td>母體變異數</td><td>\(\frac1n\sum_i(x_i-\bar x)^2\)</td><td class="num">4</td><td><code>np.var(x)</code></td></tr>
+        <tr><td>樣本變異數</td><td>\(\frac1{n-1}\sum_i(x_i-\bar x)^2\)</td><td class="num">≈ 4.571</td><td><code>np.var(x, ddof=1)</code>、pandas 預設</td></tr>
+        <tr><td>百分位數</td><td>有 q% 的資料比它小</td><td>—</td><td>四分位距 IQR、箱形圖</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box key"><b class="t">為什麼樣本變異數要除以 n−1？</b>
+      <p>計算時用的是樣本平均 \(\bar x\)，不是真正的 \(\mu\)。\(\bar x\) 是從同一批資料算出來的，資料一定離 \(\bar x\) 比離 \(\mu\) 近，所以除以 n 會系統性地<strong>低估</strong>：\(\mathbb E\big[\frac1n\sum(x_i-\bar x)^2\big]=\frac{n-1}n\sigma^2\)。除以 \(n-1\)（貝索校正，Bessel's correction）剛好修正回來。n 很大時兩者幾乎一樣。注意：PyTorch 的 <code>torch.var</code> 預設是 n−1，NumPy 的 <code>np.var</code> 預設是 n。</p>
+    </div>
+    <h3>標準化（z-score）</h3>
+    <div class="formula">\[ z=\frac{x-\bar x}{s} \]</div>
+    <div class="prose"><p>標準化後平均 0、標準差 1，不同單位的特徵可以放在一起比較。機器學習前處理的 <code>StandardScaler</code>、BatchNorm、LayerNorm 都是這件事。</p></div>
+  </section>
+
+  <section class="sec" id="s12">
+    <div class="label">第 12 節</div>
+    <h2>估計量：偏差、變異數、標準誤</h2>
+    <div class="prose">
+      <p>用資料算出來、拿來猜未知參數 \(\theta\) 的公式叫<strong>估計量</strong>（estimator）\(\hat\theta\)。因為資料是隨機的，\(\hat\theta\) 本身也是隨機變數，有自己的平均和變異數。</p>
+    </div>
+    <div class="formula">\[ \operatorname{Bias}(\hat\theta)=\mathbb E[\hat\theta]-\theta,\qquad \operatorname{MSE}(\hat\theta)=\mathbb E\big[(\hat\theta-\theta)^2\big]=\operatorname{Bias}^2+\operatorname{Var}(\hat\theta) \]</div>
+    <div class="prose">
+      <p>偏差為 0 叫<strong>不偏</strong>（unbiased）。樣本平均是 \(\mu\) 的不偏估計，它的標準差叫<strong>標準誤</strong>（standard error）：\(\operatorname{SE}=\sigma/\sqrt n\)。</p>
+      <p>\(\text{MSE}=\text{偏差}^2+\text{變異數}\) 這個分解，在機器學習變成著名的<strong>偏差–變異數權衡</strong>（bias–variance tradeoff）：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>模型太簡單</th><th>模型太複雜</th></tr></thead>
+      <tbody>
+        <tr><td>偏差</td><td>高：抓不到真實規律</td><td>低</td></tr>
+        <tr><td>變異數</td><td>低</td><td>高：換一批訓練資料，模型就差很多</td></tr>
+        <tr><td>症狀</td><td>欠擬合 underfitting：訓練、測試都差</td><td>過擬合 overfitting：訓練好、測試差</td></tr>
+        <tr><td>對策</td><td>加大模型、加特徵</td><td>更多資料、正則化、dropout、提早停止、集成</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>正則化其實是「故意加一點偏差，換來大幅降低變異數」。例如嶺回歸把權重往 0 拉，估計變得有偏，但更穩定。</p></div>
+  </section>
+
+  <section class="sec" id="s13">
+    <div class="label">第 13 節</div>
+    <h2>最大概似估計（MLE）</h2>
+    <div class="prose">
+      <p>有一組資料 \(x_1,\dots,x_n\)，假設它們來自某個帶參數 \(\theta\) 的分佈 \(p(x;\theta)\)。哪個 \(\theta\) 最好？<strong>讓這組資料出現機率最大的那個</strong>。</p>
+    </div>
+    <div class="formula">\[ L(\theta)=\prod_{i=1}^np(x_i;\theta)\quad(\text{概似函數}),\qquad \hat\theta_{\text{MLE}}=\arg\max_\theta\ \sum_{i=1}^n\log p(x_i;\theta) \]</div>
+    <div class="prose">
+      <p>為什麼取 log？① 很多小機率相乘會下溢成 0，取 log 變成相加；② log 是遞增函數，最大值的位置不變；③ 相加比較好微分。深度學習把它寫成<strong>最小化負對數概似</strong>（negative log-likelihood, NLL）：\(\min_\theta-\sum_i\log p(x_i;\theta)\)。</p>
+      <p><strong>概似（likelihood）不是機率</strong>：\(L(\theta)\) 是把資料固定、看成 \(\theta\) 的函數，對 \(\theta\) 積分不必等於 1。</p>
+    </div>
+    <h3>例一：硬幣</h3>
+    <div class="prose"><p>擲 10 次，7 次正面。設正面機率 \(p\)：</p></div>
+    <div class="formula">\[ \log L(p)=7\log p+3\log(1-p),\qquad \frac{d}{dp}\log L=\frac7p-\frac3{1-p}=0\ \Rightarrow\ \hat p=\frac{7}{10} \]</div>
+    <div class="prose"><p>MLE 就是直覺的「正面比例」。比較：\(L(0.7)=0.7^7\,0.3^3\approx0.00222\)，\(L(0.5)=0.5^{10}\approx0.00098\)，0.7 讓資料出現的機率高了兩倍多。</p></div>
+    <h3>例二：常態分佈</h3>
+    <div class="formula">\[ \log L(\mu,\sigma^2)=-\frac{1}{2\sigma^2}\sum_i(x_i-\mu)^2-\frac n2\log\sigma^2+\text{常數}\ \Rightarrow\ \hat\mu=\bar x,\quad \hat\sigma^2=\frac1n\sum_i(x_i-\bar x)^2 \]</div>
+    <div class="prose"><p>注意 \(\hat\sigma^2\) 除以的是 n：MLE 不一定不偏（第 11 節）。</p></div>
+    <div class="demo">
+      <h4>硬幣的概似函數</h4>
+      <p class="hint">設定擲幾次、幾次正面，看概似函數 \(L(p)\)（<span class="r">藍色</span>）和對數概似 \(\log L(p)\)（紫色，右側刻度）。兩條曲線最高點的位置相同，都在 \(\hat p=k/n\)。n 越大，曲線越尖：資料越多，估計越確定。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="ml-n">擲 n 次</label><input type="range" id="ml-n" min="1" max="100" step="1" value="10"><output id="ml-nv"></output></div>
+        <div class="ctrl"><label for="ml-k">正面 k 次</label><input type="range" id="ml-k" min="0" max="10" step="1" value="7"><output id="ml-kv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-ml" aria-label="概似函數曲線"></canvas></div>
+        <div class="out" id="ml-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s14">
+    <div class="label">第 14 節</div>
+    <h2>MLE 就是深度學習的損失函數</h2>
+    <div class="prose"><p>這一節是整份筆記的核心。神經網路 \(f_\theta(x)\) 輸出的是「分佈的參數」，損失函數就是那個分佈的負對數概似。</p></div>
+    <h3>迴歸：常態雜訊 ⇒ 均方誤差</h3>
+    <div class="prose"><p>假設 \(y=f_\theta(x)+\varepsilon\)，\(\varepsilon\sim\mathcal N(0,\sigma^2)\)，也就是 \(p(y\mid x)=\mathcal N(y;f_\theta(x),\sigma^2)\)：</p></div>
+    <div class="formula">\[ -\log p(y\mid x)=\frac{(y-f_\theta(x))^2}{2\sigma^2}+\tfrac12\log(2\pi\sigma^2)\quad\Rightarrow\quad \text{NLL}=\frac{1}{2\sigma^2}\sum_i\big(y_i-f_\theta(x_i)\big)^2+\text{常數} \]</div>
+    <div class="prose"><p>\(\sigma\) 固定時，最小化 NLL 和最小化<strong>均方誤差</strong>完全一樣。如果改假設拉普拉斯雜訊，得到的是<strong>平均絕對誤差</strong>（MAE / L1 loss），對離群值比較不敏感。</p></div>
+    <h3>二元分類：伯努利 ⇒ 二元交叉熵</h3>
+    <div class="prose"><p>模型輸出 \(\hat p=\sigma(f_\theta(x))\) 當作 \(y=1\) 的機率，\(p(y\mid x)=\hat p^{\,y}(1-\hat p)^{1-y}\)：</p></div>
+    <div class="formula">\[ -\log p(y\mid x)=-\big[y\log\hat p+(1-y)\log(1-\hat p)\big]\quad(\text{BCE}) \]</div>
+    <h3>多類分類：類別分佈 ⇒ 交叉熵</h3>
+    <div class="prose"><p>模型輸出 \(\hat p=\operatorname{softmax}(f_\theta(x))\)，\(y\) 是正確類別：</p></div>
+    <div class="formula">\[ -\log p(y\mid x)=-\log\hat p_y=-\sum_k y_k\log\hat p_k\quad(y\text{ 寫成 one-hot}) \]</div>
+    <div class="prose"><p>語言模型的訓練損失就是每個位置「正確下一個詞」的 \(-\log\hat p\) 取平均。常聽到的 <strong>perplexity（困惑度）</strong>就是 \(e^{\text{平均 NLL}}\)：perplexity 20 大約代表模型每一步像在 20 個詞之間均勻地猜。</p></div>
+    <div class="box key"><b class="t">選損失函數，就是選資料的機率模型</b>
+      <p>MSE 隱含「誤差是常態分佈、各點變異數一樣」；交叉熵隱含「標籤來自類別分佈」。當資料不符合這些假設（例如誤差有很重的尾巴），換一個分佈就得到更合適的損失。如果讓網路也輸出 \(\sigma\)，就能學「每個預測有多不確定」（異質變異數迴歸）。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s15">
+    <div class="label">第 15 節</div>
+    <h2>貝氏推論、MAP 與正則化</h2>
+    <div class="prose"><p>MLE 只看資料。貝氏推論把參數 \(\theta\) 也當成隨機變數，先有<strong>先驗</strong> \(p(\theta)\)，看到資料後用貝氏定理得到<strong>後驗</strong>：</p></div>
+    <div class="formula">\[ p(\theta\mid D)=\frac{p(D\mid\theta)\,p(\theta)}{p(D)}\ \propto\ p(D\mid\theta)\,p(\theta) \]</div>
+    <h3>Beta–二項：最清楚的例子</h3>
+    <div class="prose">
+      <p>硬幣正面機率 \(p\) 的先驗取 \(\text{Beta}(\alpha,\beta)\)，觀察到 n 次中 k 次正面，後驗剛好還是 Beta（這叫<strong>共軛先驗</strong>，conjugate prior）：</p>
+    </div>
+    <div class="formula">\[ \text{Beta}(\alpha,\beta)\ \xrightarrow{\ k\text{ 正}、\ n-k\text{ 反}\ }\ \text{Beta}(\alpha+k,\ \beta+n-k) \]</div>
+    <div class="prose"><p>可以把 \(\alpha-1\)、\(\beta-1\) 想成「之前就看過的正面、反面次數」。先驗 Beta(2, 2)（溫和地相信接近公平），看到 10 次中 7 次正面 → 後驗 Beta(9, 5)。後驗平均 \(9/14\approx0.643\)，後驗眾數（MAP）\(8/12\approx0.667\)，都比 MLE 的 0.7 往 0.5 拉回一點。資料越多，先驗的影響越小。</p></div>
+    <div class="demo">
+      <h4>貝氏更新</h4>
+      <p class="hint">設定先驗 Beta(α, β) 和觀察到的資料。灰色是先驗、<span class="c">琥珀色</span>是概似（標準化後）、<span class="r">藍色</span>是後驗。試試先驗很強（α = β = 30）、資料很少時，後驗會被先驗拉住。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="bt-a">α</label><input type="range" id="bt-a" min="1" max="30" step="1" value="2"><output id="bt-av"></output></div>
+        <div class="ctrl"><label for="bt-b">β</label><input type="range" id="bt-b" min="1" max="30" step="1" value="2"><output id="bt-bv"></output></div>
+        <div class="ctrl"><label for="bt-n">擲 n 次</label><input type="range" id="bt-n" min="0" max="100" step="1" value="10"><output id="bt-nv"></output></div>
+        <div class="ctrl"><label for="bt-k">正面 k 次</label><input type="range" id="bt-k" min="0" max="10" step="1" value="7"><output id="bt-kv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-bt" aria-label="先驗、概似與後驗"></canvas></div>
+        <div class="out" id="bt-out"></div>
+      </div>
+    </div>
+    <h3>MAP 估計 = MLE + 正則化</h3>
+    <div class="prose"><p>取後驗最大的點（maximum a posteriori）。取 log：</p></div>
+    <div class="formula">\[ \hat\theta_{\text{MAP}}=\arg\min_\theta\Big[\underbrace{-\sum_i\log p(x_i\mid\theta)}_{\text{原本的損失}}\ \underbrace{-\log p(\theta)}_{\text{正則化項}}\Big] \]</div>
+    <div class="tbl"><table>
+      <thead><tr><th>先驗 \(p(\theta)\)</th><th>\(-\log p(\theta)\)</th><th>等於</th></tr></thead>
+      <tbody>
+        <tr><td>常態 \(\mathcal N(0,\tau^2I)\)</td><td>\(\frac{1}{2\tau^2}\lVert\theta\rVert_2^2+\text{常數}\)</td><td><strong>L2 正則化／權重衰減</strong>，\(\lambda=1/\tau^2\)</td></tr>
+        <tr><td>拉普拉斯 \(\text{Laplace}(0,b)\)</td><td>\(\frac1b\lVert\theta\rVert_1+\text{常數}\)</td><td><strong>L1 正則化／Lasso</strong></td></tr>
+        <tr><td>均勻（平的）</td><td>常數</td><td>沒有正則化，MAP = MLE</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>所以權重衰減的意思是「我事先相信權重應該靠近 0」。\(\lambda\) 越大，代表先驗越窄、越相信。</p></div>
+  </section>
+
+  <section class="sec" id="s16">
+    <div class="label">第 16 節</div>
+    <h2>信賴區間與假設檢定</h2>
+    <h3>信賴區間</h3>
+    <div class="prose"><p>由 CLT，樣本平均 \(\bar x\) 大約服從 \(\mathcal N(\mu,\sigma^2/n)\)，所以 \(\mu\) 的 95% 信賴區間是：</p></div>
+    <div class="formula">\[ \bar x\pm1.96\times\frac{s}{\sqrt n} \]</div>
+    <div class="prose">
+      <p>例：100 筆資料，平均 52、標準差 10，SE \(=10/\sqrt{100}=1\)，95% 信賴區間 \([50.04,\ 53.96]\)。</p>
+      <p><strong>正確解讀</strong>：如果重複「抽樣、算區間」很多次，約 95% 的區間會包住真正的 \(\mu\)。<span class="pen">不是</span>「\(\mu\) 有 95% 機率落在這個區間」（頻率學派的 \(\mu\) 是固定的數，不是隨機的；那種說法是貝氏的可信區間）。</p>
+      <p>樣本小又不知道 \(\sigma\) 時，把 1.96 換成 t 分佈的臨界值（n = 10 時約 2.26）。</p>
+    </div>
+    <h3>假設檢定</h3>
+    <div class="steps">
+      <div><div><strong>設定虛無假設 \(H_0\)</strong>：通常是「沒有差別」，例如「新模型和舊模型準確率一樣」。</div></div>
+      <div><div><strong>算檢定統計量</strong>：例如 \(z=\dfrac{\bar x-\mu_0}{s/\sqrt n}\)，衡量資料離 \(H_0\) 有幾個標準誤。</div></div>
+      <div><div><strong>算 p 值</strong>：如果 \(H_0\) 是真的，看到「這麼極端或更極端」結果的機率。</div></div>
+      <div><div><strong>判斷</strong>：p 值小於事先定好的 \(\alpha\)（常用 0.05）就拒絕 \(H_0\)，稱為「統計顯著」。</div></div>
+    </div>
+    <div class="box warn"><b class="t">p 值最常見的誤解</b>
+      <p>p 值<span class="pen">不是</span>「\(H_0\) 為真的機率」，也<span class="pen">不是</span>「結果是運氣的機率」。它是 \(P(\text{資料這麼極端}\mid H_0)\)，不是 \(P(H_0\mid\text{資料})\)，這兩者的差別正是第 4 節的貝氏定理。另外，「顯著」不等於「重要」：樣本夠大時，0.1% 的準確率差異也會顯著。</p>
+    </div>
+    <h3>在機器學習的用途</h3>
+    <div class="prose"><ul>
+      <li><strong>測試集準確率的誤差範圍</strong>：準確率是比例，SE \(\approx\sqrt{\hat p(1-\hat p)/n}\)。1000 筆測試、準確率 90%，SE 約 0.95%，95% 區間大約 ±1.9%。兩個模型差 1% 可能只是運氣。</li>
+      <li><strong>多次種子</strong>：用不同隨機種子訓練 3–5 次，報告平均 ± 標準差。</li>
+      <li><strong>A/B 測試</strong>：線上比較兩個版本的點擊率。</li>
+      <li><strong>多重比較</strong>：試了 20 個超參數組合，以 α = 0.05 來說，就算全部沒效也平均會有 1 個「顯著」。</li>
+    </ul></div>
+  </section>
+
+  <!-- ================= 下篇 ================= -->
+  <div class="part-head" id="partC" style="background:var(--violet-soft)">
+    <div class="eyebrow">下篇</div>
+    <h2>機率與 AI</h2>
+    <p>資訊理論、採樣、生成模型、隨機性與評估指標：把上面的工具用在實際的 AI 上。</p>
+  </div>
+
+  <section class="sec" id="s17">
+    <div class="label">第 17 節</div>
+    <h2>AI 中的機率地圖</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>AI 裡的東西</th><th>背後的機率概念</th><th>節</th></tr></thead>
+      <tbody>
+        <tr><td>softmax 輸出、sigmoid 輸出</td><td>類別分佈、伯努利分佈</td><td class="num">7、20</td></tr>
+        <tr><td>MSE、交叉熵、NLL</td><td>最大概似估計</td><td class="num">13、14</td></tr>
+        <tr><td>權重衰減、L1</td><td>MAP，常態／拉普拉斯先驗</td><td class="num">15</td></tr>
+        <tr><td>語言模型、perplexity</td><td>機率連鎖規則、NLL</td><td class="num">3、14</td></tr>
+        <tr><td>temperature、top-k、top-p</td><td>從類別分佈採樣</td><td class="num">21</td></tr>
+        <tr><td>知識蒸餾、label smoothing</td><td>交叉熵、KL 散度</td><td class="num">19、20</td></tr>
+        <tr><td>VAE</td><td>潛在變數、ELBO、KL、重參數化</td><td class="num">22</td></tr>
+        <tr><td>擴散模型</td><td>常態分佈、逐步加雜訊再去雜訊</td><td class="num">22</td></tr>
+        <tr><td>強化學習的策略梯度</td><td>期望值、採樣估計梯度</td><td class="num">21</td></tr>
+        <tr><td>Xavier / He 初始化</td><td>獨立變數和的變異數</td><td class="num">23</td></tr>
+        <tr><td>dropout</td><td>伯努利遮罩、期望值</td><td class="num">23</td></tr>
+        <tr><td>BatchNorm、LayerNorm</td><td>樣本平均、樣本變異數、標準化</td><td class="num">11、23</td></tr>
+        <tr><td>SGD、小批次</td><td>不偏估計、變異數 \(\sigma^2/B\)</td><td class="num">6、23</td></tr>
+        <tr><td>精確率、召回率、AUC</td><td>條件機率、貝氏定理</td><td class="num">24</td></tr>
+        <tr><td>樸素貝氏、高斯混合模型</td><td>條件獨立、多維常態</td><td class="num">3、9</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="s18">
+    <div class="label">第 18 節</div>
+    <h2>資訊量與熵</h2>
+    <div class="prose"><p>一個機率為 \(p\) 的事件發生時，帶來多少「驚訝」或資訊？</p></div>
+    <div class="formula">\[ I(x)=-\log p(x) \]</div>
+    <div class="prose"><p>越不可能的事發生，資訊量越大；必然發生（\(p=1\)）的事資訊量是 0。兩個獨立事件的資訊量相加（因為 log 把乘法變加法）。以 2 為底單位是 <strong>bit</strong>，以 \(e\) 為底是 <strong>nat</strong>（深度學習的交叉熵預設用 nat）。</p></div>
+    <div class="formula">\[ H(p)=\mathbb E_{x\sim p}[-\log p(x)]=-\sum_xp(x)\log p(x) \]</div>
+    <div class="prose">
+      <p><strong>熵</strong>（entropy）是平均資訊量，衡量分佈的不確定程度。公平硬幣 \(H=1\) bit；公平骰子 \(H=\log_26\approx2.585\) bits；一定出正面的硬幣 \(H=0\)。在 k 個結果之中，<strong>均勻分佈的熵最大</strong>，等於 \(\log k\)。</p>
+      <p>直覺：熵是「最省的編碼，平均每個符號要幾個 bit」。常出現的符號用短編碼、罕見的用長編碼（像摩斯電碼的 E 只有一點）。</p>
+    </div>
+    <div class="box tip"><b class="t">在 AI 的用途</b>
+      <p>決策樹用「資訊增益」（分割前後熵的減少量）選特徵；強化學習加熵獎勵讓策略保持探索；主動學習挑模型預測熵最高（最不確定）的樣本去標註。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s19">
+    <div class="label">第 19 節</div>
+    <h2>交叉熵與 KL 散度</h2>
+    <div class="prose"><p>真實分佈是 \(p\)，但我們用模型 \(q\) 來編碼（或預測）。平均要付出的資訊量叫<strong>交叉熵</strong>：</p></div>
+    <div class="formula">\[ H(p,q)=-\sum_xp(x)\log q(x) \]</div>
+    <div class="prose"><p>比用正確的 \(p\) 多付出的部分，叫 <strong>KL 散度</strong>（Kullback–Leibler divergence）：</p></div>
+    <div class="formula">\[ D_{\text{KL}}(p\,\Vert\,q)=\sum_xp(x)\log\frac{p(x)}{q(x)}=H(p,q)-H(p)\ \ge0 \]</div>
+    <div class="prose"><ul>
+      <li>\(D_{\text{KL}}\ge0\)，只有在 \(p=q\) 時等於 0。可以把它當成兩個分佈的「距離」。</li>
+      <li>但它<strong>不對稱</strong>：\(D_{\text{KL}}(p\Vert q)\ne D_{\text{KL}}(q\Vert p)\)，所以不是真正的距離。例：\(p=(0.5,0.5)\)、\(q=(0.9,0.1)\)：\(D_{\text{KL}}(p\Vert q)\approx0.511\)，\(D_{\text{KL}}(q\Vert p)\approx0.368\)（nats）。</li>
+    </ul></div>
+    <div class="box key"><b class="t">為什麼訓練用交叉熵？</b>
+      <p>\(p\) 是資料的真實分佈（固定），\(q_\theta\) 是模型。\(H(p,q_\theta)=H(p)+D_{\text{KL}}(p\Vert q_\theta)\)，\(H(p)\) 和 \(\theta\) 無關。所以三件事完全等價：<strong>最小化交叉熵 = 最小化 KL 散度 = 最大概似估計</strong>。分類時 \(p\) 是 one-hot，\(H(p)=0\)，交叉熵就等於 \(-\log q_y\)。</p>
+    </div>
+    <h3>兩個方向的 KL，行為不一樣</h3>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>\(D_{\text{KL}}(p\Vert q)\)（前向）</th><th>\(D_{\text{KL}}(q\Vert p)\)（反向）</th></tr></thead>
+      <tbody>
+        <tr><td>懲罰</td><td>\(p\) 有、\(q\) 沒有的地方（\(q\to0\) 時爆掉）</td><td>\(q\) 有、\(p\) 沒有的地方</td></tr>
+        <tr><td>\(q\) 的傾向</td><td>蓋住 \(p\) 的所有高峰（mean-seeking）</td><td>只抓住一個高峰（mode-seeking）</td></tr>
+        <tr><td>出現在</td><td>MLE、一般的監督式訓練</td><td>變分推論、VAE、RLHF 的 KL 懲罰</td></tr>
+      </tbody>
+    </table></div>
+    <div class="demo">
+      <h4>熵、交叉熵、KL 計算器</h4>
+      <p class="hint">拖動兩組三類的分佈 \(p\)（真實）與 \(q\)（模型），自動正規化成總和 1。觀察：\(q=p\) 時 KL = 0；\(q\) 在 \(p\) 有機率的地方給很小的值時，KL(p‖q) 會暴增。</p>
+      <div class="two">
+        <div class="ctrls" style="display:grid;gap:6px">
+          <div class="ctrl"><label for="kl-p0">p 類別 1</label><input type="range" id="kl-p0" min="0.01" max="1" step="0.01" value="0.5"></div>
+          <div class="ctrl"><label for="kl-p1">p 類別 2</label><input type="range" id="kl-p1" min="0.01" max="1" step="0.01" value="0.3"></div>
+          <div class="ctrl"><label for="kl-p2">p 類別 3</label><input type="range" id="kl-p2" min="0.01" max="1" step="0.01" value="0.2"></div>
+        </div>
+        <div class="ctrls" style="display:grid;gap:6px">
+          <div class="ctrl"><label for="kl-q0">q 類別 1</label><input type="range" id="kl-q0" min="0.01" max="1" step="0.01" value="0.33"></div>
+          <div class="ctrl"><label for="kl-q1">q 類別 2</label><input type="range" id="kl-q1" min="0.01" max="1" step="0.01" value="0.33"></div>
+          <div class="ctrl"><label for="kl-q2">q 類別 3</label><input type="range" id="kl-q2" min="0.01" max="1" step="0.01" value="0.33"></div>
+        </div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-kl" aria-label="兩個分佈的長條圖"></canvas></div>
+        <div class="out" id="kl-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s20">
+    <div class="label">第 20 節</div>
+    <h2>分類模型的機率輸出</h2>
+    <h3>邏輯回歸：log-odds 是線性的</h3>
+    <div class="formula">\[ P(y=1\mid x)=\sigma(w^\top x+b)\quad\Longleftrightarrow\quad \log\frac{P(y=1\mid x)}{P(y=0\mid x)}=w^\top x+b \]</div>
+    <div class="prose"><p>\(\frac{p}{1-p}\) 叫勝算（odds），取 log 叫 logit。神經網路最後一層、還沒經過 sigmoid 或 softmax 的輸出叫 <strong>logits</strong>，名稱就是從這裡來的。softmax 是多類版本：\(\log\frac{p_i}{p_j}=z_i-z_j\)，只有差值有意義，所以所有 logits 同加一個常數，機率不變。</p></div>
+    <h3>校準（calibration）</h3>
+    <div class="prose"><p>模型說 80% 有把握的那些預測，真的有 80% 是對的嗎？如果是，模型就是<strong>校準良好</strong>。現代大型網路常常過度自信（說 99% 但只對 90%）。常見修正：<strong>溫度縮放</strong>（temperature scaling），在驗證集上找一個 \(T\)，把 logits 除以 \(T\) 再做 softmax。</p></div>
+    <h3>label smoothing</h3>
+    <div class="prose"><p>把 one-hot 目標 \((0,1,0)\) 改成 \((\frac\epsilon k,\ 1-\epsilon+\frac\epsilon k,\ \frac\epsilon k)\)，例如 \(\epsilon=0.1\)、\(k=3\) 時大約是 \((0.033,0.933,0.033)\)。交叉熵的目標不再是讓 \(\hat p_y\to1\)（那需要 logits 趨近無限大），可以減少過度自信。</p></div>
+    <h3>知識蒸餾</h3>
+    <div class="prose"><p>讓小模型（學生）學大模型（老師）的完整輸出分佈，而不只是正確答案。損失是 \(D_{\text{KL}}(p_{\text{teacher}}^{(T)}\Vert p_{\text{student}}^{(T)})\)，兩邊都用較高的溫度 \(T\) 軟化，讓「貓有點像老虎、不像汽車」這種類別之間的相似資訊也能傳過去。</p></div>
+  </section>
+
+  <section class="sec" id="s21">
+    <div class="label">第 21 節</div>
+    <h2>採樣與蒙地卡羅</h2>
+    <h3>怎麼產生亂數</h3>
+    <div class="prose"><ul>
+      <li><strong>反函數法</strong>：\(u\sim\text{Uniform}(0,1)\)，則 \(F^{-1}(u)\) 服從 CDF 為 \(F\) 的分佈。例：指數分佈 \(x=-\ln(1-u)/\lambda\)。</li>
+      <li><strong>類別分佈</strong>：把機率排成累積和 \((0.5,\ 0.8,\ 1.0)\)，抽 \(u\)，看它落在哪一段。語言模型生成就是這樣抽詞。</li>
+      <li><strong>常態分佈</strong>：Box–Muller 轉換把兩個均勻亂數變成兩個獨立標準常態；再用 \(\mu+\sigma\varepsilon\) 平移縮放。</li>
+    </ul></div>
+    <h3>蒙地卡羅估計</h3>
+    <div class="formula">\[ \mathbb E_{x\sim p}[g(x)]\approx\frac1N\sum_{i=1}^Ng(x_i),\qquad x_i\sim p,\qquad \text{誤差}\propto\frac1{\sqrt N} \]</div>
+    <div class="prose"><p>算不出來的期望值，就抽樣取平均（大數法則保證會收斂）。小批次 SGD 就是用 B 筆資料估計整個資料集的平均梯度；強化學習的策略梯度 \(\nabla_\theta\mathbb E[R]=\mathbb E[R\,\nabla_\theta\log\pi_\theta(a\mid s)]\) 也是靠採樣來估計。</p></div>
+    <h3>語言模型的解碼策略</h3>
+    <div class="demo">
+      <h4>temperature、top-k、top-p</h4>
+      <p class="hint">假設模型對下一個詞的 logits 如下（「今天天氣很___」）。調整溫度 \(T\)、top-k、top-p，看哪些詞還在候選名單（<span class="r">藍色</span>）、重新正規化後的機率是多少。灰色代表被排除。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="lm-t">溫度 T</label><input type="range" id="lm-t" min="0.1" max="2.5" step="0.05" value="1"><output id="lm-tv"></output></div>
+        <div class="ctrl"><label for="lm-k">top-k</label><input type="range" id="lm-k" min="1" max="8" step="1" value="8"><output id="lm-kv"></output></div>
+        <div class="ctrl"><label for="lm-p">top-p</label><input type="range" id="lm-p" min="0.1" max="1" step="0.01" value="1"><output id="lm-pv"></output></div>
+        <button class="btn" id="lm-s">抽 20 次</button>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-lm" aria-label="下一個詞的機率"></canvas></div>
+        <div class="out" id="lm-out"></div>
+      </div>
+    </div>
+    <div class="tbl" style="margin-top:14px"><table>
+      <thead><tr><th>策略</th><th>做法</th><th>效果</th></tr></thead>
+      <tbody>
+        <tr><td>貪婪 greedy</td><td>永遠選機率最大的</td><td>穩定但容易重複、無聊</td></tr>
+        <tr><td>溫度 temperature</td><td>\(\operatorname{softmax}(z/T)\)</td><td>\(T&lt;1\) 更集中、\(T&gt;1\) 更隨機、\(T\to0\) 等於貪婪</td></tr>
+        <tr><td>top-k</td><td>只留機率最高的 k 個，重新正規化</td><td>砍掉長尾的怪詞</td></tr>
+        <tr><td>top-p（nucleus）</td><td>從最高的開始累加到 ≥ p 為止</td><td>候選數量隨模型信心自動調整</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="s22">
+    <div class="label">第 22 節</div>
+    <h2>生成模型：VAE 與擴散模型</h2>
+    <h3>潛在變數模型的難題</h3>
+    <div class="prose"><p>假設資料 \(x\)（例如一張圖）由看不到的潛在變數 \(z\)（例如「臉朝哪、髮色」）產生：\(p_\theta(x)=\int p_\theta(x\mid z)\,p(z)\,dz\)。MLE 要最大化 \(\log p_\theta(x)\)，但這個積分算不出來。</p></div>
+    <h3>ELBO：證據下界</h3>
+    <div class="prose"><p>引入一個編碼器 \(q_\phi(z\mid x)\) 去近似真正的後驗 \(p(z\mid x)\)，可以證明：</p></div>
+    <div class="formula">\[ \log p_\theta(x)\ \ge\ \underbrace{\mathbb E_{z\sim q_\phi(z\mid x)}\big[\log p_\theta(x\mid z)\big]}_{\text{重建項：解碼回去要像原圖}}\ -\ \underbrace{D_{\text{KL}}\big(q_\phi(z\mid x)\,\Vert\,p(z)\big)}_{\text{正則項：編碼不要離先驗太遠}} \]</div>
+    <div class="prose"><p>右邊叫 ELBO（evidence lower bound）。兩邊的差距剛好是 \(D_{\text{KL}}(q_\phi(z\mid x)\Vert p_\theta(z\mid x))\ge0\)。VAE 就是最大化 ELBO：重建項若假設常態就是 MSE（第 14 節），KL 項在 \(q=\mathcal N(\mu,\sigma^2)\)、\(p(z)=\mathcal N(0,1)\) 時有公式：</p></div>
+    <div class="formula">\[ D_{\text{KL}}\big(\mathcal N(\mu,\sigma^2)\,\Vert\,\mathcal N(0,1)\big)=\tfrac12\big(\mu^2+\sigma^2-1-\log\sigma^2\big) \]</div>
+    <div class="prose"><p>例：\(\mu=1,\ \sigma=0.5\) 時約 0.818；\(\mu=0,\ \sigma=1\) 時剛好 0。多維時每一維相加。</p></div>
+    <h3>重參數化技巧</h3>
+    <div class="prose"><p>重建項要對 \(\phi\) 微分，但「從 \(q_\phi\) 抽樣」這個動作沒辦法微分。改寫成：</p></div>
+    <div class="formula">\[ z=\mu_\phi(x)+\sigma_\phi(x)\odot\varepsilon,\qquad \varepsilon\sim\mathcal N(0,I) \]</div>
+    <div class="prose"><p>隨機性全部移到和參數無關的 \(\varepsilon\)，\(z\) 對 \(\mu\)、\(\sigma\) 就是普通的可微函數，反向傳播可以穿過去。這用的就是第 9 節「常態的線性變換還是常態」。</p></div>
+    <h3>擴散模型</h3>
+    <div class="prose"><p>前向過程：對圖片一步步加常態雜訊，\(T\) 步之後變成純雜訊。因為常態加常態還是常態，可以一步跳到第 \(t\) 步：</p></div>
+    <div class="formula">\[ x_t=\sqrt{\bar\alpha_t}\,x_0+\sqrt{1-\bar\alpha_t}\,\varepsilon,\qquad \varepsilon\sim\mathcal N(0,I) \]</div>
+    <div class="prose"><p>訓練一個網路 \(\varepsilon_\theta(x_t,t)\) 去猜加進去的雜訊，損失是 \(\lVert\varepsilon-\varepsilon_\theta(x_t,t)\rVert^2\)，又是 MSE。生成時從純雜訊出發，反覆減掉預測的雜訊、再加一點新的隨機雜訊，一步步採樣回圖片。整個理論也是從 ELBO 推出來的。</p></div>
+  </section>
+
+  <section class="sec" id="s23">
+    <div class="label">第 23 節</div>
+    <h2>神經網路裡的隨機性</h2>
+    <h3>權重初始化：控制變異數</h3>
+    <div class="prose"><p>一個神經元 \(z=\sum_{i=1}^{n_{in}}w_ix_i\)。若 \(w_i\)、\(x_i\) 獨立、平均 0，由第 6 節的性質：</p></div>
+    <div class="formula">\[ \operatorname{Var}(z)=\sum_i\operatorname{Var}(w_ix_i)=n_{in}\operatorname{Var}(w)\operatorname{Var}(x) \]</div>
+    <div class="prose"><p>想讓訊號一層層傳下去時變異數不爆炸也不消失，就要 \(n_{in}\operatorname{Var}(w)\approx1\)：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>方法</th><th>\(\operatorname{Var}(w)\)</th><th>適用</th><th>例：\(n_{in}=256,\ n_{out}=128\)</th></tr></thead>
+      <tbody>
+        <tr><td>Xavier / Glorot</td><td>\(\frac{2}{n_{in}+n_{out}}\)</td><td>tanh、sigmoid</td><td class="num">≈ 0.00521</td></tr>
+        <tr><td>He / Kaiming</td><td>\(\frac{2}{n_{in}}\)</td><td>ReLU（砍掉一半，所以乘 2）</td><td class="num">≈ 0.00781</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>注意力的 \(\sqrt{d_k}\)（線代筆記第 25 節）也是同一個道理：\(q^\top k\) 是 \(d_k\) 項相加，變異數是 \(d_k\)。</p></div>
+    <h3>dropout</h3>
+    <div class="prose"><p>訓練時每個神經元以機率 \(p\) 被設為 0（伯努利遮罩 \(m_i\sim\text{Bernoulli}(1-p)\)），留下的除以 \(1-p\)：\(\tilde x_i=m_ix_i/(1-p)\)。這樣 \(\mathbb E[\tilde x_i]=x_i\)，測試時不必做任何調整（inverted dropout）。可以把它看成同時訓練很多個子網路的集成。</p></div>
+    <h3>SGD 的雜訊</h3>
+    <div class="prose"><p>小批次梯度 \(\hat g=\frac1B\sum_{i\in\text{batch}}\nabla\ell_i\) 是完整梯度的不偏估計（期望值的線性），變異數約 \(\sigma^2/B\)。雜訊不全是壞事：它幫助跳出尖銳的局部最小值。批次加大 k 倍時，常見的經驗法則是學習率也乘以 k（linear scaling rule），讓「訊號與雜訊的比例」大致維持。</p></div>
+    <h3>BatchNorm 的訓練和推論</h3>
+    <div class="prose"><p>訓練時用這個批次的樣本平均和樣本變異數；推論時用訓練中累積的移動平均（running mean / var），因為推論時可能只有一筆資料。PyTorch 的 <code>model.train()</code> 和 <code>model.eval()</code> 切換的就是這個（以及 dropout）。</p></div>
+  </section>
+
+  <section class="sec" id="s24">
+    <div class="label">第 24 節</div>
+    <h2>評估指標的機率意義</h2>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>預測陽性</th><th>預測陰性</th></tr></thead>
+      <tbody>
+        <tr><td>實際陽性</td><td>TP 真陽性</td><td>FN 偽陰性</td></tr>
+        <tr><td>實際陰性</td><td>FP 偽陽性</td><td>TN 真陰性</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl" style="margin-top:14px"><table>
+      <thead><tr><th>指標</th><th>公式</th><th>條件機率</th><th>白話</th></tr></thead>
+      <tbody>
+        <tr><td>召回率 recall（靈敏度、TPR）</td><td>\(\frac{TP}{TP+FN}\)</td><td>\(P(\hat y=1\mid y=1)\)</td><td>真的陽性有幾成被抓到</td></tr>
+        <tr><td>精確率 precision</td><td>\(\frac{TP}{TP+FP}\)</td><td>\(P(y=1\mid\hat y=1)\)</td><td>說是陽性的有幾成是對的</td></tr>
+        <tr><td>偽陽性率 FPR</td><td>\(\frac{FP}{FP+TN}\)</td><td>\(P(\hat y=1\mid y=0)\)</td><td>陰性被誤判的比例</td></tr>
+        <tr><td>F1</td><td>\(\frac{2PR}{P+R}\)</td><td>—</td><td>精確率和召回率的調和平均</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p>召回率和精確率是<strong>反過來的條件機率</strong>，用貝氏定理連起來（第 4 節）：\(\text{precision}=\frac{\text{recall}\times P(y=1)}{P(\hat y=1)}\)。所以正例很稀少時，就算召回率高、FPR 低，精確率也可能很差。</p>
+      <p>例：100 個陽性、900 個陰性；抓到 80 個（TP = 80），誤報 45 個（FP = 45）。召回率 0.8、精確率 0.64、F1 ≈ 0.711、準確率 0.935。準確率看起來很高，是因為陰性太多（全部猜陰性也有 0.9）。</p>
+      <p><strong>ROC 曲線</strong>：調整判斷門檻，畫出 (FPR, TPR)。<strong>AUC</strong>（曲線下面積）有一個漂亮的機率意義：隨機挑一個陽性和一個陰性，模型給陽性的分數比較高的機率。0.5 是亂猜，1 是完美。</p>
+    </div>
+    <div class="demo">
+      <h4>門檻、混淆矩陣與 ROC</h4>
+      <p class="hint">假設模型給陰性樣本的分數服從 \(\mathcal N(0,1)\)（灰色），給陽性的服從 \(\mathcal N(d,1)\)（<span class="c">琥珀色</span>）。移動門檻，看各個指標和 ROC 曲線上的點。\(d\) 越大，兩群分得越開，AUC 越高（理論值 \(\Phi(d/\sqrt2)\)）。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="roc-d">分離度 d</label><input type="range" id="roc-d" min="0" max="4" step="0.1" value="1.5"><output id="roc-dv"></output></div>
+        <div class="ctrl"><label for="roc-t">門檻</label><input type="range" id="roc-t" min="-3" max="6" step="0.05" value="0.8"><output id="roc-tv"></output></div>
+        <div class="ctrl"><label for="roc-pi">陽性比例</label><input type="range" id="roc-pi" min="1" max="50" step="1" value="10"><output id="roc-piv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-roc1" aria-label="兩群分數分佈與門檻"></canvas></div>
+        <div class="cv"><canvas id="cv-roc2" aria-label="ROC 曲線"></canvas></div>
+      </div>
+      <div class="out" id="roc-out"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="s25">
+    <div class="label">第 25 節</div>
+    <h2>公式速查表</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>主題</th><th>公式</th><th>節</th></tr></thead>
+      <tbody>
+        <tr><td>加法規則</td><td>\(P(A\cup B)=P(A)+P(B)-P(A\cap B)\)</td><td class="num">2</td></tr>
+        <tr><td>條件機率</td><td>\(P(A\mid B)=P(A\cap B)/P(B)\)</td><td class="num">3</td></tr>
+        <tr><td>獨立</td><td>\(P(A\cap B)=P(A)P(B)\)</td><td class="num">3</td></tr>
+        <tr><td>連鎖規則</td><td>\(P(x_{1:T})=\prod_tP(x_t\mid x_{&lt;t})\)</td><td class="num">3</td></tr>
+        <tr><td>全機率</td><td>\(P(A)=\sum_iP(A\mid B_i)P(B_i)\)</td><td class="num">4</td></tr>
+        <tr><td>貝氏定理</td><td>\(P(H\mid D)=P(D\mid H)P(H)/P(D)\)</td><td class="num">4</td></tr>
+        <tr><td>期望值線性</td><td>\(\mathbb E[aX+bY]=a\mathbb E[X]+b\mathbb E[Y]\)</td><td class="num">6</td></tr>
+        <tr><td>變異數</td><td>\(\operatorname{Var}X=\mathbb E[X^2]-(\mathbb EX)^2\)，\(\operatorname{Var}(aX)=a^2\operatorname{Var}X\)</td><td class="num">6</td></tr>
+        <tr><td>平均的變異數</td><td>\(\operatorname{Var}(\bar X)=\sigma^2/n\)</td><td class="num">6</td></tr>
+        <tr><td>共變異數</td><td>\(\operatorname{Cov}(X,Y)=\mathbb E[XY]-\mathbb EX\,\mathbb EY\)</td><td class="num">8</td></tr>
+        <tr><td>線性變換</td><td>\(\operatorname{Cov}(Ax)=A\Sigma A^\top\)</td><td class="num">8</td></tr>
+        <tr><td>CLT</td><td>\(\bar X_n\approx\mathcal N(\mu,\sigma^2/n)\)</td><td class="num">10</td></tr>
+        <tr><td>偏差–變異數</td><td>\(\text{MSE}=\text{Bias}^2+\text{Var}\)</td><td class="num">12</td></tr>
+        <tr><td>MLE</td><td>\(\arg\max_\theta\sum_i\log p(x_i;\theta)\)</td><td class="num">13</td></tr>
+        <tr><td>MAP</td><td>\(\arg\max_\theta\big[\sum_i\log p(x_i\mid\theta)+\log p(\theta)\big]\)</td><td class="num">15</td></tr>
+        <tr><td>Beta–二項</td><td>\(\text{Beta}(\alpha,\beta)\to\text{Beta}(\alpha+k,\beta+n-k)\)</td><td class="num">15</td></tr>
+        <tr><td>信賴區間</td><td>\(\bar x\pm1.96\,s/\sqrt n\)</td><td class="num">16</td></tr>
+        <tr><td>熵</td><td>\(H(p)=-\sum p\log p\)</td><td class="num">18</td></tr>
+        <tr><td>交叉熵與 KL</td><td>\(H(p,q)=H(p)+D_{\text{KL}}(p\Vert q)\)</td><td class="num">19</td></tr>
+        <tr><td>ELBO</td><td>\(\log p(x)\ge\mathbb E_q[\log p(x\mid z)]-D_{\text{KL}}(q\Vert p(z))\)</td><td class="num">22</td></tr>
+        <tr><td>高斯 KL</td><td>\(\tfrac12(\mu^2+\sigma^2-1-\log\sigma^2)\)</td><td class="num">22</td></tr>
+        <tr><td>He 初始化</td><td>\(\operatorname{Var}(w)=2/n_{in}\)</td><td class="num">23</td></tr>
+        <tr><td>精確率</td><td>\(P(y=1\mid\hat y=1)=TP/(TP+FP)\)</td><td class="num">24</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="s26">
+    <div class="label">第 26 節</div>
+    <h2>練習題</h2>
+    <div class="prose"><p>每題選完會立刻顯示解說。答錯了就回到對應的節再看一次。</p></div>
+    <div class="score" id="qz-score"></div>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <footer>本頁的數字例子都已用 Python（NumPy、SciPy）實際計算驗證。練習進度不會被保存，重新整理就會清空。姊妹篇：<a href="linear-algebra.html">線代與矩陣微分筆記</a>。</footer>
+</main>
+</div>
+
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code','canvas','select','option']}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f4 = v => { const r = Math.round(v*1e4)/1e4; return Object.is(r, -0) ? '0' : String(r); };
+const pct = v => (v*100).toFixed(1) + '%';
+
+/* ---------- 目錄 ---------- */
+(function(){
+  const secs = [...document.querySelectorAll('section.sec')];
+  const title = s => s.querySelector('h2').textContent.replace(/\s+/g,' ').trim();
+  const parts = {s1:'上篇　機率基礎', s11:'中篇　統計推論', s17:'下篇　機率與 AI'};
+  let h = '';
+  secs.forEach((s, i) => { if (parts[s.id]) h += `<li class="part">${parts[s.id]}</li>`; h += `<li><a href="#${s.id}" data-id="${s.id}"><span class="n">${i+1}</span><span>${s.querySelector('h2').innerHTML}</span></a></li>`; });
+  $('#toc').innerHTML = h;
+  $('#jump').innerHTML = '<option value="top">回到開頭</option>' + secs.map((s, i) => `<option value="${s.id}">${i+1}. ${title(s)}</option>`).join('');
+  $('#jump').addEventListener('change', e => { const el = document.getElementById(e.target.value); (el || document.body).scrollIntoView(); });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) document.querySelectorAll('.toc a').forEach(a => a.classList.toggle('on', a.dataset.id === e.target.id)); }), {rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s => io.observe(s));
+})();
+
+/* ---------- 工具 ---------- */
+function sizeCanvas(cv, aspect, maxH){
+  const w = Math.max(220, cv.parentElement.clientWidth); let h = Math.round(w*aspect); if (maxH) h = Math.min(h, maxH);
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(w*d); cv.height = Math.round(h*d); cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); ctx.clearRect(0,0,w,h);
+  return {ctx, w, h};
+}
+function arrow(ctx, x1, y1, x2, y2, color, lw = 2.4){
+  const a = Math.atan2(y2-y1, x2-x1), L = Math.hypot(x2-x1, y2-y1); if (L < 2) return; const hd = Math.min(10, L*.4);
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a)*hd*.7, y2 - Math.sin(a)*hd*.7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hd*Math.cos(a-.4), y2 - hd*Math.sin(a-.4)); ctx.lineTo(x2 - hd*Math.cos(a+.4), y2 - hd*Math.sin(a+.4)); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+const renders = []; const onR = f => { renders.push(f); f(); };
+let rq; window.addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => renders.forEach(f => f())); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renders.forEach(f => f()));
+new MutationObserver(() => renders.forEach(f => f())).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; }; }
+function gaussFrom(r){ let s = null; return () => { if (s !== null){ const v = s; s = null; return v; } let u = 0; while (u === 0) u = r(); const v = r(), R = Math.sqrt(-2*Math.log(u)); s = R*Math.sin(2*Math.PI*v); return R*Math.cos(2*Math.PI*v); }; }
+function erf(x){ const s = Math.sign(x); x = Math.abs(x); const t = 1/(1 + .3275911*x); const y = 1 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - .284496736)*t + .254829592)*t*Math.exp(-x*x); return s*y; }
+const Phi = x => .5*(1 + erf(x/Math.SQRT2));
+const npdf = (x, m = 0, s = 1) => Math.exp(-((x - m)**2)/(2*s*s))/(Math.sqrt(2*Math.PI)*s);
+function lgamma(z){ const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < .5) return Math.log(Math.PI/Math.abs(Math.sin(Math.PI*z))) - lgamma(1 - z); z -= 1; let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i]/(z + i); const t = z + g + .5; return .5*Math.log(2*Math.PI) + (z + .5)*Math.log(t) - t + Math.log(x); }
+const lchoose = (n, k) => lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1);
+const betapdf = (x, a, b) => (x <= 0 || x >= 1) ? ((x === 0 && a < 1) || (x === 1 && b < 1) ? Infinity : (x === 0 && a === 1) ? Math.exp(-lbeta(a, b)) : (x === 1 && b === 1) ? Math.exp(-lbeta(a, b)) : 0) : Math.exp((a - 1)*Math.log(x) + (b - 1)*Math.log(1 - x) - lbeta(a, b));
+const lbeta = (a, b) => lgamma(a) + lgamma(b) - lgamma(a + b);
+function axesBox(ctx, w, h, pad){ ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke(); }
+function txt(ctx, s, x, y, color, align = 'left', size = 12){ ctx.fillStyle = color || tok('--muted'); ctx.font = size + 'px ' + tok('--f-mono'); ctx.textAlign = align; ctx.fillText(s, x, y); ctx.textAlign = 'left'; }
+function linePath(ctx, pts, color, lw = 2.2, dash){ ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash); ctx.beginPath(); let started = false; pts.forEach(([x, y]) => { if (!isFinite(y)) { started = false; return; } if (!started){ ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); }); ctx.stroke(); ctx.restore(); }
+function bindRange(ids, fn){ ids.forEach(id => $('#'+id).addEventListener('input', fn)); }
+function setOut(id, v){ const o = $('#'+id+'v'); if (o) o.textContent = v; }
+
+/* ---------- 第 4 節：貝氏 ---------- */
+(function(){
+  const cv = $('#cv-bayes');
+  function draw(){
+    const pr = +$('#by-p').value/100, se = +$('#by-s').value/100, fp = +$('#by-f').value/100;
+    setOut('by-p', pct(pr)); setOut('by-s', pct(se)); setOut('by-f', pct(fp));
+    const N = 10000, sick = Math.round(N*pr), TP = Math.round(sick*se), FN = sick - TP, FP = Math.round((N - sick)*fp), TN = N - sick - FP;
+    const {ctx, w, h} = sizeCanvas(cv, .62, 300); const cols = 125, rows = 80, cw = w/cols, ch = (h - 26)/rows;
+    const C = [[TP, tok('--col'), 1], [FN, tok('--col'), .3], [FP, tok('--row'), 1], [TN, tok('--sunk'), 1]];
+    let idx = 0;
+    C.forEach(([n, col, al]) => { ctx.fillStyle = col; ctx.globalAlpha = al; for (let k = 0; k < n; k++, idx++){ const c = Math.floor(idx/rows), r = idx % rows; ctx.fillRect(c*cw, r*ch, Math.max(1, cw - .4), Math.max(1, ch - .4)); } });
+    ctx.globalAlpha = 1;
+    txt(ctx, '■ 有病且陽性 ' + TP, 0, h - 8, tok('--col')); txt(ctx, '■ 沒病但陽性 ' + FP, w*.5, h - 8, tok('--row'));
+    const post = TP/(TP + FP || 1), exact = pr*se/(pr*se + (1 - pr)*fp || 1);
+    $('#by-out').innerHTML = `一萬人裡：<br>有病 ${sick} 人 → 陽性 <span style="color:var(--col)">${TP}</span>、陰性 ${FN}<br>沒病 ${N - sick} 人 → 陽性 <span style="color:var(--row)">${FP}</span>、陰性 ${TN}<br><br>陽性總共 ${TP + FP} 人，其中真的有病：<br>${TP} / ${TP + FP} = <b>${pct(post)}</b><br><br>貝氏公式：<br>P(病|+) = ${f4(se)}×${f4(pr)} / (${f4(se)}×${f4(pr)} + ${f4(fp)}×${f4(1 - pr)})<br>&nbsp;&nbsp;= <b>${pct(exact)}</b><br><br><span style="color:var(--muted)">陰性的人真的沒病：P(沒病|−) = ${pct(TN/(TN + FN || 1))}</span>`;
+  }
+  bindRange(['by-p','by-s','by-f'], draw); onR(draw);
+})();
+
+/* ---------- 第 7 節：分佈探索器 ---------- */
+(function(){
+  const cv = $('#cv-dist');
+  const D = {
+    bern: {n:'伯努利', disc:true, ps:[['p',0,1,.01,.3]], pmf:(k,[p]) => k === 0 ? 1 - p : k === 1 ? p : 0, rng:() => [0, 1], m:([p]) => [p, p*(1 - p)]},
+    binom: {n:'二項', disc:true, ps:[['n',1,40,1,10],['p',0,1,.01,.5]], pmf:(k,[n,p]) => k > n ? 0 : Math.exp(lchoose(n, k) + (k ? k*Math.log(p) : 0) + (n - k ? (n - k)*Math.log(1 - p) : 0)), rng:([n]) => [0, n], m:([n,p]) => [n*p, n*p*(1 - p)]},
+    pois: {n:'卜瓦松', disc:true, ps:[['λ',.2,20,.1,3]], pmf:(k,[l]) => Math.exp(k*Math.log(l) - l - lgamma(k + 1)), rng:([l]) => [0, Math.ceil(l + 4*Math.sqrt(l) + 3)], m:([l]) => [l, l]},
+    unif: {n:'均勻', ps:[['a',-3,2,.1,0],['b',-2,5,.1,1]], pdf:(x,[a,b]) => (b > a && x >= a && x <= b) ? 1/(b - a) : 0, cdf:(x,[a,b]) => b > a ? Math.min(1, Math.max(0, (x - a)/(b - a))) : 0, rng:([a,b]) => [Math.min(a, b) - 1, Math.max(a, b) + 1], m:([a,b]) => [(a + b)/2, (b - a)**2/12]},
+    norm: {n:'常態', ps:[['μ',-3,3,.1,0],['σ',.2,3,.05,1]], pdf:(x,[m,s]) => npdf(x, m, s), cdf:(x,[m,s]) => Phi((x - m)/s), rng:([m,s]) => [m - 4*s, m + 4*s], m:([m,s]) => [m, s*s]},
+    expo: {n:'指數', ps:[['λ',.2,4,.05,1]], pdf:(x,[l]) => x < 0 ? 0 : l*Math.exp(-l*x), cdf:(x,[l]) => x < 0 ? 0 : 1 - Math.exp(-l*x), rng:([l]) => [-.2/l, 6/l], m:([l]) => [1/l, 1/l/l]},
+    beta: {n:'Beta', ps:[['α',.3,20,.1,2],['β',.3,20,.1,5]], pdf:(x,[a,b]) => (x <= 0 || x >= 1) ? NaN : betapdf(x, a, b), cdf:null, rng:() => [0, 1], m:([a,b]) => [a/(a + b), a*b/((a + b)**2*(a + b + 1))]},
+    lap: {n:'拉普拉斯', ps:[['μ',-3,3,.1,0],['b',.2,3,.05,1]], pdf:(x,[m,b]) => Math.exp(-Math.abs(x - m)/b)/(2*b), cdf:(x,[m,b]) => x < m ? .5*Math.exp((x - m)/b) : 1 - .5*Math.exp(-(x - m)/b), rng:([m,b]) => [m - 6*b, m + 6*b], m:([m,b]) => [m, 2*b*b]}
+  };
+  let cur = 'norm';
+  $('#ds-pick').innerHTML = Object.keys(D).map(k => `<button class="btn" data-d="${k}" aria-pressed="${k === cur}">${D[k].n}</button>`).join('');
+  $('#ds-pick').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; cur = b.dataset.d; $('#ds-pick').querySelectorAll('[data-d]').forEach(x => x.setAttribute('aria-pressed', x === b)); build(); });
+  function build(){
+    const d = D[cur];
+    $('#ds-ctrls').innerHTML = d.ps.map(([l, a, b, s, v], i) => `<div class="ctrl"><label for="ds-${i}">${l}</label><input type="range" id="ds-${i}" min="${a}" max="${b}" step="${s}" value="${v}"><output id="ds-${i}v"></output></div>`).join('');
+    d.ps.forEach((_, i) => $('#ds-'+i).addEventListener('input', draw)); draw();
+  }
+  function draw(){
+    const d = D[cur], P = d.ps.map((_, i) => +$('#ds-'+i).value); P.forEach((v, i) => setOut('ds-'+i, String(v)));
+    const {ctx, w, h} = sizeCanvas(cv, .62, 300), pad = {l:40, r:30, t:14, b:26}; axesBox(ctx, w, h, pad);
+    const [x0, x1] = d.rng(P), X = x => pad.l + (x - x0)/(x1 - x0)*(w - pad.l - pad.r);
+    const [mean, vr] = d.m(P);
+    let ymax = 0, pts = [], cdf = [];
+    if (d.disc){
+      let acc = 0; for (let k = x0; k <= x1; k++){ const v = d.pmf(k, P); pts.push([k, v]); ymax = Math.max(ymax, v); acc += v; cdf.push([k, acc]); }
+    } else {
+      const N = 300; for (let i = 0; i <= N; i++){ const x = x0 + (x1 - x0)*i/N, v = d.pdf(x, P); pts.push([x, v]); if (isFinite(v)) ymax = Math.max(ymax, v); }
+      if (d.cdf) pts.forEach(([x]) => cdf.push([x, d.cdf(x, P)]));
+      else { let acc = 0; const dx = (x1 - x0)/300; pts.forEach(([x, v], i) => { if (i && isFinite(v) && isFinite(pts[i-1][1])) acc += (v + pts[i-1][1])/2*dx; cdf.push([x, Math.min(1, acc)]); }); }
+    }
+    ymax = Math.min(ymax*1.12 || 1, 8); const Y = y => h - pad.b - Math.min(y, ymax)/ymax*(h - pad.t - pad.b), Yc = y => h - pad.b - y*(h - pad.t - pad.b);
+    if (d.disc){ const bw = Math.max(2, Math.min(24, (w - pad.l - pad.r)/(x1 - x0 + 1)*.6)); ctx.fillStyle = tok('--row'); pts.forEach(([k, v]) => ctx.fillRect(X(k) - bw/2, Y(v), bw, h - pad.b - Y(v)));
+      const step = Math.ceil((x1 - x0 + 1)/12); pts.forEach(([k]) => { if ((k - x0) % step === 0) txt(ctx, String(k), X(k), h - 8, null, 'center'); }); }
+    else { ctx.save(); ctx.fillStyle = tok('--row-soft'); ctx.beginPath(); ctx.moveTo(X(x0), h - pad.b); pts.forEach(([x, v]) => ctx.lineTo(X(x), isFinite(v) ? Y(v) : h - pad.b)); ctx.lineTo(X(x1), h - pad.b); ctx.closePath(); ctx.fill(); ctx.restore();
+      linePath(ctx, pts.map(([x, v]) => [X(x), Y(v)]), tok('--row'));
+      for (let i = 0; i <= 4; i++){ const x = x0 + (x1 - x0)*i/4; txt(ctx, f4(Math.round(x*100)/100), X(x), h - 8, null, 'center'); } }
+    linePath(ctx, cdf.map(([x, c]) => [X(x), Yc(c)]), tok('--violet'), 1.6, [5, 4]);
+    txt(ctx, f4(Math.round(ymax*100)/100), pad.l - 4, pad.t + 10, null, 'right'); txt(ctx, '1', w - pad.r + 4, pad.t + 10, tok('--violet'));
+    if (mean >= x0 && mean <= x1){ ctx.save(); ctx.strokeStyle = tok('--pen'); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(X(mean), pad.t); ctx.lineTo(X(mean), h - pad.b); ctx.stroke(); ctx.restore(); txt(ctx, 'μ', X(mean) + 4, pad.t + 12, tok('--pen')); }
+    $('#ds-out').innerHTML = `${d.n}分佈（${d.disc ? '離散，畫 PMF' : '連續，畫 PDF'}）<br>參數：${d.ps.map(([l], i) => l + ' = ' + P[i]).join('，')}<br><br>平均 E[X] = <b>${f4(mean)}</b><br>變異數 Var(X) = <b>${f4(vr)}</b><br>標準差 = ${f4(Math.sqrt(vr))}<br><br>${d.disc ? '長條高度就是機率，全部加起來 = 1。' : '曲線下面積 = 1；曲線高度是密度，' + (ymax > 1.05 ? '<span class="pen">這裡超過 1 了，密度不是機率</span>。' : '可以大於 1。')}`;
+  }
+  build(); renders.push(draw);
+})();
+
+/* ---------- 第 9 節：二維常態 ---------- */
+(function(){
+  const cv = $('#cv-g2'); let seed = 7, Z = [];
+  function sample(){ const g = gaussFrom(mulberry32(seed++)); Z = Array.from({length:600}, () => [g(), g()]); }
+  function draw(){
+    const sx = +$('#g2-sx').value, sy = +$('#g2-sy').value, r = +$('#g2-r').value; setOut('g2-sx', sx.toFixed(2)); setOut('g2-sy', sy.toFixed(2)); setOut('g2-r', r.toFixed(2));
+    const a = sx*sx, b = r*sx*sy, d = sy*sy;
+    const L11 = sx, L21 = r*sy, L22 = sy*Math.sqrt(1 - r*r);
+    const tr = a + d, det = a*d - b*b, disc = Math.sqrt(tr*tr/4 - det), l1 = tr/2 + disc, l2 = tr/2 - disc;
+    const v1 = Math.abs(b) < 1e-12 ? (a >= d ? [1, 0] : [0, 1]) : (() => { const v = [l1 - d, b], n = Math.hypot(...v); return [v[0]/n, v[1]/n]; })(), v2 = [-v1[1], v1[0]];
+    const {ctx, w, h} = sizeCanvas(cv, .85, 340), s = Math.min(w, h)/9, ox = w/2, oy = h/2, P = (x, y) => [ox + x*s, oy - y*s];
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+    ctx.fillStyle = tok('--muted'); ctx.globalAlpha = .55;
+    let mx = 0, my = 0, cxx = 0, cyy = 0, cxy = 0;
+    Z.forEach(([z1, z2]) => { const x = L11*z1, y = L21*z1 + L22*z2; mx += x; my += y; cxx += x*x; cyy += y*y; cxy += x*y; const [px, py] = P(x, y); ctx.fillRect(px - 1.5, py - 1.5, 3, 3); });
+    ctx.globalAlpha = 1; const n = Z.length; mx /= n; my /= n; const ecov = cxy/n - mx*my, ex = Math.sqrt(cxx/n - mx*mx), ey = Math.sqrt(cyy/n - my*my);
+    [1, 2].forEach(k => { const pts = []; for (let i = 0; i <= 80; i++){ const t = i/80*2*Math.PI, u = k*Math.sqrt(l1)*Math.cos(t), v = k*Math.sqrt(l2)*Math.sin(t); pts.push(P(u*v1[0] + v*v2[0], u*v1[1] + v*v2[1])); } linePath(ctx, pts, tok('--violet'), k === 1 ? 2.2 : 1.4, k === 2 ? [5, 4] : null); });
+    arrow(ctx, ox, oy, ...P(v1[0]*Math.sqrt(l1), v1[1]*Math.sqrt(l1)), tok('--row'), 3); arrow(ctx, ox, oy, ...P(v2[0]*Math.sqrt(l2), v2[1]*Math.sqrt(l2)), tok('--col'), 3);
+    $('#g2-out').innerHTML = `Σ = [[${f4(a)}, ${f4(b)}],<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[${f4(b)}, ${f4(d)}]]<br>非對角 = ρσ₁σ₂ = ${f4(b)}<br><br>特徵值 λ₁ = ${f4(l1)}，λ₂ = ${f4(l2)}<br><span style="color:var(--row)">v₁ = (${f4(v1[0])}, ${f4(v1[1])})</span><br><span style="color:var(--col)">v₂ = (${f4(v2[0])}, ${f4(v2[1])})</span><br><br>抽樣方法：x = Lε，LLᵀ = Σ（Cholesky）<br>L = [[${f4(L11)}, 0], [${f4(L21)}, ${f4(L22)}]]<br><br>600 個樣本的估計：<br>σ̂₁ = ${f4(ex)}，σ̂₂ = ${f4(ey)}，ρ̂ = ${f4(ecov/(ex*ey))}<br><span style="color:var(--muted)">ρ = 0 且 σ₁ = σ₂ 時是正圓</span>`;
+  }
+  $('#g2-re').addEventListener('click', () => { sample(); draw(); });
+  bindRange(['g2-sx','g2-sy','g2-r'], draw); sample(); onR(draw);
+})();
+
+/* ---------- 第 10 節：CLT ---------- */
+(function(){
+  const cv = $('#cv-clt'); let cur = 'dice', seed = 11, means = [];
+  const B = {
+    dice: {n:'骰子', mu:3.5, v:35/12, s:r => 1 + Math.floor(r()*6)},
+    expo: {n:'指數（右偏）', mu:1, v:1, s:r => -Math.log(1 - r())},
+    bern: {n:'伯努利 p = 0.2', mu:.2, v:.16, s:r => r() < .2 ? 1 : 0},
+    arc: {n:'U 形', mu:.5, v:.125, s:r => Math.sin(Math.PI*r()/2)**2}
+  };
+  $('#clt-pick').innerHTML = Object.keys(B).map(k => `<button class="btn" data-c="${k}" aria-pressed="${k === cur}">${B[k].n}</button>`).join('');
+  $('#clt-pick').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (!b) return; cur = b.dataset.c; $('#clt-pick').querySelectorAll('[data-c]').forEach(x => x.setAttribute('aria-pressed', x === b)); sim(); draw(); });
+  function sim(){ const r = mulberry32(seed++), b = B[cur], n = +$('#clt-n').value; means = Array.from({length:3000}, () => { let s = 0; for (let i = 0; i < n; i++) s += b.s(r); return s/n; }); }
+  function draw(){
+    const b = B[cur], n = +$('#clt-n').value; setOut('clt-n', String(n));
+    const sd = Math.sqrt(b.v/n), lo = Math.min(...means, b.mu - 4*sd), hi = Math.max(...means, b.mu + 4*sd);
+    const bins = 40, bw = (hi - lo)/bins || 1, cnt = new Array(bins).fill(0); means.forEach(m => cnt[Math.min(bins - 1, Math.floor((m - lo)/bw))]++);
+    const dens = cnt.map(c => c/(means.length*bw));
+    const {ctx, w, h} = sizeCanvas(cv, .62, 300), pad = {l:12, r:12, t:14, b:24}; axesBox(ctx, w, h, pad);
+    const X = x => pad.l + (x - lo)/(hi - lo)*(w - pad.l - pad.r);
+    const curve = []; for (let i = 0; i <= 200; i++){ const x = lo + (hi - lo)*i/200; curve.push([x, npdf(x, b.mu, sd)]); }
+    const ymax = Math.min(Math.max(...dens), Math.max(...curve.map(c => c[1]))*3)*1.1, Y = y => h - pad.b - Math.min(y, ymax)/ymax*(h - pad.t - pad.b);
+    ctx.fillStyle = tok('--row'); ctx.globalAlpha = .65; dens.forEach((d, i) => { const x = X(lo + i*bw); ctx.fillRect(x, Y(d), Math.max(1, X(lo + (i + 1)*bw) - x - 1), h - pad.b - Y(d)); }); ctx.globalAlpha = 1;
+    linePath(ctx, curve.map(([x, y]) => [X(x), Y(y)]), tok('--pen'), 2.2);
+    for (let i = 0; i <= 4; i++){ const x = lo + (hi - lo)*i/4; txt(ctx, f4(Math.round(x*100)/100), X(x), h - 6, null, 'center'); }
+    const em = means.reduce((a, c) => a + c, 0)/means.length, es = Math.sqrt(means.reduce((a, c) => a + (c - em)**2, 0)/(means.length - 1));
+    const sk = means.reduce((a, c) => a + ((c - em)/es)**3, 0)/means.length;
+    $('#clt-out').innerHTML = `原始分佈：${b.n}<br>μ = ${f4(b.mu)}，σ = ${f4(Math.sqrt(b.v))}<br><br>每次平均 n = ${n} 個，重複 3000 次<br><br>CLT 預測：平均 ≈ ${f4(b.mu)}，標準差 ≈ σ/√n = ${f4(sd)}<br>模擬結果：平均 = ${f4(em)}，標準差 = ${f4(es)}<br>偏態（0 代表對稱）= ${f4(sk)}<br><br><span style="color:var(--muted)">n = 1 時就是原始分佈本身；n 變大時，偏態趨近 0、形狀趨近常態。</span>`;
+  }
+  $('#clt-n').addEventListener('input', () => { sim(); draw(); }); $('#clt-re').addEventListener('click', () => { sim(); draw(); });
+  sim(); onR(draw);
+})();
+
+/* ---------- 第 13 節：MLE ---------- */
+(function(){
+  const cv = $('#cv-ml');
+  function draw(){
+    const n = +$('#ml-n').value, kEl = $('#ml-k'); kEl.max = n; if (+kEl.value > n) kEl.value = n; const k = +kEl.value; setOut('ml-n', String(n)); setOut('ml-k', String(k));
+    const ll = p => (k ? k*Math.log(p) : 0) + (n - k ? (n - k)*Math.log(1 - p) : 0), ph = k/n, lmax = ll(Math.min(Math.max(ph, 1e-12), 1 - 1e-12));
+    const {ctx, w, h} = sizeCanvas(cv, .62, 300), pad = {l:34, r:40, t:14, b:24}; axesBox(ctx, w, h, pad);
+    const X = p => pad.l + p*(w - pad.l - pad.r), Y = y => h - pad.b - y*(h - pad.t - pad.b), floor = -12, Y2 = y => h - pad.b - (Math.max(y - lmax, floor) - floor)/(-floor)*(h - pad.t - pad.b);
+    const pts = [], lp = []; for (let i = 1; i < 400; i++){ const p = i/400, v = ll(p); pts.push([X(p), Y(Math.exp(v - lmax))]); lp.push([X(p), Y2(v)]); }
+    linePath(ctx, lp, tok('--violet'), 1.8, [5, 4]); linePath(ctx, pts, tok('--row'), 2.6);
+    ctx.save(); ctx.strokeStyle = tok('--pen'); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(X(ph), pad.t); ctx.lineTo(X(ph), h - pad.b); ctx.stroke(); ctx.restore();
+    [0, .25, .5, .75, 1].forEach(p => txt(ctx, String(p), X(p), h - 6, null, 'center')); txt(ctx, 'p̂', X(ph) + 4, pad.t + 12, tok('--pen'));
+    txt(ctx, 'max', w - pad.r + 4, pad.t + 10, tok('--violet')); txt(ctx, 'max−12', w - pad.r + 2, h - pad.b, tok('--violet'), 'left', 10);
+    const se = Math.sqrt(ph*(1 - ph)/n);
+    $('#ml-out').innerHTML = `資料：${n} 次中 ${k} 次正面<br>log L(p) = ${k}·log p + ${n - k}·log(1−p)<br><br>MLE：p̂ = k/n = <b>${f4(ph)}</b><br>log L(p̂) = ${f4(lmax)}<br>L(p̂) = ${lmax > -700 ? Math.exp(lmax).toExponential(3) : '太小，會下溢'}<br>log L(0.5) = ${f4(ll(.5))}<br><br>p̂ 的標準誤 ≈ √(p̂(1−p̂)/n) = ${f4(se)}<br><span style="color:var(--muted)">藍色曲線已縮放成最高點 = 1。n 越大曲線越窄，代表估計越確定。原始的 L(p) 會小到電腦存不下，所以實務上一律用 log。</span>`;
+  }
+  bindRange(['ml-n','ml-k'], draw); onR(draw);
+})();
+
+/* ---------- 第 15 節：Beta 後驗 ---------- */
+(function(){
+  const cv = $('#cv-bt');
+  function q(a, b, t){ const N = 2000; let acc = 0, prev = 0; for (let i = 1; i < N; i++){ const x = i/N, v = betapdf(x, a, b); acc += (v + prev)/2/N; prev = v; if (acc >= t) return x; } return 1; }
+  function draw(){
+    const a = +$('#bt-a').value, b = +$('#bt-b').value, n = +$('#bt-n').value, kEl = $('#bt-k'); kEl.max = n; if (+kEl.value > n) kEl.value = n; const k = +kEl.value;
+    ['a','b','n','k'].forEach(id => setOut('bt-'+id, String({a,b,n,k}[id])));
+    const A = a + k, Bb = b + n - k;
+    const {ctx, w, h} = sizeCanvas(cv, .62, 300), pad = {l:12, r:12, t:14, b:24}; axesBox(ctx, w, h, pad);
+    const xs = Array.from({length:399}, (_, i) => (i + 1)/400);
+    const pr = xs.map(x => betapdf(x, a, b)), li = xs.map(x => betapdf(x, k + 1, n - k + 1)), po = xs.map(x => betapdf(x, A, Bb));
+    const ymax = Math.min(Math.max(...po.filter(isFinite), ...pr.filter(isFinite), ...(n ? li.filter(isFinite) : [0]))*1.08, 30);
+    const X = p => pad.l + p*(w - pad.l - pad.r), Y = y => h - pad.b - Math.min(y, ymax)/ymax*(h - pad.t - pad.b);
+    linePath(ctx, xs.map((x, i) => [X(x), Y(pr[i])]), tok('--muted'), 2, [5, 4]);
+    if (n) linePath(ctx, xs.map((x, i) => [X(x), Y(li[i])]), tok('--col'), 2);
+    ctx.save(); ctx.fillStyle = tok('--row-soft'); ctx.beginPath(); ctx.moveTo(X(0), h - pad.b); xs.forEach((x, i) => ctx.lineTo(X(x), Y(po[i]))); ctx.lineTo(X(1), h - pad.b); ctx.closePath(); ctx.globalAlpha = .7; ctx.fill(); ctx.restore();
+    linePath(ctx, xs.map((x, i) => [X(x), Y(po[i])]), tok('--row'), 2.6);
+    [0, .25, .5, .75, 1].forEach(p => txt(ctx, String(p), X(p), h - 6, null, 'center'));
+    const mapv = (A > 1 && Bb > 1) ? (A - 1)/(A + Bb - 2) : NaN;
+    $('#bt-out').innerHTML = `先驗 <span style="color:var(--muted)">Beta(${a}, ${b})</span>，平均 ${f4(a/(a + b))}<br>資料：${n} 次中 ${k} 次正面${n ? '，MLE = ' + f4(k/n) : ''}<br>後驗 <span style="color:var(--row)">Beta(${a}+${k}, ${b}+${n - k}) = Beta(${A}, ${Bb})</span><br><br>後驗平均 = ${A}/${A + Bb} = <b>${f4(A/(A + Bb))}</b><br>MAP（後驗最高點）= ${isNaN(mapv) ? '—' : '<b>' + f4(mapv) + '</b>'}<br>95% 可信區間 ≈ [${f4(q(A, Bb, .025))}, ${f4(q(A, Bb, .975))}]<br><br><span style="color:var(--muted)">先驗等於「事先看過 ${a - 1} 次正面、${b - 1} 次反面」。資料越多，後驗越靠近 MLE、也越窄。</span>`;
+  }
+  bindRange(['bt-a','bt-b','bt-n','bt-k'], draw); onR(draw);
+})();
+
+/* ---------- 第 19 節：KL ---------- */
+(function(){
+  const cv = $('#cv-kl'), ids = ['p0','p1','p2','q0','q1','q2'];
+  function draw(){
+    const raw = ids.map(i => +$('#kl-'+i).value), sp = raw[0] + raw[1] + raw[2], sq = raw[3] + raw[4] + raw[5];
+    const p = raw.slice(0, 3).map(v => v/sp), q = raw.slice(3).map(v => v/sq);
+    const H = d => -d.reduce((s, v) => s + v*Math.log(v), 0), CE = (a, b) => -a.reduce((s, v, i) => s + v*Math.log(b[i]), 0);
+    const {ctx, w, h} = sizeCanvas(cv, .6, 260), pad = {l:10, r:10, t:16, b:26}; axesBox(ctx, w, h, pad);
+    const gw = (w - pad.l - pad.r)/3, Y = y => h - pad.b - y*(h - pad.t - pad.b);
+    [0,1,2].forEach(i => { const x = pad.l + i*gw; ctx.fillStyle = tok('--col'); ctx.fillRect(x + gw*.14, Y(p[i]), gw*.32, h - pad.b - Y(p[i])); ctx.fillStyle = tok('--row'); ctx.fillRect(x + gw*.54, Y(q[i]), gw*.32, h - pad.b - Y(q[i]));
+      txt(ctx, p[i].toFixed(2), x + gw*.3, Y(p[i]) - 4, tok('--col'), 'center', 11); txt(ctx, q[i].toFixed(2), x + gw*.7, Y(q[i]) - 4, tok('--row'), 'center', 11); txt(ctx, '類別 ' + (i + 1), x + gw*.5, h - 8, null, 'center'); });
+    const Hp = H(p), Hq = H(q), cpq = CE(p, q), kpq = cpq - Hp, kqp = CE(q, p) - Hq, L2 = Math.LN2;
+    $('#kl-out').innerHTML = `<span style="color:var(--col)">p = (${p.map(v => v.toFixed(3)).join(', ')})</span><br><span style="color:var(--row)">q = (${q.map(v => v.toFixed(3)).join(', ')})</span><br><br><table style="min-width:0"><thead><tr><th></th><th>nats</th><th>bits</th></tr></thead><tbody><tr><td>H(p)</td><td class="num">${f4(Hp)}</td><td class="num">${f4(Hp/L2)}</td></tr><tr><td>H(q)</td><td class="num">${f4(Hq)}</td><td class="num">${f4(Hq/L2)}</td></tr><tr><td>H(p, q)</td><td class="num">${f4(cpq)}</td><td class="num">${f4(cpq/L2)}</td></tr><tr><td>KL(p‖q)</td><td class="num"><b>${f4(kpq)}</b></td><td class="num">${f4(kpq/L2)}</td></tr><tr><td>KL(q‖p)</td><td class="num"><b>${f4(kqp)}</b></td><td class="num">${f4(kqp/L2)}</td></tr></tbody></table><br>檢查：H(p, q) = H(p) + KL(p‖q) = ${f4(Hp)} + ${f4(kpq)} = ${f4(Hp + kpq)}<br>3 類的最大熵 = log 3 = ${f4(Math.log(3))} nats（均勻分佈）`;
+  }
+  bindRange(ids.map(i => 'kl-'+i), draw); onR(draw);
+})();
+
+/* ---------- 第 21 節：解碼 ---------- */
+(function(){
+  const cv = $('#cv-lm'), W = ['好','熱','冷','晴朗','悶','差','奇怪','香蕉'], Z = [3.0, 2.6, 2.2, 1.6, 1.0, 0.5, -0.5, -2.5];
+  let counts = null;
+  function dist(){
+    const T = +$('#lm-t').value, K = +$('#lm-k').value, Pp = +$('#lm-p').value;
+    const zt = Z.map(z => z/T), m = Math.max(...zt), e = zt.map(z => Math.exp(z - m)), s = e.reduce((a, b) => a + b, 0), p = e.map(v => v/s);
+    const keep = p.map(() => false); let acc = 0;
+    for (let i = 0; i < p.length; i++){ if (i >= K) break; keep[i] = true; acc += p[i]; if (acc >= Pp) break; }
+    const ks = p.reduce((a, v, i) => a + (keep[i] ? v : 0), 0), q = p.map((v, i) => keep[i] ? v/ks : 0);
+    return {T, K, Pp, p, q, keep};
+  }
+  function draw(){
+    const d = dist(); setOut('lm-t', d.T.toFixed(2)); setOut('lm-k', String(d.K)); setOut('lm-p', d.Pp.toFixed(2));
+    const {ctx, w, h} = sizeCanvas(cv, .7, 300), lw = 54, rowH = (h - 10)/W.length, bwMax = w - lw - 60;
+    W.forEach((wd, i) => { const y = 5 + i*rowH; txt(ctx, wd, lw - 8, y + rowH*.65, tok('--ink'), 'right', 13);
+      ctx.fillStyle = tok('--sunk'); ctx.fillRect(lw, y + rowH*.18, d.p[i]*bwMax, rowH*.64);
+      if (d.keep[i]){ ctx.fillStyle = tok('--row'); ctx.fillRect(lw, y + rowH*.18, d.q[i]*bwMax, rowH*.64); }
+      txt(ctx, (d.keep[i] ? d.q[i] : d.p[i]).toFixed(3), lw + Math.max(d.q[i], d.p[i])*bwMax + 6, y + rowH*.65, d.keep[i] ? tok('--row') : tok('--muted'), 'left', 11); });
+    const H = -d.q.reduce((s, v) => s + (v > 0 ? v*Math.log(v) : 0), 0);
+    $('#lm-out').innerHTML = `logits z = (${Z.join(', ')})<br>softmax(z / ${d.T.toFixed(2)}) 之後：<br>${W.map((wd, i) => wd + ' ' + d.p[i].toFixed(3)).join('、')}<br><br>候選詞：${W.filter((_, i) => d.keep[i]).join('、')}（${d.keep.filter(Boolean).length} 個）<br>重新正規化後的熵 = ${f4(H)} nats<br>${counts ? '<br>抽 20 次的結果：<br>' + counts.map(([wd, c]) => wd + ' × ' + c).join('、') : ''}`;
+  }
+  $('#lm-s').addEventListener('click', () => { const d = dist(), c = {}; for (let t = 0; t < 20; t++){ let u = Math.random(), i = 0; while (i < d.q.length - 1 && u > d.q[i]){ u -= d.q[i]; i++; } while (!d.keep[i]) i--; c[W[i]] = (c[W[i]] || 0) + 1; } counts = Object.entries(c).sort((a, b) => b[1] - a[1]); draw(); });
+  bindRange(['lm-t','lm-k','lm-p'], () => { counts = null; draw(); }); onR(draw);
+})();
+
+/* ---------- 第 24 節：ROC ---------- */
+(function(){
+  const c1 = $('#cv-roc1'), c2 = $('#cv-roc2');
+  function draw(){
+    const d = +$('#roc-d').value, t = +$('#roc-t').value, pi = +$('#roc-pi').value/100; setOut('roc-d', d.toFixed(1)); setOut('roc-t', t.toFixed(2)); setOut('roc-pi', pct(pi));
+    const tpr = 1 - Phi(t - d), fpr = 1 - Phi(t), prec = tpr*pi/(tpr*pi + fpr*(1 - pi) || 1), f1 = 2*prec*tpr/(prec + tpr || 1), acc = tpr*pi + (1 - fpr)*(1 - pi), auc = Phi(d/Math.SQRT2);
+    { const {ctx, w, h} = sizeCanvas(c1, .75, 260), pad = {l:8, r:8, t:12, b:22}; axesBox(ctx, w, h, pad);
+      const x0 = -3.5, x1 = Math.max(4, d + 3.5), X = x => pad.l + (x - x0)/(x1 - x0)*(w - pad.l - pad.r), Y = y => h - pad.b - y/.45*(h - pad.t - pad.b);
+      const xs = Array.from({length:201}, (_, i) => x0 + (x1 - x0)*i/200);
+      [[0, tok('--muted')], [d, tok('--col')]].forEach(([m, col]) => { ctx.save(); ctx.fillStyle = col; ctx.globalAlpha = .22; ctx.beginPath(); ctx.moveTo(X(Math.max(t, x0)), h - pad.b); xs.filter(x => x >= t).forEach(x => ctx.lineTo(X(x), Y(npdf(x, m)))); ctx.lineTo(X(x1), h - pad.b); ctx.closePath(); ctx.fill(); ctx.restore(); linePath(ctx, xs.map(x => [X(x), Y(npdf(x, m))]), col, 2.2); });
+      ctx.save(); ctx.strokeStyle = tok('--pen'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(t), pad.t); ctx.lineTo(X(t), h - pad.b); ctx.stroke(); ctx.restore();
+      txt(ctx, '陰性', X(0), h - 6, tok('--muted'), 'center'); txt(ctx, '陽性', X(d), h - 6, tok('--col'), 'center'); txt(ctx, '門檻 →判陽', X(t) + 4, pad.t + 10, tok('--pen')); }
+    { const {ctx, w, h} = sizeCanvas(c2, .75, 260), pad = {l:30, r:10, t:10, b:24}; axesBox(ctx, w, h, pad);
+      const X = x => pad.l + x*(w - pad.l - pad.r), Y = y => h - pad.b - y*(h - pad.t - pad.b);
+      linePath(ctx, [[X(0), Y(0)], [X(1), Y(1)]], tok('--rule'), 1.2, [4, 4]);
+      const pts = []; for (let i = 0; i <= 200; i++){ const tt = 8 - 13*i/200; pts.push([X(1 - Phi(tt)), Y(1 - Phi(tt - d))]); }
+      ctx.save(); ctx.fillStyle = tok('--row-soft'); ctx.beginPath(); ctx.moveTo(X(0), Y(0)); pts.forEach(p => ctx.lineTo(...p)); ctx.lineTo(X(1), Y(0)); ctx.closePath(); ctx.globalAlpha = .7; ctx.fill(); ctx.restore();
+      linePath(ctx, pts, tok('--row'), 2.4); ctx.fillStyle = tok('--pen'); ctx.beginPath(); ctx.arc(X(fpr), Y(tpr), 5.5, 0, 7); ctx.fill();
+      txt(ctx, 'FPR', w - pad.r, h - 6, null, 'right'); txt(ctx, 'TPR', 2, pad.t + 10); txt(ctx, 'AUC = ' + auc.toFixed(3), X(.95), Y(.08), tok('--row'), 'right', 13); }
+    $('#roc-out').innerHTML = `TPR（召回率）= P(分數 &gt; 門檻 | 陽性) = <b>${f4(tpr)}</b>　　FPR = P(分數 &gt; 門檻 | 陰性) = <b>${f4(fpr)}</b><br>陽性比例 ${pct(pi)} 時：精確率 = TPR·π / (TPR·π + FPR·(1−π)) = <b>${f4(prec)}</b>，F1 = ${f4(f1)}，準確率 = ${f4(acc)}<br>AUC = Φ(d/√2) = <b>${f4(auc)}</b>：隨機挑一個陽性、一個陰性，陽性分數較高的機率。<br><span style="color:var(--muted)">把陽性比例調低（例如 1%），TPR 和 FPR 不變，精確率卻大幅下降：這就是第 4 節的基本率謬誤。</span>`;
+  }
+  bindRange(['roc-d','roc-t','roc-pi'], draw); onR(draw);
+})();
+
+/* ---------- 第 26 節：練習題 ---------- */
+(function(){
+  const Q = [
+    {q:'擲一顆公平骰子，已知點數是偶數，點數是 6 的機率？', o:['1/6','1/3','1/2','2/3'], a:1, e:'世界縮小成 {2, 4, 6}，6 是其中之一。（第 3 節）'},
+    {q:'兩個事件機率都大於 0 且互斥，它們獨立嗎？', o:['一定獨立','一定不獨立','看情況','互斥就是獨立'], a:1, e:'互斥時 P(A∩B) = 0，但 P(A)P(B) > 0，所以不獨立。（第 2 節）'},
+    {q:'盛行率 1%、靈敏度 99%、偽陽性率 5%。驗出陽性，真的有病的機率最接近？', o:['99%','95%','約 17%','1%'], a:2, e:'0.0099 / (0.0099 + 0.0495) ≈ 16.7%。沒病的人太多，偽陽性數量壓過真陽性。（第 4 節）'},
+    {q:'語言模型計算一整句話機率的依據是？', o:['大數法則','機率的連鎖規則','中央極限定理','共軛先驗'], a:1, e:'P(x₁…x_T) = Π P(x_t | x_<t)。（第 3 節）'},
+    {q:'連續分佈的 PDF 值 f(x) 可以大於 1 嗎？', o:['不行，機率最多是 1','可以，密度不是機率','只有常態分佈可以','只有離散分佈可以'], a:1, e:'面積才是機率。寬度 0.1 的均勻分佈密度是 10。（第 5 節）'},
+    {q:'Var(3X + 5) 等於？', o:['3 Var(X) + 5','9 Var(X) + 5','9 Var(X)','3 Var(X)'], a:2, e:'加常數不改變分散程度，乘 a 變異數乘 a²。（第 6 節）'},
+    {q:'批次大小從 32 變成 128，小批次梯度的標準差大約變成原本的？', o:['1/4','1/2','1/16','不變'], a:1, e:'標準差 ∝ 1/√B，√4 = 2。（第 6 節）'},
+    {q:'X 在 {−1, 0, 1} 均勻、Y = X²。下列何者正確？', o:['X、Y 獨立','X、Y 不相關但不獨立','X、Y 正相關','X、Y 負相關'], a:1, e:'Cov = E[X³] − E[X]E[X²] = 0，但 Y 完全由 X 決定。（第 8 節）'},
+    {q:'中央極限定理說的是？', o:['樣本越多，資料本身越接近常態','樣本平均的分佈趨近常態','所有分佈都是常態','變異數會趨近 0 以外的定值'], a:1, e:'是「平均」的分佈趨近常態，原始資料的分佈不會改變。（第 10 節）'},
+    {q:'為什麼樣本變異數要除以 n − 1？', o:['計算比較快','用樣本平均代替真實平均會低估變異數','讓結果變大比較保守','只是慣例，沒有理由'], a:1, e:'資料離 x̄ 比離 μ 近，除以 n 的期望值是 (n−1)σ²/n。（第 11 節）'},
+    {q:'MSE = ？', o:['Bias + Var','Bias² + Var','Bias × Var','Var − Bias²'], a:1, e:'偏差–變異數分解。（第 12 節）'},
+    {q:'擲 20 次硬幣 15 次正面，正面機率的 MLE 是？', o:['0.5','0.6','0.75','0.8'], a:2, e:'伯努利的 MLE 就是成功比例 15/20。（第 13 節）'},
+    {q:'假設迴歸誤差服從常態分佈，最大概似等價於最小化？', o:['交叉熵','均方誤差','平均絕對誤差','KL(q‖p)'], a:1, e:'−log 常態密度 = (y − f(x))²/(2σ²) + 常數。（第 14 節）'},
+    {q:'權重的常態先驗 N(0, τ²I) 在 MAP 裡對應？', o:['L1 正則化','L2 正則化／權重衰減','dropout','提早停止'], a:1, e:'−log p(θ) = ‖θ‖²/(2τ²) + 常數。拉普拉斯先驗才對應 L1。（第 15 節）'},
+    {q:'先驗 Beta(2, 2)，觀察 10 次中 7 次正面，後驗是？', o:['Beta(7, 3)','Beta(9, 5)','Beta(2, 2)','Beta(12, 12)'], a:1, e:'Beta(α + k, β + n − k) = Beta(2 + 7, 2 + 3)。（第 15 節）'},
+    {q:'p 值是？', o:['H₀ 為真的機率','結果是運氣的機率','假設 H₀ 為真，看到這麼極端資料的機率','模型正確的機率'], a:2, e:'是 P(資料這麼極端 | H₀)，不是 P(H₀ | 資料)。（第 16 節）'},
+    {q:'公平骰子的熵是幾 bits？', o:['1','約 2.585','6','3.5'], a:1, e:'均勻分佈 H = log₂ 6。（第 18 節）'},
+    {q:'H(p, q) = ？', o:['H(p) − KL(p‖q)','H(p) + KL(p‖q)','KL(q‖p)','H(q) + KL(p‖q)'], a:1, e:'交叉熵 = 熵 + 多付出的部分。所以最小化交叉熵 = 最小化 KL = MLE。（第 19 節）'},
+    {q:'KL 散度的哪個性質讓它不是真正的距離？', o:['可以是負的','不對稱','永遠是 0','沒有單位'], a:1, e:'KL(p‖q) ≠ KL(q‖p)。它一定 ≥ 0。（第 19 節）'},
+    {q:'溫度 T 趨近 0 時，從 softmax(z/T) 採樣會變成？', o:['均勻亂選','貪婪：永遠選最大的','top-p','選最小的'], a:1, e:'除以很小的 T 會把差距放大，機率集中到最大的 logit。（第 21 節）'},
+    {q:'VAE 的重參數化技巧 z = μ + σ ⊙ ε 解決了什麼問題？', o:['讓 KL 變成 0','讓採樣步驟可以反向傳播','讓模型變小','讓先驗變成均勻分佈'], a:1, e:'隨機性移到與參數無關的 ε，z 對 μ、σ 可微。（第 22 節）'},
+    {q:'KL(N(μ, σ²) ‖ N(0, 1)) 在 μ = 0、σ = 1 時等於？', o:['0','0.5','1','log 2'], a:0, e:'½(0 + 1 − 1 − 0) = 0，兩個分佈相同。（第 22 節）'},
+    {q:'ReLU 網路的 He 初始化，Var(w) = ？', o:['1/n_in','2/n_in','2/(n_in + n_out)','1'], a:1, e:'n_in Var(w) 要約等於 1，ReLU 砍掉一半所以乘 2。（第 23 節）'},
+    {q:'精確率（precision）是哪個條件機率？', o:['P(預測陽 | 真陽)','P(真陽 | 預測陽)','P(預測陽 | 真陰)','P(真陰 | 預測陰)'], a:1, e:'召回率才是 P(預測陽 | 真陽)。兩者用貝氏定理互換。（第 24 節）'},
+    {q:'AUC = 0.8 的意思是？', o:['準確率 80%','隨機挑一個陽性和一個陰性，陽性分數較高的機率是 0.8','精確率 80%','80% 的陽性被抓到'], a:1, e:'這是 AUC 的機率解釋，與門檻無關。（第 24 節）'}
+  ];
+  const ans = {};
+  $('#quiz').innerHTML = Q.map((q, i) => `<div class="q" data-i="${i}"><div class="qt">${i+1}. ${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="ex" hidden>${q.e}</div></div>`).join('');
+  const score = () => { const k = Object.keys(ans).length, c = Object.entries(ans).filter(([i, j]) => Q[i].a === j).length; $('#qz-score').textContent = `已作答 ${k} / ${Q.length}，答對 ${c} 題`; };
+  document.querySelectorAll('#quiz .q').forEach(el => {
+    const i = +el.dataset.i;
+    el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+      const j = +b.dataset.j; ans[i] = j;
+      el.querySelectorAll('.opt').forEach(x => { x.disabled = true; const k = +x.dataset.j; if (k === Q[i].a) x.classList.add('right'); else if (k === j) x.classList.add('wrong'); });
+      const ex = el.querySelector('.ex'); ex.hidden = false; ex.insertAdjacentHTML('afterbegin', `<b>${j === Q[i].a ? '答對了。' : '再想想。'}</b> `); score();
+    }));
+  });
+  score();
+})();
+</script>
+
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>引用的論文、影片與圖表，版權屬原作者，不在上述授權範圍內。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p>需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body></html>

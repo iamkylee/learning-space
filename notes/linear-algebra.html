@@ -1,0 +1,1255 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>線代與矩陣微分筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout：方格筆記本。左側章節目錄（桌面），主欄是一頁頁筆記；列（row）一律用藍色、欄（column）一律用琥珀色，全站一致 */
+:root{
+  --paper:#F5F7F4; --sheet:#FFFFFF; --sunk:#ECF0EC; --ink:#1B2430; --muted:#5A6672; --rule:#D8E0DA; --grid:#E3EAE5;
+  --row:#2560B5; --row-soft:#DCE8F8; --col:#B8620E; --col-soft:#F8E6D0;
+  --pen:#B2382E; --pen-soft:#F6DFDC; --good:#2E7A4F; --good-soft:#DCEFE3; --violet:#6750A4; --violet-soft:#E9E4F5;
+  --f-display:"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+    --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+    --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+  --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+  --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+a{color:var(--row)}
+:focus-visible{outline:2px solid var(--row);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.r{color:var(--row);font-weight:600}.c{color:var(--col);font-weight:600}.pen{color:var(--pen)}
+
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;box-sizing:border-box;max-height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;overscroll-behavior:contain;padding-block:28px 40px}
+.side .brand{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.3}
+.side .sub{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
+.toc{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc .part{font-size:12px;letter-spacing:.08em;color:var(--muted);padding:14px 8px 4px;font-weight:500}
+.toc a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:5px 8px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.45}
+.toc a:hover{background:var(--sunk)}
+.toc a.on{background:var(--row-soft)}
+.toc .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+main{min-width:0;padding-block:12px 80px}
+.mbar{display:none}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .side{display:none}
+  .mbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);padding-block:8px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .mbar select{width:100%;font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);color:var(--ink)}
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+
+.hero{padding-block:36px 20px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero h1{font-size:clamp(32px,5vw,48px)}
+.hero .lead{margin-top:14px;color:var(--muted);max-width:36em}
+.hero .lead b{color:var(--ink)}
+.hero-fig{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:16px;overflow-x:auto}
+@media (max-width:720px){.hero{grid-template-columns:minmax(0,1fr)}}
+
+.part-head{margin-top:56px;padding:22px 22px;border-radius:14px;background:var(--row-soft);display:grid;gap:6px}
+.part-head.b{background:var(--col-soft)}
+.part-head .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.part-head h2{font-size:clamp(26px,3.6vw,34px)}
+.part-head p{max-width:62ch}
+
+section.sec{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:28px clamp(16px,3vw,32px);margin-top:28px;scroll-margin-top:16px}
+@media (max-width:900px){section.sec{scroll-margin-top:60px}}
+.sec .label{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.sec h2{font-size:clamp(23px,3vw,29px);margin-bottom:16px}
+.sec h3{font-size:19px;margin:30px 0 10px}
+.prose{max-width:68ch;display:grid;gap:12px}
+.prose>*,.box>*,.steps>div>div{min-width:0;overflow-wrap:break-word}
+.prose ul,.prose ol{margin:0;padding-left:1.4em;display:grid;gap:6px}
+.formula{overflow-x:auto;padding:8px 0;max-width:100%}
+.formula mjx-container{margin:0!important}
+.box{border-radius:10px;padding:14px 16px;display:grid;gap:6px;max-width:68ch;font-size:15px;margin-top:14px}
+.box b.t{font-size:13px;letter-spacing:.04em}
+.box.key{background:var(--row-soft)} .box.warn{background:var(--pen-soft)} .box.tip{background:var(--good-soft)} .box.amber{background:var(--col-soft)}
+.tbl{overflow-x:auto;max-width:100%;margin-top:10px}
+table{border-collapse:collapse;font-size:14.5px;min-width:100%}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:700}
+td.num{font-family:var(--f-mono);white-space:nowrap}
+code{font-family:var(--f-mono);font-size:.9em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+pre{margin:0;overflow-x:auto;background:var(--sunk);border-radius:10px;padding:14px 16px;font-family:var(--f-mono);font-size:13px;line-height:1.65}
+pre code{background:none;padding:0}
+.cm{color:var(--muted)}
+.steps{counter-reset:s;display:grid;gap:10px;margin-top:10px;max-width:72ch}
+.steps>div{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px}
+.steps>div::before{counter-increment:s;content:counter(s);font-family:var(--f-mono);font-size:13px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--sheet);display:flex;align-items:center;justify-content:center;margin-top:4px}
+
+/* demo */
+.demo{border:1.5px dashed var(--rule);border-radius:12px;padding:16px;margin-top:22px;display:grid;gap:12px;background:var(--paper)}
+.demo>*{min-width:0}
+.demo h4{font-size:17px}
+.demo .hint{font-size:14px;color:var(--muted);max-width:70ch}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.ctrl{display:flex;align-items:center;gap:8px;font-size:13.5px;min-width:0}
+.ctrl label{color:var(--muted);white-space:nowrap}
+.ctrl input[type=range]{width:130px;accent-color:var(--row)}
+.ctrl output{font-family:var(--f-mono);font-size:13px;min-width:3.6em}
+.btn{font:inherit;font-size:13.5px;padding:6px 12px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1.3}
+.btn:hover{border-color:var(--row)}
+.btn[aria-pressed="true"]{background:var(--row-soft);border-color:var(--row)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.out{font-family:var(--f-mono);font-size:13.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;overflow-x:auto;line-height:1.7}
+.cv{width:100%;min-width:0}
+.cv canvas{display:block;width:100%;border-radius:8px;background:var(--sheet);border:1px solid var(--rule)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}}
+.chip{display:inline-block;font-size:12.5px;font-weight:500;padding:1px 9px;border-radius:999px;font-family:var(--f-body)}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.bad{background:var(--pen-soft);color:var(--pen)} .chip.info{background:var(--row-soft);color:var(--row)}
+
+/* matrix widgets */
+.mx{display:inline-grid;gap:3px;padding:4px 7px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;vertical-align:middle}
+.mx input,.mx .cell{width:44px;height:34px;box-sizing:border-box;text-align:center;font-family:var(--f-mono);font-size:14px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);color:var(--ink);padding:0}
+.mx .cell{display:flex;align-items:center;justify-content:center}
+.mx button.cell{cursor:pointer}
+.mx .hr{background:var(--row-soft);border-color:var(--row);color:var(--row);font-weight:700}
+.mx .hc{background:var(--col-soft);border-color:var(--col);color:var(--col);font-weight:700}
+.mx .ho{background:var(--violet-soft);border-color:var(--violet);color:var(--violet);font-weight:700}
+.mxrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--f-mono)}
+.mxlab{display:grid;gap:4px;justify-items:center;font-size:12.5px;color:var(--muted)}
+
+/* quiz */
+.quiz{display:grid;gap:16px;margin-top:20px}
+.q{display:grid;gap:8px;border-top:1px dashed var(--rule);padding-top:14px}
+.q .qt{font-weight:500}
+.q .opts{display:grid;gap:6px}
+.q .opt{text-align:left;font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);color:var(--ink);cursor:pointer}
+.q .opt:hover:not(:disabled){border-color:var(--row)}
+.q .opt.right{background:var(--good-soft);border-color:var(--good)} .q .opt.wrong{background:var(--pen-soft);border-color:var(--pen)}
+.q .ex{font-size:14.5px;background:var(--sunk);border-radius:8px;padding:9px 12px}
+.score{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+</style>
+<meta name="description" content="從「向量是什麼」重新開始，一路到矩陣乘法、轉置、反矩陣、二次型與特徵值；再用萬用三步驟推導矩陣微分與反向傳播，最後整理 AI 常用運算與速查表。">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>:root{--line:var(--rule);--accent:var(--row);--bg:var(--paper);--surface2:var(--sunk)}.ls-foot{max-width:960px}</style>
+</head><body>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span>iamkylee@gmail.com</span></div>
+<div class="shell">
+<aside class="side" aria-label="目錄">
+  <div class="brand">線代與<br>矩陣微分筆記</div>
+  <div class="sub">從零開始，到看懂 \(\nabla_w(w^\top Aw)\)</div>
+  <ol class="toc" id="toc"></ol>
+</aside>
+
+<main>
+  <div class="mbar"><select id="jump" aria-label="跳到章節"></select></div>
+
+  <header class="hero">
+    <div>
+      <h1>線代與矩陣微分筆記</h1>
+      <p class="lead">寫給線性代數都忘光、卻要看懂深度學習推導的人。<b>上篇</b>從「向量是什麼」重新開始，一路到矩陣乘法、轉置、反矩陣、二次型與特徵值；<b>下篇</b>用一個萬用的三步驟方法，把 \(\nabla_w(c^\top w)\)、\(\nabla_w(w^\top Aw)\)、\(\nabla_W L\) 這些公式一條一條推出來，而不是背下來；<b>實戰篇</b>整理 AI 實際會用到的運算（廣播、softmax、交叉熵、注意力、LayerNorm、卷積、SVD、einsum），每一個都附上反向傳播怎麼算。</p>
+      <p class="lead">全站固定一個顏色約定：<span class="r">藍色是列（row，橫的）</span>，<span class="c">琥珀色是欄（column，直的）</span>。</p>
+    </div>
+    <div class="hero-fig" aria-label="矩陣乘法示意：A 的第 1 列和 B 的第 2 欄做內積，得到 C 第 1 列第 2 欄">
+      <div class="mxrow" id="hero-mx"></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px">\(C_{12}=\) <span class="r">A 的第 1 列</span> · <span class="c">B 的第 2 欄</span> \(=1\cdot8+2\cdot10+3\cdot12=64\)</div>
+    </div>
+  </header>
+
+  <!-- ================= 上篇 ================= -->
+  <div class="part-head" id="partA">
+    <div class="eyebrow">上篇</div>
+    <h2>矩陣運算</h2>
+    <p>先把基本功補回來。每一節都先講「它是什麼」，再講「在深度學習哪裡出現」，最後動手算。</p>
+  </div>
+
+  <!-- 1 -->
+  <section class="sec" id="s1">
+    <div class="label">第 1 節</div>
+    <h2>純量、向量、矩陣、張量</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>名稱</th><th>英文</th><th>寫法（本頁慣例）</th><th>形狀（shape）</th><th>深度學習例子</th></tr></thead>
+      <tbody>
+        <tr><td>純量</td><td>scalar</td><td>一般小寫斜體 \(a,\ \eta,\ L\)</td><td class="num">()</td><td>損失 \(L\)、學習率 \(\eta\)</td></tr>
+        <tr><td>向量</td><td>vector</td><td>粗體或一般小寫 \(\mathbf w,\ w,\ x\)</td><td class="num">(n,)</td><td>一筆資料的特徵、一層的偏差 \(b\)</td></tr>
+        <tr><td>矩陣</td><td>matrix</td><td>大寫 \(A,\ X,\ W\)</td><td class="num">(m, n)</td><td>一個批次的資料 \(X\)、權重 \(W\)</td></tr>
+        <tr><td>張量</td><td>tensor</td><td>大寫</td><td class="num">(N, C, H, W)</td><td>一批彩色影像</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:14px">
+      <p><strong>矩陣的形狀永遠是「列數 × 欄數」</strong>，也就是先說有幾橫排、再說有幾直行。\(A\in\mathbb R^{2\times3}\) 讀作「A 是 2 列 3 欄的實數矩陣」。第 \(i\) 列、第 \(j\) 欄的元素寫成 \(A_{ij}\)（或 \(a_{ij}\)），<strong>第一個下標是列、第二個是欄</strong>。</p>
+    </div>
+    <div class="formula">\[ A=\begin{bmatrix} a_{11} & a_{12} & a_{13}\\ a_{21} & a_{22} & a_{23}\end{bmatrix}=\begin{bmatrix} 1 & 2 & 3\\ 4 & 5 & 6\end{bmatrix},\qquad a_{12}=2,\quad a_{21}=4 \]</div>
+    <div class="prose">
+      <p><strong>向量預設是一個直的「欄向量」</strong>（column vector，形狀 \(n\times1\)）。需要橫的時候寫成轉置 \(w^\top\)（\(1\times n\)，列向量 row vector）。這個約定很重要：後面所有公式的形狀都靠它。</p>
+    </div>
+    <div class="formula">\[ w=\begin{bmatrix} w_1\\ w_2\\ w_3\end{bmatrix}\ (3\times1),\qquad w^\top=\begin{bmatrix} w_1 & w_2 & w_3\end{bmatrix}\ (1\times3) \]</div>
+    <div class="box warn"><b class="t">「行」和「列」的陷阱</b>
+      <p>台灣的教科書：<strong>列 = row（橫）、行 = column（直）</strong>，所以「行向量」是直的 column vector。中國大陸的用法剛好相反（行 = row、列 = column）。看網路資料或 AI 的回答時，遇到「行向量」「列向量」先確認是哪一邊的用法，最保險的做法是看英文或直接看形狀。本頁一律寫「列（row）」「欄（column）」。</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="sec" id="s2">
+    <div class="label">第 2 節</div>
+    <h2>向量運算：加法、純量乘法、內積、長度</h2>
+    <h3>加法與純量乘法</h3>
+    <div class="prose"><p>都是逐元素做。形狀必須相同才能相加。</p></div>
+    <div class="formula">\[ \begin{bmatrix}1\\2\end{bmatrix}+\begin{bmatrix}3\\-1\end{bmatrix}=\begin{bmatrix}4\\1\end{bmatrix},\qquad 3\begin{bmatrix}1\\2\end{bmatrix}=\begin{bmatrix}3\\6\end{bmatrix} \]</div>
+    <div class="prose"><p>梯度下降 \(w\leftarrow w-\eta\nabla L\) 就只用到這兩個運算：把梯度向量乘上純量 \(\eta\)，再和 \(w\) 相減。</p></div>
+
+    <h3>內積（dot product）</h3>
+    <div class="prose"><p>兩個一樣長的向量，對應元素相乘再全部加起來，得到一個<strong>純量</strong>：</p></div>
+    <div class="formula">\[ a^\top b=a\cdot b=\sum_{i=1}^{n}a_ib_i,\qquad \begin{bmatrix}1\\2\\3\end{bmatrix}^\top\begin{bmatrix}4\\5\\6\end{bmatrix}=1\cdot4+2\cdot5+3\cdot6=32 \]</div>
+    <div class="prose">
+      <p>寫成 \(a^\top b\) 是把它看成矩陣乘法：\((1\times n)(n\times1)=1\times1\)，也就是一個數。</p>
+      <p><strong>幾何意義</strong>：\(a^\top b=\lVert a\rVert\,\lVert b\rVert\cos\theta\)。方向越接近，內積越大；互相垂直時內積為 0（稱為正交，orthogonal）。</p>
+      <p><strong>在深度學習</strong>：一個神經元的輸出 \(z=w^\top x+b\) 就是一個內積加偏差；Transformer 的注意力分數 \(q^\top k\) 也是內積，衡量兩個向量有多「對齊」。</p>
+    </div>
+    <h3>長度（範數，norm）</h3>
+    <div class="formula">\[ \lVert w\rVert=\sqrt{w^\top w}=\sqrt{\textstyle\sum_i w_i^2},\qquad \lVert w\rVert^2=w^\top w \]</div>
+    <div class="prose"><p>例：\(w=(3,4)\)，\(\lVert w\rVert=5\)。權重衰減的 \(\tfrac\lambda2\lVert w\rVert^2\)、均方誤差 \(\lVert Xw-y\rVert^2\) 都是「長度的平方」，也就是自己和自己做內積。</p></div>
+
+    <div class="demo">
+      <h4>內積與夾角</h4>
+      <p class="hint">拖動兩個角度。內積是正的（夾角小於 90°）、零（垂直）、還是負的（夾角大於 90°）？</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="dp-a">a 的角度</label><input type="range" id="dp-a" min="0" max="360" value="20"><output id="dp-av"></output></div>
+        <div class="ctrl"><label for="dp-b">b 的角度</label><input type="range" id="dp-b" min="0" max="360" value="70"><output id="dp-bv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-dot" aria-label="兩個向量與夾角"></canvas></div>
+        <div class="out" id="dp-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="sec" id="s3">
+    <div class="label">第 3 節</div>
+    <h2>矩陣乘法</h2>
+    <div class="prose">
+      <p><strong>規則只有一條</strong>：左邊的欄數要等於右邊的列數，結果的形狀是「左邊的列 × 右邊的欄」。</p>
+    </div>
+    <div class="formula">\[ \underbrace{A}_{m\times \boxed{k}}\ \underbrace{B}_{\boxed{k}\times n}=\underbrace{C}_{m\times n},\qquad C_{ij}=\sum_{t=1}^{k}A_{it}B_{tj} \]</div>
+    <div class="prose"><p>\(C_{ij}\) 就是 <span class="r">A 的第 i 列</span> 和 <span class="c">B 的第 j 欄</span> 做內積。下面點任何一個結果格子試試看。</p></div>
+
+    <div class="demo" id="d-mm">
+      <h4>矩陣乘法逐格計算</h4>
+      <p class="hint">數字可以直接改。點右邊結果矩陣的任一格，看它是哪一列和哪一欄的內積。也可以換形狀，看什麼時候「乘不起來」。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="mm-shape">形狀</label><select id="mm-shape" class="btn"><option value="2,3,2">(2×3)(3×2)</option><option value="3,2,3">(3×2)(2×3)</option><option value="2,2,2">(2×2)(2×2)</option><option value="1,3,1">(1×3)(3×1) 內積</option><option value="3,1,3">(3×1)(1×3) 外積</option></select></div>
+      </div>
+      <div class="mxrow" id="mm-row" style="overflow-x:auto"></div>
+      <div class="out" id="mm-out"></div>
+    </div>
+
+    <h3>三種看矩陣乘法的方式</h3>
+    <div class="prose"><p>同一個乘法，換個角度看，會在不同推導裡派上用場：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>看法</th><th>內容</th><th>什麼時候好用</th></tr></thead>
+      <tbody>
+        <tr><td>① 逐格內積</td><td>\(C_{ij}=\) 第 i 列 · 第 j 欄</td><td>手算、寫成 \(\sum\) 做微分（下篇的主角）</td></tr>
+        <tr><td>② 欄的線性組合</td><td>\(Ax=x_1\,(A\text{ 的第 1 欄})+x_2\,(A\text{ 的第 2 欄})+\cdots\)</td><td>理解線性變換（第 4 節）</td></tr>
+        <tr><td>③ 外積相加</td><td>\(AB=\sum_t (A\text{ 的第 t 欄})(B\text{ 的第 t 列})\)</td><td>理解 \(X^\top X=\sum_i x_ix_i^\top\)、批次梯度是逐筆加總</td></tr>
+      </tbody>
+    </table></div>
+    <div class="formula">\[ \text{例：}\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}\begin{bmatrix}5\\6\end{bmatrix}=5\begin{bmatrix}1\\3\end{bmatrix}+6\begin{bmatrix}2\\4\end{bmatrix}=\begin{bmatrix}17\\39\end{bmatrix} \]</div>
+
+    <h3>三個一定要記住的性質</h3>
+    <div class="prose"><ul>
+      <li><strong>不能交換</strong>：一般 \(AB\ne BA\)。形狀可能根本不合；就算都是方陣，結果通常也不一樣。所以推導時<strong>左右順序不能亂換</strong>。</li>
+      <li><strong>可以結合</strong>：\((AB)C=A(BC)\)。括號怎麼加都可以，只要順序不變。</li>
+      <li><strong>可以分配</strong>：\(A(B+C)=AB+AC\)、\((A+B)C=AC+BC\)。</li>
+    </ul></div>
+    <div class="box key"><b class="t">深度學習裡的矩陣乘法</b>
+      <p>一層全連接層 \(Y=XW+b\)：\(X\) 是 \(n\times d_{in}\)（n 筆資料），\(W\) 是 \(d_{in}\times d_{out}\)，\(Y\) 是 \(n\times d_{out}\)。中間的 \(d_{in}\) 一定要對上，這就是 PyTorch 常見錯誤 <code>mat1 and mat2 shapes cannot be multiplied</code> 的意思。</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="sec" id="s4">
+    <div class="label">第 4 節</div>
+    <h2>矩陣是一種變換</h2>
+    <div class="prose">
+      <p>\(y=Ax\) 把向量 \(x\) 變成 \(y\)。用第 3 節的「看法 ②」：\(A\) 的<strong>第 1 欄就是 \((1,0)\) 被送到的位置</strong>，第 2 欄就是 \((0,1)\) 被送到的位置。只要知道這兩個基底去哪，整個平面怎麼變形就決定了。</p>
+      <p>單位正方形會變成一個平行四邊形，它的<strong>面積就是行列式</strong> \(\det A=ad-bc\)（帶正負號；負的代表翻面）。</p>
+    </div>
+    <div class="demo">
+      <h4>拖動矩陣，看網格怎麼變形</h4>
+      <p class="hint"><span class="r">藍色箭頭</span>是第 1 欄 \((a,c)\)，<span class="c">琥珀色箭頭</span>是第 2 欄 \((b,d)\)。紫色是單位正方形變成的平行四邊形。</p>
+      <div class="btns" id="lt-pre"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="lt-a">a</label><input type="range" id="lt-a" min="-2" max="2" step="0.05" value="1"><output id="lt-av"></output></div>
+        <div class="ctrl"><label for="lt-b">b</label><input type="range" id="lt-b" min="-2" max="2" step="0.05" value="0.5"><output id="lt-bv"></output></div>
+        <div class="ctrl"><label for="lt-c">c</label><input type="range" id="lt-c" min="-2" max="2" step="0.05" value="0"><output id="lt-cv"></output></div>
+        <div class="ctrl"><label for="lt-d">d</label><input type="range" id="lt-d" min="-2" max="2" step="0.05" value="1"><output id="lt-dv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-lt" aria-label="線性變換後的網格"></canvas></div>
+        <div class="out" id="lt-out"></div>
+      </div>
+    </div>
+    <div class="prose" style="margin-top:12px"><p>為什麼神經網路需要激活函數？因為矩陣只能做這種「直線還是直線、原點不動」的變形，疊再多層 \(W_2W_1x\) 也還是一個矩陣。要彎曲空間，必須在中間加非線性。</p></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="sec" id="s5">
+    <div class="label">第 5 節</div>
+    <h2>轉置</h2>
+    <div class="prose"><p>把矩陣沿對角線翻過來：第 i 列變成第 i 欄。\((A^\top)_{ij}=A_{ji}\)，形狀從 \(m\times n\) 變成 \(n\times m\)。</p></div>
+    <div class="formula">\[ A=\begin{bmatrix}1 & 2 & 3\\4 & 5 & 6\end{bmatrix}\ (2\times3)\qquad\Longrightarrow\qquad A^\top=\begin{bmatrix}1 & 4\\2 & 5\\3 & 6\end{bmatrix}\ (3\times2) \]</div>
+    <h3>轉置的四條規則</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>規則</th><th>白話</th><th>在推導中怎麼用</th></tr></thead>
+      <tbody>
+        <tr><td>\((A^\top)^\top=A\)</td><td>翻兩次回到原樣</td><td>—</td></tr>
+        <tr><td>\((A+B)^\top=A^\top+B^\top\)</td><td>可以分開翻</td><td>展開 \((Xw-y)^\top\)</td></tr>
+        <tr><td>\((AB)^\top=B^\top A^\top\)</td><td><strong>順序要倒過來</strong></td><td>\((Xw)^\top=w^\top X^\top\)</td></tr>
+        <tr><td>純量 \(s^\top=s\)</td><td>\(1\times1\) 翻了還是自己</td><td>\(y^\top Xw=w^\top X^\top y\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p><strong>為什麼 \((AB)^\top=B^\top A^\top\)？</strong> 看形狀就知道：\(A\) 是 \(m\times k\)、\(B\) 是 \(k\times n\)，\((AB)^\top\) 是 \(n\times m\)。\(B^\top\)（\(n\times k\)）乘 \(A^\top\)（\(k\times m\)）剛好是 \(n\times m\)；反過來 \(A^\top B^\top\) 根本乘不起來。用元素驗證：\(((AB)^\top)_{ij}=(AB)_{ji}=\sum_t A_{jt}B_{ti}=\sum_t (B^\top)_{it}(A^\top)_{tj}=(B^\top A^\top)_{ij}\)。</p>
+      <p><strong>純量轉置的妙用</strong>：\(y^\top Xw\) 是 \((1\times n)(n\times d)(d\times1)=1\times1\)，一個數。所以 \(y^\top Xw=(y^\top Xw)^\top=w^\top X^\top y\)。兩個看起來不一樣的式子其實相等，展開最小平方時會把 \(-y^\top Xw-w^\top X^\top y\) 合併成 \(-2y^\top Xw\)。</p>
+    </div>
+    <h3>對稱矩陣</h3>
+    <div class="prose"><p>\(A^\top=A\) 的方陣叫<strong>對稱矩陣</strong>（symmetric），也就是 \(A_{ij}=A_{ji}\)，沿對角線鏡射相同。最重要的例子：<strong>\(X^\top X\) 永遠是對稱的</strong>，因為 \((X^\top X)^\top=X^\top (X^\top)^\top=X^\top X\)。Hessian 矩陣（第 9 章）也是對稱的。這會讓下篇很多公式化簡：\(A+A^\top\) 變成 \(2A\)。</p></div>
+  </section>
+
+  <!-- 6 -->
+  <section class="sec" id="s6">
+    <div class="label">第 6 節</div>
+    <h2>單位矩陣、反矩陣、行列式</h2>
+    <div class="prose">
+      <p><strong>單位矩陣</strong> \(I\)：對角線是 1、其他是 0。它是矩陣世界的「1」：\(AI=IA=A\)。</p>
+      <p><strong>反矩陣</strong> \(A^{-1}\)：滿足 \(AA^{-1}=A^{-1}A=I\)，把 \(A\) 做的變換「還原」。只有方陣才可能有，而且要 \(\det A\ne0\)（變換沒有把平面壓扁成一條線）。</p>
+    </div>
+    <div class="formula">\[ \begin{bmatrix}a & b\\c & d\end{bmatrix}^{-1}=\frac{1}{ad-bc}\begin{bmatrix}d & -b\\-c & a\end{bmatrix},\qquad \text{例：}\begin{bmatrix}2 & 1\\1 & 1\end{bmatrix}^{-1}=\frac11\begin{bmatrix}1 & -1\\-1 & 2\end{bmatrix} \]</div>
+    <div class="prose"><p>2×2 的口訣：<strong>對角互換、副對角變號、除以行列式</strong>。驗算：\(\begin{bmatrix}2 & 1\\1 & 1\end{bmatrix}\begin{bmatrix}1 & -1\\-1 & 2\end{bmatrix}=\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}\)。</p></div>
+    <h3>解方程組 \(Ax=b\)</h3>
+    <div class="prose">
+      <p>形式上 \(x=A^{-1}b\)，但實作時<strong>不要真的算反矩陣</strong>：用 <code>np.linalg.solve(A, b)</code>，比較快也比較準。牛頓法的 \(p=-H^{-1}g\)、正規方程的 \(w=(X^\top X)^{-1}X^\top y\) 都是這樣處理。</p>
+      <p>其他兩條：\((AB)^{-1}=B^{-1}A^{-1}\)（一樣要倒過來），\((A^\top)^{-1}=(A^{-1})^\top\)。</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="sec" id="s7">
+    <div class="label">第 7 節</div>
+    <h2>四種特別的乘積</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>名稱</th><th>寫法</th><th>形狀</th><th>結果</th><th>出現在</th></tr></thead>
+      <tbody>
+        <tr><td>內積 inner product</td><td>\(a^\top b\)</td><td class="num">(1×n)(n×1)</td><td>純量</td><td>神經元 \(w^\top x\)</td></tr>
+        <tr><td>外積 outer product</td><td>\(ab^\top\)</td><td class="num">(m×1)(1×n)</td><td>m×n 矩陣，\((ab^\top)_{ij}=a_ib_j\)</td><td>單筆資料的權重梯度 \(\delta x^\top\)</td></tr>
+        <tr><td>二次型 quadratic form</td><td>\(w^\top Aw\)</td><td class="num">(1×n)(n×n)(n×1)</td><td>純量</td><td>最小平方、牛頓法的 \(\tfrac12p^\top Hp\)</td></tr>
+        <tr><td>逐元素乘 Hadamard</td><td>\(a\odot b\)</td><td class="num">同形狀</td><td>同形狀</td><td>激活函數的反向 \(dy\odot f'(x)\)</td></tr>
+      </tbody>
+    </table></div>
+    <h3>二次型一定要會展開</h3>
+    <div class="prose"><p>這是下篇最重要的式子。先用 2×2 展開：</p></div>
+    <div class="formula">\[ w^\top Aw=\begin{bmatrix}w_1 & w_2\end{bmatrix}\begin{bmatrix}A_{11} & A_{12}\\A_{21} & A_{22}\end{bmatrix}\begin{bmatrix}w_1\\w_2\end{bmatrix}=A_{11}w_1^2+(A_{12}+A_{21})\,w_1w_2+A_{22}w_2^2 \]</div>
+    <div class="prose"><p>一般形式：<strong>每一個 \(A_{ij}\) 都乘上 \(w_i\) 和 \(w_j\)，全部加起來</strong>：</p></div>
+    <div class="formula">\[ w^\top Aw=\sum_{i}\sum_{j}w_i\,A_{ij}\,w_j \]</div>
+    <div class="prose"><p>數字例子：\(A=\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}\)、\(w=(1,1)\)。\(w^\top Aw=1+2+3+4=10\)（\(w\) 全是 1，所以就是所有元素相加）。注意 \(A_{12}\) 和 \(A_{21}\) 都掛在 \(w_1w_2\) 上：\(w^\top Aw=w_1^2+5w_1w_2+4w_2^2\)。<strong>二次型只看得到 \(A_{12}+A_{21}\)</strong>，所以把 \(A\) 換成對稱的 \(\tfrac12(A+A^\top)=\begin{bmatrix}1 & 2.5\\2.5 & 4\end{bmatrix}\)，值完全不變。</p></div>
+  </section>
+
+  <!-- 8 -->
+  <section class="sec" id="s8">
+    <div class="label">第 8 節</div>
+    <h2>特徵值、正定與「碗」</h2>
+    <div class="prose">
+      <p>如果 \(Av=\lambda v\)，也就是 \(A\) 作用在 \(v\) 上只把它<strong>拉長或縮短</strong>（不轉方向），\(v\) 叫<strong>特徵向量</strong>（eigenvector），倍數 \(\lambda\) 叫<strong>特徵值</strong>（eigenvalue）。</p>
+      <p>例：\(A=\begin{bmatrix}2 & 1\\1 & 2\end{bmatrix}\)。\(A\begin{bmatrix}1\\1\end{bmatrix}=\begin{bmatrix}3\\3\end{bmatrix}=3\begin{bmatrix}1\\1\end{bmatrix}\)，\(A\begin{bmatrix}1\\-1\end{bmatrix}=\begin{bmatrix}1\\-1\end{bmatrix}\)。特徵值是 3 和 1。</p>
+      <p>對稱矩陣的特徵值一定是實數，特徵向量互相垂直。它們決定二次函數 \(f(w)=w^\top Aw\) 的形狀：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>特徵值</th><th>名稱</th><th>\(w^\top Aw\) 的圖形</th><th>對最佳化的意思</th></tr></thead>
+      <tbody>
+        <tr><td>全部 \(&gt;0\)</td><td>正定 positive definite</td><td>碗口朝上</td><td>有唯一最低點</td></tr>
+        <tr><td>全部 \(\ge0\)</td><td>半正定 positive semidefinite</td><td>碗或谷底一條線</td><td>\(X^\top X\) 一定至少是這種</td></tr>
+        <tr><td>有正有負</td><td>不定 indefinite</td><td>馬鞍</td><td>鞍點</td></tr>
+        <tr><td>差距很大</td><td>條件數 \(\kappa=\lambda_{\max}/\lambda_{\min}\) 大</td><td>細長山谷</td><td>梯度下降走鋸齒</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>為什麼 \(X^\top X\) 一定半正定？\(v^\top X^\top Xv=(Xv)^\top(Xv)=\lVert Xv\rVert^2\ge0\)。這一行就是最小平方問題「一定是碗」的證明。</p></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="sec" id="s9">
+    <div class="label">第 9 節</div>
+    <h2>NumPy 與 PyTorch 對照</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>數學</th><th>NumPy / PyTorch</th><th>注意</th></tr></thead>
+      <tbody>
+        <tr><td>\(AB\)</td><td><code>A @ B</code></td><td><code>A * B</code> 是逐元素乘 \(\odot\)，不是矩陣乘法</td></tr>
+        <tr><td>\(A^\top\)</td><td><code>A.T</code></td><td>PyTorch 也可 <code>A.mT</code>（只轉最後兩維）</td></tr>
+        <tr><td>\(a^\top b\)</td><td><code>a @ b</code> 或 <code>np.dot(a, b)</code></td><td>1 維陣列沒有「直」「橫」之分</td></tr>
+        <tr><td>\(ab^\top\)</td><td><code>np.outer(a, b)</code> 或 <code>a[:, None] * b[None, :]</code></td><td></td></tr>
+        <tr><td>\(A^{-1}b\)</td><td><code>np.linalg.solve(A, b)</code></td><td>不要用 <code>inv(A) @ b</code></td></tr>
+        <tr><td>\(\lVert w\rVert\)</td><td><code>np.linalg.norm(w)</code></td><td></td></tr>
+        <tr><td>\(I\)</td><td><code>np.eye(n)</code></td><td></td></tr>
+        <tr><td>特徵值</td><td><code>np.linalg.eigh(A)</code></td><td>對稱矩陣用 eigh</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box warn"><b class="t">1 維陣列的陷阱</b>
+      <p>NumPy 的 <code>np.array([1, 2, 3])</code> 形狀是 <code>(3,)</code>，既不是直的也不是橫的，<code>.T</code> 對它沒有作用。需要明確的欄向量時寫 <code>w.reshape(-1, 1)</code>（形狀 (3, 1)）。形狀 (3,) 和 (3, 1) 混在一起相減，會廣播成 (3, 3)，這是很常見的 bug。</p>
+    </div>
+  </section>
+
+  <!-- ================= 下篇 ================= -->
+  <div class="part-head b" id="partB">
+    <div class="eyebrow">下篇</div>
+    <h2>矩陣微分</h2>
+    <p>不用背公式表。只要學會一個三步驟方法，任何公式都能自己推出來，也能自己檢查有沒有背錯。</p>
+  </div>
+
+  <!-- 10 -->
+  <section class="sec" id="s10">
+    <div class="label">第 10 節</div>
+    <h2>梯度的形狀：和變數一樣</h2>
+    <div class="prose">
+      <p>函數 \(f\) 是<strong>純量</strong>（例如損失），變數 \(w\) 是向量。<strong>梯度</strong>就是把 \(f\) 對每個 \(w_k\) 的偏導數排成和 \(w\) 一樣形狀的向量：</p>
+    </div>
+    <div class="formula">\[ w=\begin{bmatrix}w_1\\ \vdots\\ w_n\end{bmatrix}\quad\Longrightarrow\quad \nabla_wf=\frac{\partial f}{\partial w}=\begin{bmatrix}\partial f/\partial w_1\\ \vdots\\ \partial f/\partial w_n\end{bmatrix} \]</div>
+    <div class="prose"><p>同樣地，對矩陣 \(W\) 微分，結果 \(\frac{\partial f}{\partial W}\) 是和 \(W\) 同形狀的矩陣，第 \((i,j)\) 格是 \(\partial f/\partial W_{ij}\)。這個約定讓梯度下降 \(w\leftarrow w-\eta\nabla_wf\) 的形狀永遠對得上，PyTorch 的 <code>w.grad</code> 也一定和 <code>w</code> 同形狀。</p></div>
+    <div class="box warn"><b class="t">關於「分子布局」和「分母布局」</b>
+      <p>矩陣微分有兩種排版約定。<strong>分子布局</strong>（numerator layout）把純量對 \(n\) 維向量的導數寫成 \(1\times n\) 的<strong>橫</strong>向量；<strong>分母布局</strong>（denominator layout）寫成 \(n\times1\) 的<strong>直</strong>向量，和 \(w\) 同形狀。機器學習幾乎都用後者，本頁也是。你貼的 Gemini 回答說「遵照分子布局，結果和 \(w\) 一致」，名稱剛好說反了，但它給的每一條公式都是在「梯度和變數同形狀」的約定下寫的，公式本身是對的。看不同書時，如果某個公式差了一個轉置，通常就是布局約定不同。</p>
+    </div>
+    <h3>向量對向量：雅可比矩陣</h3>
+    <div class="prose"><p>如果輸出也是向量 \(y=g(x)\)（\(y\in\mathbb R^m,\ x\in\mathbb R^n\)），導數是一張 \(m\times n\) 的表，第 \((i,j)\) 格是 \(\partial y_i/\partial x_j\)，叫<strong>雅可比矩陣</strong>（Jacobian）\(J\)。最重要的一個：\(y=Ax\) 的雅可比矩陣就是 \(A\) 本身，因為 \(y_i=\sum_jA_{ij}x_j\)，\(\partial y_i/\partial x_j=A_{ij}\)。</p></div>
+  </section>
+
+  <!-- 11 -->
+  <section class="sec" id="s11">
+    <div class="label">第 11 節</div>
+    <h2>萬用三步驟</h2>
+    <div class="prose"><p>任何矩陣微分都可以用同一套方法，不需要記任何「矩陣微分規則」：</p></div>
+    <div class="steps">
+      <div><div><strong>寫成 \(\sum\)（指標形式）。</strong>把矩陣乘法全部改寫成元素的加總，例如 \(c^\top w=\sum_ic_iw_i\)、\((Aw)_i=\sum_jA_{ij}w_j\)。這時候式子裡只剩一般的數字相乘相加。</div></div>
+      <div><div><strong>對其中一個元素 \(w_k\) 做偏微分。</strong>用高中微積分就夠了。唯一的新工具是 \(\dfrac{\partial w_i}{\partial w_k}=\delta_{ik}\)：\(i=k\) 時是 1，否則是 0（Kronecker delta）。它的作用是讓 \(\sum_i\) 只剩 \(i=k\) 那一項。</div></div>
+      <div><div><strong>把結果收回矩陣寫法。</strong>看結果長得像哪個矩陣乘法的第 k 個元素，例如 \(\sum_jA_{kj}w_j=(Aw)_k\)、\(\sum_iA_{ik}w_i=(A^\top w)_k\)。最後用「形狀和變數相同」檢查一次。</div></div>
+    </div>
+    <h3>暖身：\(\nabla_w(c^\top w)=c\)</h3>
+    <div class="formula">\[ \underbrace{c^\top w=\sum_i c_iw_i}_{\text{① 寫成 }\sum}\qquad \underbrace{\frac{\partial}{\partial w_k}\sum_i c_iw_i=\sum_i c_i\,\delta_{ik}=c_k}_{\text{② 對 }w_k\text{ 微分}}\qquad \underbrace{\nabla_w(c^\top w)=c}_{\text{③ 收回}} \]</div>
+    <div class="prose"><p>就像一維的 \(\frac{d}{dx}(cx)=c\)。\(w^\top c\) 是同一個數（純量轉置），所以 \(\nabla_w(w^\top c)=c\) 也一樣。</p></div>
+    <h3>暖身 2：\(\nabla_w\lVert w\rVert^2=2w\)</h3>
+    <div class="formula">\[ \lVert w\rVert^2=\sum_iw_i^2,\qquad \frac{\partial}{\partial w_k}\sum_iw_i^2=2w_k,\qquad \nabla_w\lVert w\rVert^2=2w \]</div>
+    <div class="prose"><p>就像 \(\frac{d}{dx}x^2=2x\)。這就是權重衰減 \(\tfrac\lambda2\lVert w\rVert^2\) 的梯度是 \(\lambda w\) 的原因。</p></div>
+  </section>
+
+  <!-- 12 -->
+  <section class="sec" id="s12">
+    <div class="label">第 12 節</div>
+    <h2>二次型：\(\nabla_w(w^\top Aw)=(A+A^\top)w\)</h2>
+    <div class="prose"><p>你問 Gemini 的就是這一條。先照 Gemini 的方式用 2×2 展開，再用三步驟做一般情況，兩種都看懂就不會忘。</p></div>
+    <h3>方法一：2×2 全部展開</h3>
+    <div class="formula">\[ f=w^\top Aw=A_{11}w_1^2+A_{12}w_1w_2+A_{21}w_1w_2+A_{22}w_2^2 \]</div>
+    <div class="formula">\[ \frac{\partial f}{\partial w_1}=2A_{11}w_1+(A_{12}+A_{21})w_2,\qquad \frac{\partial f}{\partial w_2}=(A_{12}+A_{21})w_1+2A_{22}w_2 \]</div>
+    <div class="prose"><p>把 \(2A_{11}w_1\) 拆成 \(A_{11}w_1+A_{11}w_1\)，重新分組成兩個向量：</p></div>
+    <div class="formula">\[ \nabla_wf=\underbrace{\begin{bmatrix}A_{11}w_1+A_{12}w_2\\A_{21}w_1+A_{22}w_2\end{bmatrix}}_{Aw}+\underbrace{\begin{bmatrix}A_{11}w_1+A_{21}w_2\\A_{12}w_1+A_{22}w_2\end{bmatrix}}_{A^\top w}=(A+A^\top)w \]</div>
+    <h3>方法二：三步驟（任何大小都適用）</h3>
+    <div class="formula">\[ f=\sum_i\sum_j w_iA_{ij}w_j \]</div>
+    <div class="prose"><p>對 \(w_k\) 微分。每一項裡 \(w_i\) 和 \(w_j\) 都可能是 \(w_k\)，用乘法法則分成兩部分：</p></div>
+    <div class="formula">\[ \frac{\partial f}{\partial w_k}=\sum_i\sum_j\Big(\delta_{ik}A_{ij}w_j+w_iA_{ij}\delta_{jk}\Big)=\underbrace{\sum_jA_{kj}w_j}_{(Aw)_k}+\underbrace{\sum_iA_{ik}w_i}_{(A^\top w)_k} \]</div>
+    <div class="prose"><p>第一部分 \(\delta_{ik}\) 讓 \(i\) 只剩 \(k\)：\(A\) 的第 k <span class="r">列</span>和 \(w\) 內積，就是 \((Aw)_k\)。第二部分 \(\delta_{jk}\) 讓 \(j\) 只剩 \(k\)：\(A\) 的第 k <span class="c">欄</span>和 \(w\) 內積，就是 \((A^\top w)_k\)。所以 \(\nabla_w(w^\top Aw)=(A+A^\top)w\)。</p></div>
+    <h3>數字驗算，以及為什麼不能直接寫 \(2Aw\)</h3>
+    <div class="prose"><p>\(A=\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}\)、\(w=(1,1)\)。展開 \(f=w_1^2+5w_1w_2+4w_2^2\)，直接偏微分：\(\partial f/\partial w_1=2w_1+5w_2=7\)、\(\partial f/\partial w_2=5w_1+8w_2=13\)。</p></div>
+    <div class="formula">\[ (A+A^\top)w=\begin{bmatrix}2 & 5\\5 & 8\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}=\begin{bmatrix}7\\13\end{bmatrix}\ \checkmark\qquad 2Aw=\begin{bmatrix}6\\14\end{bmatrix}\ \times \]</div>
+    <div class="prose"><p>\(A\) 不對稱時寫 \(2Aw\) 就錯了。只有 \(A\) 對稱（\(A^\top=A\)，例如 \(X^\top X\) 或 Hessian）時，\((A+A^\top)w=2Aw\)。這也是為什麼常看到前面放 \(\tfrac12\)：\(\nabla_w\big(\tfrac12w^\top Aw\big)=Aw\)，乾淨。</p></div>
+
+    <div class="demo" id="d-quad">
+      <h4>二次型探索器</h4>
+      <p class="hint">改 \(A\) 的四個數字。左圖是 \(f(w)=w^\top Aw\) 的等高線；點圖上任一點當作 \(w\)，箭頭是梯度 \((A+A^\top)w\)，一定和等高線垂直。右邊同時列出公式值、數值微分，以及錯誤的 \(2Aw\)。</p>
+      <div class="ctrls" id="qd-ctrls"></div>
+      <div class="btns"><button class="btn" data-qp="1,2,3,4">不對稱 [[1,2],[3,4]]</button><button class="btn" data-qp="2,1,1,2">正定 [[2,1],[1,2]]</button><button class="btn" data-qp="1,0,0,-1">鞍點 [[1,0],[0,−1]]</button><button class="btn" data-qp="1,0,0,9">細長山谷 [[1,0],[0,9]]</button></div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-quad" aria-label="二次型等高線與梯度"></canvas></div>
+        <div class="out" id="qd-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="sec" id="s13">
+    <div class="label">第 13 節</div>
+    <h2>雙線性型：\(w^\top Av\)</h2>
+    <div class="prose"><p>兩個<strong>不同</strong>的向量夾一個矩陣，\(f=w^\top Av=\sum_i\sum_jw_iA_{ij}v_j\)，結果是純量。</p></div>
+    <div class="formula">\[ \frac{\partial f}{\partial w_k}=\sum_jA_{kj}v_j=(Av)_k\ \Rightarrow\ \nabla_wf=Av,\qquad \frac{\partial f}{\partial v_k}=\sum_iw_iA_{ik}=(A^\top w)_k\ \Rightarrow\ \nabla_vf=A^\top w \]</div>
+    <div class="prose">
+      <p>記法：對誰微分，就把誰「拿掉」，剩下的部分排成和它同形狀。\(w^\top(Av)\) 拿掉 \(w^\top\) 剩 \(Av\)；\((w^\top A)v=(A^\top w)^\top v\) 拿掉 \(v\) 剩 \(A^\top w\)。</p>
+      <p>第 12 節的二次型其實就是這一條的特例：\(v=w\) 時，\(w\) 出現兩次，兩個位置的貢獻相加，\(Aw+A^\top w\)。這和計算圖「同一個變數用在兩處，梯度相加」是同一件事。</p>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="sec" id="s14">
+    <div class="label">第 14 節</div>
+    <h2>連鎖律的矩陣版</h2>
+    <div class="prose"><p>如果 \(f\) 是純量，經過中間向量 \(u=g(w)\)，也就是 \(f=h(u)\)、\(u=g(w)\)：</p></div>
+    <div class="formula">\[ \nabla_wf=J^\top\,\nabla_uf,\qquad J=\frac{\partial u}{\partial w}\ (\text{雅可比矩陣，}m\times n) \]</div>
+    <div class="prose"><p>為什麼有轉置？寫成 \(\sum\)：\(\dfrac{\partial f}{\partial w_k}=\sum_i\dfrac{\partial f}{\partial u_i}\dfrac{\partial u_i}{\partial w_k}=\sum_i J_{ik}(\nabla_uf)_i=(J^\top\nabla_uf)_k\)。這就是一維連鎖律，只是每一條 \(w_k\to u_i\to f\) 的路徑都要加起來。</p></div>
+    <h3>例：最小平方的梯度</h3>
+    <div class="formula">\[ f(w)=\lVert Xw-y\rVert^2,\qquad u=Xw-y,\quad f=\lVert u\rVert^2 \]</div>
+    <div class="formula">\[ \nabla_uf=2u\ (\text{第 11 節}),\qquad J=\frac{\partial u}{\partial w}=X\ (\text{第 10 節}),\qquad \nabla_wf=X^\top(2u)=2X^\top(Xw-y) \]</div>
+    <div class="box tip"><b class="t">形狀檢查：最強的除錯工具</b>
+      <p>\(X\) 是 \(n\times d\)、\(w\) 是 \(d\times1\)、\(u\) 是 \(n\times1\)。答案必須是 \(d\times1\)（和 \(w\) 同形狀）。手上有 \(X\)（\(n\times d\)）和 \(u\)（\(n\times1\)），唯一能湊出 \(d\times1\) 的乘法就是 \(X^\top u\)。忘記轉置放哪裡時，靠形狀就能拼回來。</p>
+    </div>
+    <h3>同一題，用展開法再做一次</h3>
+    <div class="formula">\[ \begin{aligned} \lVert Xw-y\rVert^2&=(Xw-y)^\top(Xw-y)=w^\top X^\top Xw-w^\top X^\top y-y^\top Xw+y^\top y\\ &=w^\top\underbrace{(X^\top X)}_{A\text{，對稱}}w-2\underbrace{(X^\top y)}_{c}{}^\top w+y^\top y \end{aligned} \]</div>
+    <div class="formula">\[ \nabla_w=2X^\top Xw-2X^\top y=2X^\top(Xw-y)\qquad\text{令它為 0：}\ X^\top Xw=X^\top y\ (\text{正規方程}) \]</div>
+    <div class="prose"><p>兩種方法答案一樣。展開法用到的工具：轉置規則、純量轉置（\(y^\top Xw=w^\top X^\top y\)）、第 11 節的 \(c^\top w\)、第 12 節的二次型（\(A\) 對稱所以是 \(2Aw\)）。<strong>這就是整個上篇和下篇在線性回歸的會合點。</strong></p></div>
+  </section>
+
+  <!-- 15 -->
+  <section class="sec" id="s15">
+    <div class="label">第 15 節</div>
+    <h2>對矩陣微分：線性層的反向傳播</h2>
+    <div class="prose"><p>神經網路的參數是矩陣 \(W\)。三步驟一樣適用，只是下標多一個。</p></div>
+    <h3>熱身：\(\dfrac{\partial}{\partial X}(a^\top Xb)=ab^\top\)</h3>
+    <div class="formula">\[ a^\top Xb=\sum_i\sum_ja_iX_{ij}b_j,\qquad \frac{\partial}{\partial X_{ij}}=a_ib_j=(ab^\top)_{ij} \]</div>
+    <div class="prose"><p>結果是外積。例：單筆資料 \(z=Wx\)、上游梯度 \(\delta=\partial L/\partial z\)，則 \(L\) 對 \(W\) 的梯度是 \(\delta x^\top\)。softmax + 交叉熵時 \(\delta=p-y\)，所以 \(\nabla_WL=(p-y)x^\top\)。</p></div>
+    <h3>批次版：\(Y=XW\)</h3>
+    <div class="prose"><p>\(X\) 是 \(n\times d_{in}\)、\(W\) 是 \(d_{in}\times d_{out}\)、\(Y\) 是 \(n\times d_{out}\)。損失 \(L\) 是純量，已知上游梯度 \(dY=\partial L/\partial Y\)（形狀同 \(Y\)）。</p></div>
+    <div class="formula">\[ Y_{ij}=\sum_tX_{it}W_{tj} \]</div>
+    <div class="formula">\[ \frac{\partial L}{\partial W_{kj}}=\sum_i\frac{\partial L}{\partial Y_{ij}}\frac{\partial Y_{ij}}{\partial W_{kj}}=\sum_i dY_{ij}\,X_{ik}=\sum_i (X^\top)_{ki}\,dY_{ij}=(X^\top dY)_{kj} \]</div>
+    <div class="formula">\[ \frac{\partial L}{\partial X_{ik}}=\sum_j dY_{ij}\,W_{kj}=\sum_j dY_{ij}\,(W^\top)_{jk}=(dY\,W^\top)_{ik} \]</div>
+    <div class="formula">\[ \boxed{\ dW=X^\top dY,\qquad dX=dY\,W^\top,\qquad db=\textstyle\sum_{\text{列}}dY\ } \]</div>
+    <div class="prose"><p>為什麼 \(W_{kj}\) 只出現在 \(Y_{ij}\)（固定欄 \(j\)）？因為 \(Y\) 的第 j 欄只用到 \(W\) 的第 j 欄。\(\sum_i\) 是把 n 筆資料的貢獻加起來，也就是第 3 節「外積相加」的看法：\(X^\top dY=\sum_i x_i\,dy_i^\top\)。偏差 \(b\) 被廣播到每一列，所以梯度是沿批次加總。</p></div>
+
+    <div class="demo">
+      <h4>形狀拼圖</h4>
+      <p class="hint">設定批次大小與層的寬度。下表列出每個量的形狀，以及唯一能湊出正確形狀的乘法。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="sp-n">n（批次）</label><input type="number" id="sp-n" value="32" min="1" max="999" class="btn" style="width:72px"></div>
+        <div class="ctrl"><label for="sp-i">d_in</label><input type="number" id="sp-i" value="784" min="1" max="9999" class="btn" style="width:72px"></div>
+        <div class="ctrl"><label for="sp-o">d_out</label><input type="number" id="sp-o" value="10" min="1" max="9999" class="btn" style="width:72px"></div>
+      </div>
+      <div class="tbl"><table id="sp-tbl"></table></div>
+    </div>
+    <div class="box amber"><b class="t">PyTorch 的 nn.Linear</b>
+      <p><code>nn.Linear(d_in, d_out)</code> 把權重存成 \(d_{out}\times d_{in}\)，計算 \(Y=XW^\top+b\)。所以它的 <code>weight.grad</code> 是 \(dY^\top X\)（形狀 \(d_{out}\times d_{in}\)）。公式看起來不同，只是 \(W\) 存的方向不同，用形狀檢查一下就對得上。</p>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="sec" id="s16">
+    <div class="label">第 16 節</div>
+    <h2>Hessian：再微分一次</h2>
+    <div class="prose"><p>梯度是向量，再對 \(w\) 微分一次得到矩陣，叫 <strong>Hessian</strong>：\(H_{ij}=\dfrac{\partial^2f}{\partial w_i\partial w_j}\)。用第 10 節「\(Ax\) 的雅可比是 \(A\)」就能直接寫出：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>\(f(w)\)</th><th>梯度 \(\nabla f\)</th><th>Hessian \(\nabla^2f\)</th></tr></thead>
+      <tbody>
+        <tr><td>\(c^\top w\)</td><td>\(c\)</td><td>\(0\)</td></tr>
+        <tr><td>\(w^\top Aw\)</td><td>\((A+A^\top)w\)</td><td>\(A+A^\top\)</td></tr>
+        <tr><td>\(\tfrac12w^\top Aw\)（\(A\) 對稱）</td><td>\(Aw\)</td><td>\(A\)</td></tr>
+        <tr><td>\(\tfrac12\lVert Xw-y\rVert^2\)</td><td>\(X^\top(Xw-y)\)</td><td>\(X^\top X\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>最後一行就是講義第 2 章的 \(\nabla^2J=X^\top X\)。Hessian 是常數矩陣，代表最小平方的地形處處彎曲程度一樣，是一個完美的碗；第 8 節的特徵值決定碗的形狀（圓還是細長）。牛頓法的二次模型 \(m(p)=f+g^\top p+\tfrac12p^\top Hp\) 對 \(p\) 微分，用的正是這張表的第 1、3 行：\(g+Hp\)。</p></div>
+  </section>
+
+  <!-- 17 -->
+  <section class="sec" id="s17">
+    <div class="label">第 17 節</div>
+    <h2>用數值微分驗證任何公式</h2>
+    <div class="prose"><p>推完公式不確定對不對？每個元素推一點點，看函數變多少：\(\dfrac{\partial f}{\partial w_k}\approx\dfrac{f(w+he_k)-f(w-he_k)}{2h}\)，其中 \(e_k\) 是第 k 個位置為 1、其餘為 0 的向量。</p></div>
+    <div class="demo">
+      <h4>梯度驗證器</h4>
+      <p class="hint">選一個公式，按「換一組隨機數字」。左欄是公式算出的梯度，右欄是數值微分，兩者應該只差 \(10^{-8}\) 左右。試試「錯誤示範」，看錯的公式怎麼被抓出來。</p>
+      <div class="btns" id="gc-btns"></div>
+      <div class="btns"><button class="btn" id="gc-re">換一組隨機數字</button></div>
+      <div class="out" id="gc-out"></div>
+    </div>
+    <h3>在 Python 裡自己驗證</h3>
+    <pre><code>import numpy as np
+rng = np.random.default_rng(0)
+A = rng.normal(size=(3, 3)); w = rng.normal(size=3)
+
+f = lambda w: w @ A @ w                      <span class="cm"># w^T A w</span>
+analytic = (A + A.T) @ w                      <span class="cm"># 公式</span>
+h = 1e-6
+numeric = np.array([(f(w + h*e) - f(w - h*e)) / (2*h) for e in np.eye(3)])
+print(np.abs(analytic - numeric).max())      <span class="cm"># 約 1e-9：公式正確</span>
+print(np.abs(2*A@w - numeric).max())         <span class="cm"># 明顯不為 0：A 不對稱時 2Aw 是錯的</span>
+
+<span class="cm"># 線性層：L = sum(Y * G)，所以 dY = G</span>
+X = rng.normal(size=(5, 3)); W = rng.normal(size=(3, 2)); G = rng.normal(size=(5, 2))
+L = lambda W: np.sum((X @ W) * G)
+dW = X.T @ G                                  <span class="cm"># 公式 dW = X^T dY</span>
+num = np.zeros_like(W)
+for i in range(3):
+    for j in range(2):
+        E = np.zeros_like(W); E[i, j] = h
+        num[i, j] = (L(W + E) - L(W - E)) / (2*h)
+print(np.abs(dW - num).max())                 <span class="cm"># 約 1e-9</span></code></pre>
+  </section>
+
+  <!-- 18 -->
+  <section class="sec" id="s18">
+    <div class="label">第 18 節</div>
+    <h2>公式速查表</h2>
+    <div class="prose"><p>全部都在「梯度和變數同形狀」的約定下。\(A\)、\(c\)、\(X\)、\(y\) 是常數。每一條都能用第 11 節的三步驟推出來。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>函數（純量）</th><th>對誰</th><th>梯度</th><th>一維類比</th><th>推導</th></tr></thead>
+      <tbody>
+        <tr><td>\(c^\top w=w^\top c\)</td><td>\(w\)</td><td>\(c\)</td><td>\((cx)'=c\)</td><td>第 11 節</td></tr>
+        <tr><td>\(w^\top w=\lVert w\rVert^2\)</td><td>\(w\)</td><td>\(2w\)</td><td>\((x^2)'=2x\)</td><td>第 11 節</td></tr>
+        <tr><td>\(w^\top Aw\)</td><td>\(w\)</td><td>\((A+A^\top)w\)</td><td>\((ax^2)'=2ax\)</td><td>第 12 節</td></tr>
+        <tr><td>\(w^\top Aw\)，\(A\) 對稱</td><td>\(w\)</td><td>\(2Aw\)</td><td></td><td>第 12 節</td></tr>
+        <tr><td>\(w^\top Av\)</td><td>\(w\)</td><td>\(Av\)</td><td></td><td>第 13 節</td></tr>
+        <tr><td>\(w^\top Av\)</td><td>\(v\)</td><td>\(A^\top w\)</td><td></td><td>第 13 節</td></tr>
+        <tr><td>\(\lVert Xw-y\rVert^2\)</td><td>\(w\)</td><td>\(2X^\top(Xw-y)\)</td><td>\(((ax-b)^2)'=2a(ax-b)\)</td><td>第 14 節</td></tr>
+        <tr><td>\(a^\top Xb\)</td><td>\(X\)</td><td>\(ab^\top\)</td><td></td><td>第 15 節</td></tr>
+        <tr><td>\(L(Y)\)，\(Y=XW\)</td><td>\(W\)</td><td>\(X^\top dY\)</td><td></td><td>第 15 節</td></tr>
+        <tr><td>\(L(Y)\)，\(Y=XW\)</td><td>\(X\)</td><td>\(dY\,W^\top\)</td><td></td><td>第 15 節</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl" style="margin-top:18px"><table>
+      <thead><tr><th>向量對向量（雅可比）</th><th>結果</th></tr></thead>
+      <tbody>
+        <tr><td>\(\partial(Ax)/\partial x\)</td><td>\(A\)</td></tr>
+        <tr><td>\(\partial(x)/\partial x\)</td><td>\(I\)</td></tr>
+        <tr><td>\(\partial f(x)/\partial x\)，\(f\) 逐元素作用</td><td>對角矩陣 \(\operatorname{diag}(f'(x))\)，所以反向就是 \(dy\odot f'(x)\)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ================= 實戰篇 ================= -->
+  <div class="part-head" id="partC" style="background:var(--violet-soft)">
+    <div class="eyebrow">實戰篇</div>
+    <h2>AI 常用運算大全</h2>
+    <p>把深度學習裡實際會碰到的運算整理成一張地圖，每一個都附上前向公式、形狀，以及反向傳播（微分）怎麼算。所有梯度公式都用數值微分驗證過。</p>
+  </div>
+
+  <!-- 19 -->
+  <section class="sec" id="s19">
+    <div class="label">第 19 節</div>
+    <h2>AI 運算地圖</h2>
+    <div class="prose"><p>深度學習的模型看起來很複雜，但拆開來，幾乎都是下面這些運算的組合。表格最右欄是詳細說明在哪一節。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>運算</th><th>數學</th><th>出現在</th><th>反向（梯度）</th><th>節</th></tr></thead>
+      <tbody>
+        <tr><td>內積</td><td>\(a^\top b\)</td><td>神經元、注意力分數、相似度</td><td>對 \(a\)：\(b\)</td><td class="num">2、13</td></tr>
+        <tr><td>外積</td><td>\(ab^\top\)</td><td>單筆權重梯度 \(\delta x^\top\)、LoRA</td><td>—</td><td class="num">7、15、28</td></tr>
+        <tr><td>矩陣乘法</td><td>\(Y=XW\)</td><td>全連接層、Q/K/V 投影</td><td>\(dW=X^\top dY,\ dX=dY\,W^\top\)</td><td class="num">15</td></tr>
+        <tr><td>批次矩陣乘法</td><td><code>einsum</code>、<code>bmm</code></td><td>多頭注意力</td><td>同上，每個批次各做一次</td><td class="num">25、28</td></tr>
+        <tr><td>逐元素乘</td><td>\(a\odot b\)</td><td>LSTM / GLU 門控、dropout 遮罩</td><td>\(da=dy\odot b\)</td><td class="num">22</td></tr>
+        <tr><td>逐元素函數</td><td>\(f(x)\)</td><td>激活函數</td><td>\(dx=dy\odot f'(x)\)</td><td class="num">22</td></tr>
+        <tr><td>廣播加法</td><td>\(XW+b\)</td><td>偏差</td><td>\(db=\) 沿批次加總</td><td class="num">20</td></tr>
+        <tr><td>加總、平均</td><td>\(\sum,\ \text{mean}\)</td><td>損失、pooling、正規化</td><td>把梯度複製回去（平均要再除以 n）</td><td class="num">20</td></tr>
+        <tr><td>reshape、轉置</td><td><code>view</code>、<code>permute</code></td><td>flatten、多頭切分</td><td>對梯度做反向的 reshape／轉置</td><td class="num">20</td></tr>
+        <tr><td>範數</td><td>\(\lVert w\rVert_2^2,\ \lVert w\rVert_1\)</td><td>正則化、梯度裁剪</td><td>\(2w,\ \operatorname{sign}(w)\)</td><td class="num">21</td></tr>
+        <tr><td>餘弦相似度</td><td>\(\frac{a^\top b}{\lVert a\rVert\lVert b\rVert}\)</td><td>CLIP、對比學習、檢索</td><td>第 21 節</td><td class="num">21</td></tr>
+        <tr><td>softmax</td><td>\(p_i=e^{z_i}/\sum_je^{z_j}\)</td><td>分類輸出、注意力權重</td><td>\(J=\operatorname{diag}(p)-pp^\top\)</td><td class="num">23</td></tr>
+        <tr><td>softmax + 交叉熵</td><td>\(-\sum_iy_i\log p_i\)</td><td>分類損失</td><td>\(p-y\)</td><td class="num">23</td></tr>
+        <tr><td>log-sum-exp</td><td>\(\log\sum_ie^{z_i}\)</td><td>數值穩定的 softmax</td><td>\(\operatorname{softmax}(z)\)</td><td class="num">23</td></tr>
+        <tr><td>注意力</td><td>\(\operatorname{softmax}(QK^\top/\sqrt d)V\)</td><td>Transformer</td><td>第 25 節</td><td class="num">25</td></tr>
+        <tr><td>標準化</td><td>\((x-\mu)/\sigma\)</td><td>LayerNorm、BatchNorm</td><td>第 26 節</td><td class="num">26</td></tr>
+        <tr><td>卷積</td><td>\(x*k\)</td><td>CNN</td><td>攤平（im2col）後就是矩陣乘法</td><td class="num">27</td></tr>
+        <tr><td>反矩陣、解方程</td><td>\(A^{-1}b\)</td><td>牛頓法、正規方程、高斯分佈</td><td>\(\partial\log\lvert\det X\rvert/\partial X=X^{-\top}\)</td><td class="num">6、28</td></tr>
+        <tr><td>特徵分解、SVD</td><td>\(A=U\Sigma V^\top\)</td><td>PCA、低秩近似、條件數</td><td>—</td><td class="num">8、28</td></tr>
+        <tr><td>跡</td><td>\(\operatorname{tr}(A)\)</td><td>\(\lVert X\rVert_F^2=\operatorname{tr}(X^\top X)\)</td><td>\(\partial\operatorname{tr}(AX)/\partial X=A^\top\)</td><td class="num">21</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box key"><b class="t">反向傳播的核心觀念</b>
+      <p>每一個運算只要知道一件事：<strong>拿到輸出的梯度 \(dy\) 後，怎麼算出輸入的梯度 \(dx\)</strong>。整個網路的反向傳播就是把這些小規則從後往前串起來（第 14 節的連鎖律）。PyTorch 的 autograd 內部就是為表格裡每個運算寫好了這條規則。</p>
+    </div>
+  </section>
+
+  <!-- 20 -->
+  <section class="sec" id="s20">
+    <div class="label">第 20 節</div>
+    <h2>廣播、加總、reshape：以及它們的反向</h2>
+    <h3>廣播（broadcasting）</h3>
+    <div class="prose">
+      <p>\(XW+b\) 裡，\(XW\) 是 \(n\times d\)，\(b\) 只有 \(d\) 個數。數學上這不能直接相加，但程式會自動把 \(b\) <strong>複製 n 份</strong>，加到每一列上。這就是廣播。</p>
+      <p>規則：從<strong>最後一維</strong>往前對齊，每一維要嘛相等、要嘛其中一個是 1（或不存在），是 1 的那邊會被複製。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>形狀 A</th><th>形狀 B</th><th>結果</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td class="num">(32, 10)</td><td class="num">(10,)</td><td class="num">(32, 10)</td><td>偏差加到每一筆資料</td></tr>
+        <tr><td class="num">(32, 10)</td><td class="num">(32, 1)</td><td class="num">(32, 10)</td><td>每一列減掉自己的最大值（softmax 穩定化）</td></tr>
+        <tr><td class="num">(3,)</td><td class="num">(3, 1)</td><td class="num">(3, 3)</td><td><span class="pen">常見 bug</span>：本來想逐元素相減</td></tr>
+        <tr><td class="num">(8, 3, 32, 32)</td><td class="num">(3, 1, 1)</td><td class="num">(8, 3, 32, 32)</td><td>每個通道減自己的平均（影像正規化）</td></tr>
+        <tr><td class="num">(32, 10)</td><td class="num">(32,)</td><td>錯誤</td><td>最後一維 10 對 32，對不上</td></tr>
+      </tbody>
+    </table></div>
+    <h3>加總與平均沿著哪一軸</h3>
+    <div class="prose">
+      <p><code>X.sum(axis=0)</code>：沿著第 0 軸（列的方向）加，<strong>把列壓掉</strong>，\(n\times d\to d\)，得到每一欄的總和。<code>axis=1</code> 把欄壓掉，\(n\times d\to n\)。加上 <code>keepdims=True</code> 會保留成 \(1\times d\) 或 \(n\times1\)，方便之後廣播。</p>
+      <p>口訣：<strong>axis 寫哪一軸，那一軸就消失。</strong></p>
+    </div>
+    <h3>前向和反向是一對</h3>
+    <div class="prose"><p>這是寫反向傳播最常用的對偶關係：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>前向做了</th><th>反向就做</th><th>例子</th></tr></thead>
+      <tbody>
+        <tr><td>廣播（複製）</td><td>沿被複製的軸<strong>加總</strong></td><td>\(Y=XW+b\Rightarrow db=\sum_i dY_{i,:}\)</td></tr>
+        <tr><td>加總</td><td>把梯度<strong>複製（廣播）</strong>回去</td><td>\(L=\sum_ix_i\Rightarrow dx_i=dL\)</td></tr>
+        <tr><td>平均</td><td>複製回去再除以 n</td><td>\(L=\frac1n\sum_ix_i\Rightarrow dx_i=dL/n\)</td></tr>
+        <tr><td>reshape／flatten</td><td>reshape 回原本形狀</td><td>CNN 最後 flatten 進全連接層</td></tr>
+        <tr><td>轉置／permute</td><td>做反方向的轉置</td><td>多頭注意力切分</td></tr>
+        <tr><td>取最大值（max pool）</td><td>梯度只給最大的那一個，其他是 0</td><td>MaxPool</td></tr>
+        <tr><td>同一變數用在兩處</td><td>兩處的梯度相加</td><td>殘差連接 \(y=x+F(x)\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>為什麼廣播的反向是加總？\(b\) 被複製到 n 列，每一份都影響損失。改動 \(b_j\) 一點，n 列的 \(Y_{ij}\) 全部都動，所以 \(\partial L/\partial b_j=\sum_i\partial L/\partial Y_{ij}\)。這和第 13 節「同一個變數用在兩處，梯度相加」是同一件事。殘差連接 \(y=x+F(x)\) 讓梯度能直接沿著 \(x\) 那條路傳回去，所以很深的 ResNet 也訓練得動。</p></div>
+  </section>
+
+  <!-- 21 -->
+  <section class="sec" id="s21">
+    <div class="label">第 21 節</div>
+    <h2>範數、距離、相似度與跡</h2>
+    <h3>範數家族</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>名稱</th><th>定義</th><th>梯度</th><th>出現在</th></tr></thead>
+      <tbody>
+        <tr><td>L2 平方</td><td>\(\lVert w\rVert_2^2=\sum_iw_i^2\)</td><td>\(2w\)</td><td>權重衰減、Ridge</td></tr>
+        <tr><td>L2</td><td>\(\lVert w\rVert_2=\sqrt{\sum_iw_i^2}\)</td><td>\(w/\lVert w\rVert_2\)</td><td>梯度裁剪（clip by norm）</td></tr>
+        <tr><td>L1</td><td>\(\lVert w\rVert_1=\sum_i\lvert w_i\rvert\)</td><td>\(\operatorname{sign}(w)\)（0 處取次梯度）</td><td>Lasso、讓權重變稀疏</td></tr>
+        <tr><td>Frobenius</td><td>\(\lVert X\rVert_F^2=\sum_{ij}X_{ij}^2=\operatorname{tr}(X^\top X)\)</td><td>\(2X\)</td><td>矩陣的權重衰減</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>L1 為什麼讓權重變稀疏？L2 的梯度 \(2w\) 越靠近 0 越小，推力跟著消失，權重只會變小不會剛好變 0；L1 的梯度是固定大小的 \(\pm1\)，一路把權重推到 0。</p></div>
+    <h3>距離：展開成內積</h3>
+    <div class="formula">\[ \lVert a-b\rVert^2=(a-b)^\top(a-b)=\lVert a\rVert^2-2a^\top b+\lVert b\rVert^2 \]</div>
+    <div class="prose"><p>這一行很實用：要算 \(n\) 筆資料和 \(m\) 個中心兩兩之間的距離（k-means、kNN、RBF 核），不必寫兩層迴圈。\(-2a^\top b\) 那一項全部一次算成矩陣乘法 \(-2XC^\top\)（\(n\times m\)），再廣播加上兩邊的長度平方。</p></div>
+    <h3>餘弦相似度</h3>
+    <div class="formula">\[ \cos(a,b)=\frac{a^\top b}{\lVert a\rVert\,\lVert b\rVert},\qquad \frac{\partial\cos}{\partial a}=\frac{b}{\lVert a\rVert\lVert b\rVert}-\cos(a,b)\,\frac{a}{\lVert a\rVert^2} \]</div>
+    <div class="prose"><p>只看方向、不看長度，值在 −1 到 1 之間。CLIP、句向量檢索、對比學習都用它。實作時通常先把向量除以長度（正規化成單位向量），之後內積就直接等於餘弦相似度，一次矩陣乘法就能算出全部配對的相似度。</p></div>
+    <h3>跡（trace）</h3>
+    <div class="prose"><p>方陣對角線的和 \(\operatorname{tr}(A)=\sum_iA_{ii}\)。實用性質：</p></div>
+    <div class="formula">\[ \operatorname{tr}(AB)=\operatorname{tr}(BA),\qquad \operatorname{tr}(A^\top B)=\sum_{ij}A_{ij}B_{ij}\ (\text{兩個矩陣逐元素乘再全加}),\qquad \operatorname{tr}(A)=\sum_i\lambda_i \]</div>
+    <div class="formula">\[ \frac{\partial\operatorname{tr}(AX)}{\partial X}=A^\top,\qquad \frac{\partial\operatorname{tr}(X^\top AX)}{\partial X}=(A+A^\top)X \]</div>
+    <div class="prose"><p>第二條是第 12 節二次型的矩陣版。很多論文推導寫成 \(\operatorname{tr}(\cdot)\)，就是因為「純量等於自己的跡」，可以用 \(\operatorname{tr}(AB)=\operatorname{tr}(BA)\) 把矩陣轉來轉去。</p></div>
+  </section>
+
+  <!-- 22 -->
+  <section class="sec" id="s22">
+    <div class="label">第 22 節</div>
+    <h2>激活函數與逐元素運算的微分</h2>
+    <div class="prose">
+      <p>激活函數對每個元素各自作用：\(y_i=f(x_i)\)。\(y_i\) 只和 \(x_i\) 有關，所以雅可比矩陣只有對角線有值 \(\operatorname{diag}(f'(x))\)。乘上去等於逐元素相乘：</p>
+    </div>
+    <div class="formula">\[ dx=J^\top dy=\operatorname{diag}(f'(x))\,dy=dy\odot f'(x) \]</div>
+    <div class="prose"><p>所以寫程式時<strong>不需要真的建出 \(n\times n\) 的對角矩陣</strong>，用 <code>*</code> 就好。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>函數</th><th>\(f(x)\)</th><th>\(f'(x)\)</th><th>備註</th></tr></thead>
+      <tbody>
+        <tr><td>ReLU</td><td>\(\max(0,x)\)</td><td>\(x&gt;0\) 時 1，否則 0</td><td>最常用；負的那半梯度是 0</td></tr>
+        <tr><td>Leaky ReLU</td><td>\(x\)（\(x&gt;0\)），\(\alpha x\)（否則）</td><td>1 或 \(\alpha\)</td><td>避免神經元「死掉」</td></tr>
+        <tr><td>sigmoid</td><td>\(\sigma(x)=\frac{1}{1+e^{-x}}\)</td><td>\(\sigma(x)(1-\sigma(x))\)</td><td>最大值 0.25，疊多層會梯度消失</td></tr>
+        <tr><td>tanh</td><td>\(\tanh x\)</td><td>\(1-\tanh^2x\)</td><td>最大值 1</td></tr>
+        <tr><td>softplus</td><td>\(\log(1+e^x)\)</td><td>\(\sigma(x)\)</td><td>平滑版 ReLU</td></tr>
+        <tr><td>SiLU / Swish</td><td>\(x\,\sigma(x)\)</td><td>\(\sigma(x)\big(1+x(1-\sigma(x))\big)\)</td><td>LLaMA 等模型的 SwiGLU</td></tr>
+        <tr><td>GELU</td><td>\(x\,\Phi(x)\)</td><td>\(\Phi(x)+x\,\phi(x)\)</td><td>BERT、GPT；\(\Phi\)、\(\phi\) 是標準常態的 CDF、PDF</td></tr>
+      </tbody>
+    </table></div>
+    <h3>逐元素乘法（門控）的反向</h3>
+    <div class="prose"><p>\(y=a\odot b\)，則 \(da=dy\odot b\)、\(db=dy\odot a\)，就像一維的乘法法則。LSTM 的 \(c_t=f_t\odot c_{t-1}+i_t\odot\tilde c_t\)、SwiGLU 的 \(\operatorname{SiLU}(xW_1)\odot(xW_2)\)、dropout 的 \(x\odot m/(1-p)\)（反向就是用同一個遮罩 \(m\) 乘回去）都是這條。</p></div>
+  </section>
+
+  <!-- 23 -->
+  <section class="sec" id="s23">
+    <div class="label">第 23 節</div>
+    <h2>Softmax、log-sum-exp 與交叉熵</h2>
+    <div class="prose"><p>分類網路最後一層和注意力機制的核心。把任意一組分數 \(z\)（logits）變成加起來是 1 的機率：</p></div>
+    <div class="formula">\[ p_i=\operatorname{softmax}(z)_i=\frac{e^{z_i}}{\sum_je^{z_j}},\qquad \text{例：}z=(2,1,0)\ \Rightarrow\ p\approx(0.665,\ 0.245,\ 0.090) \]</div>
+    <h3>數值穩定：先減最大值</h3>
+    <div class="prose"><p>\(e^{1000}\) 會溢位成無限大。因為分子分母同乘 \(e^{-c}\) 不改變結果，實作一律寫 \(\operatorname{softmax}(z-\max z)\)。同理 log-sum-exp：</p></div>
+    <div class="formula">\[ \operatorname{LSE}(z)=\log\sum_ie^{z_i}=m+\log\sum_ie^{z_i-m},\quad m=\max_iz_i,\qquad \nabla_z\operatorname{LSE}(z)=\operatorname{softmax}(z) \]</div>
+    <div class="prose"><p>LSE 是「平滑版的 max」，它的梯度剛好就是 softmax。所以 \(\log p_i=z_i-\operatorname{LSE}(z)\)，PyTorch 的 <code>log_softmax</code> 和 <code>cross_entropy</code> 就是這樣算的，不會先算出 \(p\) 再取 log。</p></div>
+    <h3>softmax 的雅可比矩陣</h3>
+    <div class="prose"><p>令 \(S=\sum_je^{z_j}\)，\(p_i=e^{z_i}/S\)。用商的微分法則：</p></div>
+    <div class="formula">\[ \frac{\partial p_i}{\partial z_j}=\frac{\delta_{ij}e^{z_i}S-e^{z_i}e^{z_j}}{S^2}=p_i(\delta_{ij}-p_j),\qquad J=\operatorname{diag}(p)-pp^\top \]</div>
+    <div class="prose"><p>和激活函數不同，softmax 的每個輸出都和<strong>所有</strong>輸入有關（分母是全部加總），所以雅可比矩陣不是對角的。\(J\) 是對稱矩陣。反向傳播：\(dz=J\,dp=p\odot dp-p\,(p^\top dp)=p\odot\big(dp-p^\top dp\big)\)。</p></div>
+    <h3>softmax + 交叉熵：梯度是 \(p-y\)</h3>
+    <div class="prose"><p>\(y\) 是 one-hot（正確類別是 1，其他是 0），損失 \(L=-\sum_iy_i\log p_i\)：</p></div>
+    <div class="formula">\[ \frac{\partial L}{\partial z_j}=-\sum_iy_i\frac{1}{p_i}\frac{\partial p_i}{\partial z_j}=-\sum_iy_i(\delta_{ij}-p_j)=-y_j+p_j\underbrace{\sum_iy_i}_{=1}=p_j-y_j \]</div>
+    <div class="prose">
+      <p>複雜的雅可比矩陣全部抵消，只剩「預測減答案」。這就是為什麼框架都把 softmax 和交叉熵合成一個函數（<code>nn.CrossEntropyLoss</code> 吃的是 logits）：梯度簡單、數值也穩定。</p>
+      <p><strong>二元分類也一樣</strong>：\(p=\sigma(w^\top x)\)、\(L=-[y\log p+(1-y)\log(1-p)]\)，算出來 \(\nabla_wL=(p-y)\,x\)。線性回歸的 \(\tfrac12(\hat y-y)^2\) 梯度也是 \((\hat y-y)x\)。三個模型的梯度長得一模一樣，這不是巧合（它們都是廣義線性模型配上對應的損失）。</p>
+    </div>
+
+    <div class="demo">
+      <h4>softmax 與溫度</h4>
+      <p class="hint">拖動三個分數和溫度 \(T\)（計算 \(\operatorname{softmax}(z/T)\)）。溫度越低，機率越集中在最大的那個；越高越平均。這就是語言模型生成時的 temperature 參數。點選正確類別，看交叉熵梯度 \(p-y\)。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="sm-0">z₁</label><input type="range" id="sm-0" min="-4" max="4" step="0.1" value="2"><output id="sm-0v"></output></div>
+        <div class="ctrl"><label for="sm-1">z₂</label><input type="range" id="sm-1" min="-4" max="4" step="0.1" value="1"><output id="sm-1v"></output></div>
+        <div class="ctrl"><label for="sm-2">z₃</label><input type="range" id="sm-2" min="-4" max="4" step="0.1" value="0"><output id="sm-2v"></output></div>
+        <div class="ctrl"><label for="sm-t">溫度 T</label><input type="range" id="sm-t" min="0.1" max="5" step="0.05" value="1"><output id="sm-tv"></output></div>
+      </div>
+      <div class="btns" id="sm-y"><span style="font-size:13.5px;color:var(--muted);align-self:center">正確類別：</span><button class="btn" data-y="0">類別 1</button><button class="btn" data-y="1" aria-pressed="true">類別 2</button><button class="btn" data-y="2">類別 3</button></div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-sm" aria-label="softmax 機率長條圖"></canvas></div>
+        <div class="out" id="sm-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 24 -->
+  <section class="sec" id="s24">
+    <div class="label">第 24 節</div>
+    <h2>完整範例：兩層神經網路的反向傳播</h2>
+    <div class="prose"><p>把前面的零件組起來。批次 \(N\) 筆資料，輸入維度 \(D\)，隱藏層 \(H\)，類別數 \(C\)。</p></div>
+    <div class="formula">\[ Z_1=XW_1+b_1,\quad A=\operatorname{ReLU}(Z_1),\quad Z_2=AW_2+b_2,\quad P=\operatorname{softmax}(Z_2),\quad L=-\frac1N\sum_{n,c}Y_{nc}\log P_{nc} \]</div>
+    <div class="tbl"><table>
+      <thead><tr><th>步驟</th><th>反向公式</th><th>形狀</th><th>用到哪一節</th></tr></thead>
+      <tbody>
+        <tr><td>① 損失對 logits</td><td>\(dZ_2=(P-Y)/N\)</td><td class="num">N×C</td><td>23（平均要除以 N，第 20 節）</td></tr>
+        <tr><td>② 第二層權重</td><td>\(dW_2=A^\top dZ_2\)</td><td class="num">H×C</td><td>15</td></tr>
+        <tr><td>③ 第二層偏差</td><td>\(db_2=\sum_{\text{列}}dZ_2\)</td><td class="num">C</td><td>20（廣播的反向是加總）</td></tr>
+        <tr><td>④ 傳回隱藏層</td><td>\(dA=dZ_2W_2^\top\)</td><td class="num">N×H</td><td>15</td></tr>
+        <tr><td>⑤ 穿過 ReLU</td><td>\(dZ_1=dA\odot\mathbb 1[Z_1&gt;0]\)</td><td class="num">N×H</td><td>22</td></tr>
+        <tr><td>⑥ 第一層權重</td><td>\(dW_1=X^\top dZ_1\)</td><td class="num">D×H</td><td>15</td></tr>
+        <tr><td>⑦ 第一層偏差</td><td>\(db_1=\sum_{\text{列}}dZ_1\)</td><td class="num">H</td><td>20</td></tr>
+      </tbody>
+    </table></div>
+    <pre style="margin-top:14px"><code>import numpy as np
+def softmax(Z):
+    Z = Z - Z.max(axis=1, keepdims=True)      <span class="cm"># 穩定化（第 23 節）</span>
+    E = np.exp(Z); return E / E.sum(axis=1, keepdims=True)
+
+<span class="cm"># 前向</span>
+Z1 = X @ W1 + b1          <span class="cm"># (N,D)(D,H) + (H,) 廣播 → (N,H)</span>
+A  = np.maximum(0, Z1)    <span class="cm"># ReLU</span>
+Z2 = A @ W2 + b2          <span class="cm"># (N,C)</span>
+P  = softmax(Z2)
+L  = -np.sum(Y * np.log(P)) / N
+
+<span class="cm"># 反向：每一行的形狀都和對應的前向變數一樣</span>
+dZ2 = (P - Y) / N         <span class="cm"># (N,C)</span>
+dW2 = A.T @ dZ2           <span class="cm"># (H,N)(N,C) = (H,C)</span>
+db2 = dZ2.sum(axis=0)     <span class="cm"># (C,)</span>
+dA  = dZ2 @ W2.T          <span class="cm"># (N,C)(C,H) = (N,H)</span>
+dZ1 = dA * (Z1 > 0)       <span class="cm"># 逐元素</span>
+dW1 = X.T @ dZ1           <span class="cm"># (D,H)</span>
+db1 = dZ1.sum(axis=0)     <span class="cm"># (H,)</span></code></pre>
+    <div class="prose" style="margin-top:12px"><p>這段程式我用數值微分驗證過，誤差在 \(10^{-10}\) 等級。PyTorch 呼叫 <code>loss.backward()</code> 時，做的就是這七行。</p></div>
+  </section>
+
+  <!-- 25 -->
+  <section class="sec" id="s25">
+    <div class="label">第 25 節</div>
+    <h2>注意力機制（Attention）</h2>
+    <div class="prose"><p>Transformer 的核心，整個都是本頁的運算組合起來的。序列有 \(n\) 個 token，每個是 \(d_{model}\) 維，排成 \(X\)（\(n\times d_{model}\)）。</p></div>
+    <div class="formula">\[ Q=XW_Q,\quad K=XW_K,\quad V=XW_V\qquad(\text{三次矩陣乘法，各是 }n\times d_k) \]</div>
+    <div class="formula">\[ \operatorname{Attention}(Q,K,V)=\underbrace{\operatorname{softmax}\!\Big(\underbrace{\frac{QK^\top}{\sqrt{d_k}}}_{S:\ n\times n}\Big)}_{P:\ n\times n,\ \text{每一列加起來是 1}}\ V\qquad(n\times d_k) \]</div>
+    <div class="steps">
+      <div><div><strong>\(QK^\top\)：</strong>第 \(i\) 列第 \(j\) 欄是 \(q_i^\top k_j\)，token \(i\) 的「問題」和 token \(j\) 的「標籤」做內積，看有多相關。一次矩陣乘法算出所有 \(n^2\) 對（這也是注意力的計算量隨長度平方成長的原因）。</div></div>
+      <div><div><strong>除以 \(\sqrt{d_k}\)：</strong>如果 \(q\)、\(k\) 的元素平均 0、變異數 1，內積 \(q^\top k=\sum_{t=1}^{d_k}q_tk_t\) 是 \(d_k\) 項相加，變異數是 \(d_k\)。\(d_k=64\) 時分數動不動就 ±16，softmax 會幾乎變成 one-hot，梯度接近 0。除以 \(\sqrt{d_k}\) 把變異數拉回 1。</div></div>
+      <div><div><strong>逐列 softmax：</strong>每一列變成一組權重，加總為 1。因果遮罩（GPT）就是在 softmax 前把 \(j&gt;i\) 的位置設成 \(-\infty\)，\(e^{-\infty}=0\)。</div></div>
+      <div><div><strong>乘 \(V\)：</strong>第 \(i\) 列的輸出是 \(\sum_jP_{ij}v_j\)，所有 token 的 value 依權重加權平均（第 3 節「列的線性組合」）。</div></div>
+    </div>
+    <h3>反向傳播</h3>
+    <div class="prose"><p>已知輸出的梯度 \(dO\)（\(n\times d_k\)）。每一步都是前面學過的規則：</p></div>
+    <div class="formula">\[ dV=P^\top dO,\qquad dP=dO\,V^\top\qquad(\text{第 15 節，}O=PV) \]</div>
+    <div class="formula">\[ dS=P\odot\Big(dP-\operatorname{rowsum}(dP\odot P)\Big)\qquad(\text{第 23 節 softmax 反向，逐列做}) \]</div>
+    <div class="formula">\[ dQ=\frac{dS\,K}{\sqrt{d_k}},\qquad dK=\frac{dS^\top Q}{\sqrt{d_k}}\qquad(S=QK^\top/\sqrt{d_k}) \]</div>
+    <div class="prose"><p>最後 \(dW_Q=X^\top dQ\)，\(dW_K\)、\(dW_V\) 同理；\(dX\) 是三條路徑相加 \(dQ\,W_Q^\top+dK\,W_K^\top+dV\,W_V^\top\)（\(X\) 用在三個地方）。</p></div>
+    <h3>多頭與批次：四維張量的矩陣乘法</h3>
+    <div class="prose"><p>實際上張量是 \((B,\ n,\ d_{model})\)。多頭注意力把最後一維切成 \(h\) 份：reshape 成 \((B,\ n,\ h,\ d_k)\)，再轉置成 \((B,\ h,\ n,\ d_k)\)。<code>Q @ K.transpose(-2, -1)</code> 對前兩維（批次、頭）逐一做矩陣乘法，得到 \((B,\ h,\ n,\ n)\)。<code>@</code> 對三維以上的張量就是「最後兩維做矩陣乘法，前面的維度當作批次，並且可以廣播」。</p></div>
+  </section>
+
+  <!-- 26 -->
+  <section class="sec" id="s26">
+    <div class="label">第 26 節</div>
+    <h2>正規化層：LayerNorm 與 BatchNorm</h2>
+    <div class="formula">\[ \mu=\frac1d\sum_ix_i,\quad \sigma=\sqrt{\frac1d\sum_i(x_i-\mu)^2+\varepsilon},\quad \hat x=\frac{x-\mu}{\sigma},\quad y=\gamma\odot\hat x+\beta \]</div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>沿哪一軸算 \(\mu,\sigma\)</th><th>用在</th></tr></thead>
+      <tbody>
+        <tr><td>LayerNorm</td><td>每一筆資料自己的特徵維度（每一列）</td><td>Transformer</td></tr>
+        <tr><td>BatchNorm</td><td>同一個特徵、跨整個批次（每一欄；CNN 是每個通道跨 N、H、W）</td><td>CNN</td></tr>
+      </tbody>
+    </table></div>
+    <h3>反向傳播</h3>
+    <div class="prose"><p>難點在 \(\mu\) 和 \(\sigma\) 也依賴每一個 \(x_i\)，所以每個 \(x_i\) 有三條路影響輸出（直接、經由 \(\mu\)、經由 \(\sigma\)）。把三條路的梯度加起來、化簡後是：</p></div>
+    <div class="formula">\[ d\hat x=dy\odot\gamma,\qquad dx=\frac1\sigma\Big(d\hat x-\operatorname{mean}(d\hat x)-\hat x\odot\operatorname{mean}(d\hat x\odot\hat x)\Big) \]</div>
+    <div class="formula">\[ d\gamma=\sum_{\text{批次}}dy\odot\hat x,\qquad d\beta=\sum_{\text{批次}}dy \]</div>
+    <div class="prose"><p>括號裡的意思：從梯度扣掉「整體平移」的部分（平均）和「整體縮放」的部分（和 \(\hat x\) 同方向的分量），因為正規化已經把平移和縮放消掉了，這兩個方向改 \(x\) 不會改變輸出。BatchNorm 是同一個公式，只是 mean 改成沿批次的方向。</p></div>
+  </section>
+
+  <!-- 27 -->
+  <section class="sec" id="s27">
+    <div class="label">第 27 節</div>
+    <h2>卷積其實是矩陣乘法</h2>
+    <div class="prose"><p>深度學習的「卷積」其實是互相關（cross-correlation）：把卷積核滑過輸入，每個位置做一次內積。一維例子：\(x=(1,2,3,4,5)\)、\(k=(1,0,-1)\)：</p></div>
+    <div class="formula">\[ y=\big(1\cdot1+2\cdot0+3\cdot(-1),\ \ 2-4,\ \ 3-5\big)=(-2,-2,-2) \]</div>
+    <div class="prose"><p>把每個滑窗攤成一列（im2col），卷積就變成矩陣乘向量：</p></div>
+    <div class="formula">\[ \underbrace{\begin{bmatrix}1 & 2 & 3\\2 & 3 & 4\\3 & 4 & 5\end{bmatrix}}_{X_{col}}\begin{bmatrix}1\\0\\-1\end{bmatrix}=\begin{bmatrix}-2\\-2\\-2\end{bmatrix} \]</div>
+    <div class="prose">
+      <p>二維也一樣：每個輸出位置的 \(C_{in}\times k\times k\) 個輸入攤成一列，\(X_{col}\) 是 \((N\cdot H_{out}\cdot W_{out})\times(C_{in}k^2)\)；卷積核排成 \((C_{in}k^2)\times C_{out}\)。卷積 = 一次大矩陣乘法，GPU 很擅長。</p>
+      <p><strong>所以反向傳播直接套第 15 節</strong>：\(dW=X_{col}^\top dY\)，\(dX_{col}=dY\,W^\top\)，再把 \(dX_{col}\) 「摺回去」（col2im）。因為同一個輸入像素出現在好幾個滑窗裡，摺回去時要<strong>相加</strong>（第 20 節「用在多處，梯度相加」）。這樣算出來等於用翻轉的卷積核對 \(dY\) 做 full 卷積。</p>
+      <p>\(1\times1\) 卷積就是對每個像素位置做同一個全連接層，混合通道而不看鄰居。</p>
+    </div>
+  </section>
+
+  <!-- 28 -->
+  <section class="sec" id="s28">
+    <div class="label">第 28 節</div>
+    <h2>分解、低秩與其他進階工具</h2>
+    <h3>奇異值分解（SVD）與低秩</h3>
+    <div class="formula">\[ A=U\Sigma V^\top=\sum_{i=1}^{r}\sigma_i\,u_iv_i^\top \]</div>
+    <div class="prose">
+      <p>任何矩陣都能拆成「旋轉 × 縮放 × 旋轉」。右邊的寫法是第 3 節「外積相加」：矩陣是 \(r\) 個秩 1 矩陣（外積）的和，\(\sigma_i\) 由大到小。只保留前 \(k\) 項就是最好的秩 \(k\) 近似，用在壓縮、去雜訊、推薦系統。</p>
+      <p><strong>LoRA</strong> 就是這個想法：微調大模型時不改 \(W\)（\(d\times d\)），只學一個低秩的修正 \(\Delta W=BA\)，\(B\) 是 \(d\times r\)、\(A\) 是 \(r\times d\)。\(d=4096,\ r=8\) 時，完整 \(\Delta W\) 要 16,777,216 個參數，LoRA 只要 \(2\times4096\times8=65{,}536\) 個，約 0.39%。</p>
+    </div>
+    <h3>PCA：共變異數矩陣的特徵分解</h3>
+    <div class="prose"><p>資料 \(X\)（\(n\times d\)）先減掉每一欄的平均，共變異數矩陣 \(C=\frac1nX^\top X\)（\(d\times d\)，對稱、半正定，第 8 節）。\(C\) 的特徵向量就是資料散得最開的方向，特徵值是那個方向的變異數。投影到前 \(k\) 個特徵向量就是降維。等價地，對 \(X\) 做 SVD，\(V\) 的欄就是主成分。</p></div>
+    <h3>正交矩陣</h3>
+    <div class="prose"><p>\(Q^\top Q=I\)，也就是 \(Q^{-1}=Q^\top\)。它只旋轉或鏡射、不改變長度：\(\lVert Qx\rVert=\lVert x\rVert\)。權重的正交初始化、RoPE 位置編碼（對 \(q\)、\(k\) 做旋轉，內積 \(q^\top k\) 因此只和相對位置有關）都用到它。</p></div>
+    <h3>行列式與反矩陣的微分</h3>
+    <div class="formula">\[ \frac{\partial\log\lvert\det X\rvert}{\partial X}=X^{-\top},\qquad \frac{\partial(x^\top\Sigma^{-1}x)}{\partial x}=2\Sigma^{-1}x\ (\Sigma\text{ 對稱}) \]</div>
+    <div class="prose"><p>多維高斯分佈的對數似然 \(-\tfrac12(x-\mu)^\top\Sigma^{-1}(x-\mu)-\tfrac12\log\det\Sigma+\text{常數}\) 裡就有這兩項；VAE、高斯混合模型、normalizing flow（要算變換的 \(\log\lvert\det J\rvert\)）都會碰到。</p></div>
+    <h3>einsum：一個函數寫遍所有乘法</h3>
+    <div class="prose"><p><code>np.einsum</code> / <code>torch.einsum</code> 直接寫下標，和第 11 節的 \(\sum\) 寫法一模一樣：<strong>輸出沒出現的下標就加總掉</strong>。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>einsum</th><th>數學</th><th>名稱</th></tr></thead>
+      <tbody>
+        <tr><td><code>'i,i-&gt;'</code></td><td>\(\sum_ia_ib_i\)</td><td>內積</td></tr>
+        <tr><td><code>'i,j-&gt;ij'</code></td><td>\(a_ib_j\)</td><td>外積</td></tr>
+        <tr><td><code>'ik,kj-&gt;ij'</code></td><td>\(\sum_kA_{ik}B_{kj}\)</td><td>矩陣乘法</td></tr>
+        <tr><td><code>'ij-&gt;ji'</code></td><td>\(A_{ji}\)</td><td>轉置</td></tr>
+        <tr><td><code>'ii-&gt;'</code></td><td>\(\sum_iA_{ii}\)</td><td>跡</td></tr>
+        <tr><td><code>'i,ij,j-&gt;'</code></td><td>\(\sum_{ij}w_iA_{ij}w_j\)</td><td>二次型</td></tr>
+        <tr><td><code>'bij,bjk-&gt;bik'</code></td><td>每個 b 各做矩陣乘法</td><td>批次矩陣乘法</td></tr>
+        <tr><td><code>'bhqd,bhkd-&gt;bhqk'</code></td><td>\(QK^\top\)（每個批次、每個頭）</td><td>注意力分數</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 29 -->
+  <section class="sec" id="s29">
+    <div class="label">第 29 節</div>
+    <h2>練習題</h2>
+    <div class="prose"><p>每題選完會立刻顯示解說。答錯了就回到對應的節再看一次。</p></div>
+    <div class="score" id="qz-score"></div>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <footer>本頁的數字例子都已用 NumPy 實際計算驗證。練習進度不會被保存，重新整理就會清空。</footer>
+</main>
+</div>
+
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code','canvas','select','option']}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f4 = v => { const r = Math.round(v*1e4)/1e4; return Object.is(r, -0) ? '0' : String(r); };
+const typeset = el => { if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise(el ? [el] : undefined).catch(()=>{}); };
+
+/* ---------- 目錄 ---------- */
+(function(){
+  const secs = [...document.querySelectorAll('section.sec')];
+  const title = s => s.querySelector('h2').textContent.replace(/\s+/g,' ').trim();
+  let h = '<li class="part">上篇　矩陣運算</li>';
+  secs.forEach((s, i) => { if (s.id === 's10') h += '<li class="part">下篇　矩陣微分</li>'; if (s.id === 's19') h += '<li class="part">實戰篇　AI 常用運算</li>'; h += `<li><a href="#${s.id}" data-id="${s.id}"><span class="n">${i+1}</span><span>${s.querySelector('h2').innerHTML}</span></a></li>`; });
+  $('#toc').innerHTML = h;
+  $('#jump').innerHTML = '<option value="top">回到開頭</option>' + secs.map((s, i) => `<option value="${s.id}">${i+1}. ${title(s)}</option>`).join('');
+  $('#jump').addEventListener('change', e => { const el = document.getElementById(e.target.value); (el || document.body).scrollIntoView(); });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ document.querySelectorAll('.toc a').forEach(a => a.classList.toggle('on', a.dataset.id === e.target.id)); } }), {rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s => io.observe(s));
+})();
+
+/* ---------- canvas 工具 ---------- */
+function sizeCanvas(cv, aspect, maxH){
+  const w = Math.max(220, cv.parentElement.clientWidth); let h = Math.round(w*aspect); if (maxH) h = Math.min(h, maxH);
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(w*d); cv.height = Math.round(h*d); cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); ctx.clearRect(0,0,w,h);
+  return {ctx, w, h};
+}
+function arrow(ctx, x1, y1, x2, y2, color, lw = 2.4){
+  const a = Math.atan2(y2-y1, x2-x1), L = Math.hypot(x2-x1, y2-y1); if (L < 2) return;
+  const hd = Math.min(10, L*.4);
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a)*hd*.7, y2 - Math.sin(a)*hd*.7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hd*Math.cos(a-.4), y2 - hd*Math.sin(a-.4)); ctx.lineTo(x2 - hd*Math.cos(a+.4), y2 - hd*Math.sin(a+.4)); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+const renders = []; const onR = f => { renders.push(f); f(); };
+let rq; window.addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => renders.forEach(f => f())); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renders.forEach(f => f()));
+new MutationObserver(() => renders.forEach(f => f())).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+/* ---------- 矩陣小工具 ---------- */
+function mxHTML(M, cls, opts = {}){
+  const cols = M[0].length;
+  return `<div class="mx" style="grid-template-columns:repeat(${cols},44px)">${M.map((r, i) => r.map((v, j) => {
+    const c = cls ? cls(i, j) : '';
+    if (opts.input) return `<input type="number" step="1" value="${v}" data-m="${opts.input}" data-i="${i}" data-j="${j}" class="${c}" aria-label="${opts.input} 第 ${i+1} 列第 ${j+1} 欄">`;
+    if (opts.click) return `<button class="cell ${c}" data-i="${i}" data-j="${j}" aria-label="結果第 ${i+1} 列第 ${j+1} 欄">${v}</button>`;
+    return `<div class="cell ${c}">${v}</div>`;
+  }).join('')).join('')}</div>`;
+}
+const matmul = (A, B) => A.map(r => B[0].map((_, j) => r.reduce((s, v, t) => s + v*B[t][j], 0)));
+
+/* hero */
+(function(){
+  const A = [[1,2,3],[4,5,6]], B = [[7,8],[9,10],[11,12]], C = matmul(A, B);
+  $('#hero-mx').innerHTML = `<div class="mxlab">${mxHTML(A, i => i === 0 ? 'hr' : '')}<span>A　2×3</span></div><span>×</span><div class="mxlab">${mxHTML(B, (i, j) => j === 1 ? 'hc' : '')}<span>B　3×2</span></div><span>=</span><div class="mxlab">${mxHTML(C, (i, j) => i === 0 && j === 1 ? 'ho' : '')}<span>C　2×2</span></div>`;
+})();
+
+/* ---------- 第 2 節：內積 ---------- */
+(function(){
+  const cv = $('#cv-dot');
+  function draw(){
+    const da = +$('#dp-a').value, db = +$('#dp-b').value; $('#dp-av').textContent = da + '°'; $('#dp-bv').textContent = db + '°';
+    const ra = 1.6, rb = 1.2, a = [ra*Math.cos(da*Math.PI/180), ra*Math.sin(da*Math.PI/180)], b = [rb*Math.cos(db*Math.PI/180), rb*Math.sin(db*Math.PI/180)];
+    const {ctx, w, h} = sizeCanvas(cv, .8, 300); const s = Math.min(w, h)/4.4, ox = w/2, oy = h/2;
+    const P = (x, y) => [ox + x*s, oy - y*s];
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+    // 投影
+    const dot = a[0]*b[0] + a[1]*b[1], na = Math.hypot(...a), proj = dot/na, u = [a[0]/na, a[1]/na];
+    const pe = P(u[0]*proj, u[1]*proj), bp = P(...b);
+    ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = tok('--muted'); ctx.beginPath(); ctx.moveTo(...bp); ctx.lineTo(...pe); ctx.stroke(); ctx.restore();
+    ctx.save(); ctx.strokeStyle = tok('--violet'); ctx.lineWidth = 5; ctx.globalAlpha = .55; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(...pe); ctx.stroke(); ctx.restore();
+    arrow(ctx, ox, oy, ...P(...a), tok('--row'), 3); arrow(ctx, ox, oy, ...bp, tok('--col'), 3);
+    ctx.font = '13px ' + tok('--f-mono'); ctx.fillStyle = tok('--row'); ctx.fillText('a', ...P(a[0]*1.1, a[1]*1.1)); ctx.fillStyle = tok('--col'); ctx.fillText('b', ...P(b[0]*1.12, b[1]*1.12));
+    let ang = Math.abs(da - db) % 360; if (ang > 180) ang = 360 - ang;
+    const sign = Math.abs(dot) < 1e-3 ? '<span class="chip info">垂直：內積 = 0</span>' : dot > 0 ? '<span class="chip good">同方向：內積 &gt; 0</span>' : '<span class="chip bad">反方向：內積 &lt; 0</span>';
+    $('#dp-out').innerHTML = `a = (${f4(a[0])}, ${f4(a[1])})　‖a‖ = ${ra}<br>b = (${f4(b[0])}, ${f4(b[1])})　‖b‖ = ${rb}<br><br>aᵀb = a₁b₁ + a₂b₂<br>&nbsp;&nbsp;&nbsp;&nbsp;= ${f4(a[0]*b[0])} + ${f4(a[1]*b[1])} = <b>${f4(dot)}</b><br>‖a‖‖b‖cos θ = ${ra}×${rb}×cos ${ang}° = <b>${f4(ra*rb*Math.cos(ang*Math.PI/180))}</b><br><br>${sign}<br><span style="color:var(--muted)">紫色線段是 b 投影到 a 方向的長度 = aᵀb / ‖a‖</span>`;
+  }
+  ['dp-a','dp-b'].forEach(id => $('#'+id).addEventListener('input', draw)); onR(draw);
+})();
+
+/* ---------- 第 3 節：矩陣乘法 ---------- */
+(function(){
+  let A, B, sel = [0, 0];
+  function init(){
+    const [m, k, n] = $('#mm-shape').value.split(',').map(Number);
+    let v = 1; A = Array.from({length:m}, () => Array.from({length:k}, () => v++));
+    v = 7; B = Array.from({length:k}, () => Array.from({length:n}, () => v++));
+    if (k === 1){ A = A.map((r, i) => [i + 1]); B = [Array.from({length:n}, (_, j) => j + 4)]; }
+    if (m === 1){ A = [[1,2,3]]; B = [[4],[5],[6]]; }
+    sel = [0, 0]; render();
+  }
+  function render(){
+    const C = matmul(A, B), [si, sj] = sel, m = A.length, k = B.length, n = B[0].length;
+    $('#mm-row').innerHTML = `<div class="mxlab">${mxHTML(A, i => i === si ? 'hr' : '', {input:'A'})}<span>A　${m}×${k}</span></div><span>×</span><div class="mxlab">${mxHTML(B, (i, j) => j === sj ? 'hc' : '', {input:'B'})}<span>B　${k}×${n}</span></div><span>=</span><div class="mxlab">${mxHTML(C, (i, j) => i === si && j === sj ? 'ho' : '', {click:true})}<span>C　${m}×${n}</span></div>`;
+    const terms = A[si].map((v, t) => `<span style="color:var(--row)">${v}</span>·<span style="color:var(--col)">${B[t][sj]}</span>`).join(' + ');
+    $('#mm-out').innerHTML = `C<sub>${si+1}${sj+1}</sub> = <span style="color:var(--row)">A 第 ${si+1} 列</span> · <span style="color:var(--col)">B 第 ${sj+1} 欄</span> = ${terms} = <b>${C[si][sj]}</b><br><span style="color:var(--muted)">形狀：(${m}×<b>${k}</b>)(<b>${k}</b>×${n}) → ${m}×${n}。中間的 ${k} 要相同，結果每一格都是 ${k} 項相乘再相加。</span>`;
+    $('#mm-row').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => { const M = inp.dataset.m === 'A' ? A : B; M[+inp.dataset.i][+inp.dataset.j] = +inp.value || 0; render(); }));
+    $('#mm-row').querySelectorAll('button.cell').forEach(b => b.addEventListener('click', () => { sel = [+b.dataset.i, +b.dataset.j]; render(); }));
+  }
+  $('#mm-shape').addEventListener('change', init); init();
+})();
+
+/* ---------- 第 4 節：線性變換 ---------- */
+(function(){
+  const cv = $('#cv-lt'), ids = ['a','b','c','d'];
+  const PRE = [['恆等', [1,0,0,1]], ['放大 2 倍', [2,0,0,2]], ['旋轉 45°', [.71,-.71,.71,.71]], ['剪切', [1,1,0,1]], ['鏡射', [-1,0,0,1]], ['壓扁（不可逆）', [1,2,.5,1]]];
+  $('#lt-pre').innerHTML = PRE.map((p, i) => `<button class="btn" data-p="${i}">${p[0]}</button>`).join('');
+  $('#lt-pre').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b) return; PRE[+b.dataset.p][1].forEach((v, i) => $('#lt-'+ids[i]).value = v); draw(); });
+  function draw(){
+    const [a, b, c, d] = ids.map(k => +$('#lt-'+k).value); ids.forEach((k, i) => $('#lt-'+k+'v').textContent = [a,b,c,d][i].toFixed(2));
+    const {ctx, w, h} = sizeCanvas(cv, .85, 340); const s = Math.min(w, h)/7, ox = w/2, oy = h/2;
+    const T = (x, y) => [a*x + b*y, c*x + d*y], P = (x, y) => [ox + x*s, oy - y*s];
+    ctx.strokeStyle = tok('--grid'); ctx.lineWidth = 1;
+    for (let k = -6; k <= 6; k++){ ctx.beginPath(); ctx.moveTo(...P(k, -6)); ctx.lineTo(...P(k, 6)); ctx.moveTo(...P(-6, k)); ctx.lineTo(...P(6, k)); ctx.stroke(); }
+    ctx.strokeStyle = tok('--muted'); ctx.globalAlpha = .45;
+    for (let k = -4; k <= 4; k++){ ctx.beginPath(); ctx.moveTo(...P(...T(k, -4))); ctx.lineTo(...P(...T(k, 4))); ctx.moveTo(...P(...T(-4, k))); ctx.lineTo(...P(...T(4, k))); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    const sq = [[0,0],[1,0],[1,1],[0,1]].map(p => P(...T(...p)));
+    ctx.fillStyle = tok('--violet-soft'); ctx.strokeStyle = tok('--violet'); ctx.lineWidth = 2; ctx.beginPath(); sq.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.closePath(); ctx.globalAlpha = .7; ctx.fill(); ctx.globalAlpha = 1; ctx.stroke();
+    arrow(ctx, ox, oy, ...P(a, c), tok('--row'), 3); arrow(ctx, ox, oy, ...P(b, d), tok('--col'), 3);
+    const det = a*d - b*c;
+    $('#lt-out').innerHTML = `A = [[${a.toFixed(2)}, ${b.toFixed(2)}],<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[${c.toFixed(2)}, ${d.toFixed(2)}]]<br><br><span style="color:var(--row)">(1,0) → 第 1 欄 (${a.toFixed(2)}, ${c.toFixed(2)})</span><br><span style="color:var(--col)">(0,1) → 第 2 欄 (${b.toFixed(2)}, ${d.toFixed(2)})</span><br><br>det A = ad − bc = ${a.toFixed(2)}×${d.toFixed(2)} − ${b.toFixed(2)}×${c.toFixed(2)} = <b>${f4(det)}</b><br>${Math.abs(det) < .02 ? '<span class="chip bad">det ≈ 0：平面被壓成一條線，沒有反矩陣</span>' : det < 0 ? '<span class="chip info">det &lt; 0：平面被翻面</span>' : '<span class="chip good">可逆：面積變成原來的 ' + f4(det) + ' 倍</span>'}`;
+  }
+  ids.forEach(k => $('#lt-'+k).addEventListener('input', draw)); onR(draw);
+})();
+
+/* ---------- 第 12 節：二次型 ---------- */
+(function(){
+  const cv = $('#cv-quad'); let A = [1,2,3,4], wpt = [1, 1], R = 2.4;
+  $('#qd-ctrls').innerHTML = ['A₁₁','A₁₂','A₂₁','A₂₂'].map((l, i) => `<div class="ctrl"><label for="qd-${i}">${l}</label><input type="number" step="0.5" id="qd-${i}" value="${A[i]}" class="btn" style="width:70px"></div>`).join('');
+  [0,1,2,3].forEach(i => $('#qd-'+i).addEventListener('input', () => { A[i] = +$('#qd-'+i).value || 0; draw(); }));
+  document.querySelectorAll('[data-qp]').forEach(b => b.addEventListener('click', () => { A = b.dataset.qp.split(',').map(Number); A.forEach((v, i) => $('#qd-'+i).value = v); wpt = [1, 1]; draw(); }));
+  const f = (x, y) => A[0]*x*x + (A[1] + A[2])*x*y + A[3]*y*y;
+  let geo = null;
+  cv.addEventListener('click', e => { if (!geo) return; const r = cv.getBoundingClientRect(); wpt = [(e.clientX - r.left - geo.ox)/geo.s, -(e.clientY - r.top - geo.oy)/geo.s]; draw(); });
+  function draw(){
+    const {ctx, w, h} = sizeCanvas(cv, .9, 360); const s = Math.min(w, h)/(2*R), ox = w/2, oy = h/2; geo = {s, ox, oy};
+    const res = 3, vals = [], cw = Math.ceil(w/res), ch = Math.ceil(h/res); let mn = Infinity, mx = -Infinity;
+    for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++){ const v = f((i*res - ox)/s, -(j*res - oy)/s); vals.push(v); mn = Math.min(mn, v); mx = Math.max(mx, v); }
+    const lo = tok('--row-soft'), hi = tok('--col-soft');
+    const band = v => Math.floor(((v - mn)/((mx - mn) || 1))*14);
+    for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++){ const b = band(vals[j*cw + i]); ctx.fillStyle = b < 7 ? lo : hi; ctx.globalAlpha = .25 + .06*Math.abs(b - 7); ctx.fillRect(i*res, j*res, res, res);
+      const edge = (i < cw - 1 && band(vals[j*cw + i + 1]) !== b) || (j < ch - 1 && band(vals[(j+1)*cw + i]) !== b); if (edge){ ctx.globalAlpha = .6; ctx.fillStyle = tok('--muted'); ctx.fillRect(i*res, j*res, res, res); } }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(w, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, h); ctx.stroke();
+    const [x, y] = wpt, S = [[2*A[0], A[1] + A[2]], [A[1] + A[2], 2*A[3]]];
+    const g = [S[0][0]*x + S[0][1]*y, S[1][0]*x + S[1][1]*y], g2 = [2*(A[0]*x + A[1]*y), 2*(A[2]*x + A[3]*y)];
+    const hh = 1e-6, num = [(f(x + hh, y) - f(x - hh, y))/(2*hh), (f(x, y + hh) - f(x, y - hh))/(2*hh)];
+    const gn = Math.hypot(...g) || 1, L = Math.min(1.1, gn*.25)/gn;
+    const px = ox + x*s, py = oy - y*s;
+    arrow(ctx, px, py, px + g[0]*L*s, py - g[1]*L*s, tok('--pen'), 3);
+    ctx.fillStyle = tok('--ink'); ctx.beginPath(); ctx.arc(px, py, 5, 0, 7); ctx.fill();
+    const a = (A[1] + A[2])/2, tr = A[0] + A[3], det = A[0]*A[3] - a*a, disc = Math.sqrt(Math.max(0, tr*tr/4 - det)), l1 = tr/2 + disc, l2 = tr/2 - disc;
+    const kind = l2 > 1e-9 ? '<span class="chip good">正定：碗</span>' : l1 < -1e-9 ? '<span class="chip info">負定：倒扣的碗</span>' : (l1 > 1e-9 && l2 < -1e-9) ? '<span class="chip bad">不定：馬鞍</span>' : '<span class="chip info">半定：谷底是一條線</span>';
+    const sym = A[1] === A[2];
+    $('#qd-out').innerHTML = `w = (${f4(x)}, ${f4(y)})<br>f(w) = wᵀAw = <b>${f4(f(x, y))}</b><br>&nbsp;&nbsp;= ${f4(A[0])}w₁² + ${f4(A[1] + A[2])}w₁w₂ + ${f4(A[3])}w₂²<br><br>A + Aᵀ = [[${f4(S[0][0])}, ${f4(S[0][1])}], [${f4(S[1][0])}, ${f4(S[1][1])}]]<br><span style="color:var(--pen)">(A+Aᵀ)w = (${f4(g[0])}, ${f4(g[1])})</span><br>數值微分 = (${f4(num[0])}, ${f4(num[1])}) ${Math.hypot(g[0] - num[0], g[1] - num[1]) < 1e-3 ? '<span class="chip good">一致</span>' : ''}<br>2Aw = (${f4(g2[0])}, ${f4(g2[1])}) ${sym ? '<span class="chip good">A 對稱，也對</span>' : (Math.hypot(g2[0] - num[0], g2[1] - num[1]) > 1e-3 ? '<span class="chip bad">A 不對稱，錯</span>' : '')}<br><br>對稱部分 ½(A+Aᵀ) 的特徵值：${f4(l1)}、${f4(l2)}<br>${kind}`;
+  }
+  onR(draw);
+})();
+
+/* ---------- 第 15 節：形狀拼圖 ---------- */
+(function(){
+  function render(){
+    const n = Math.max(1, +$('#sp-n').value || 1), di = Math.max(1, +$('#sp-i').value || 1), dO = Math.max(1, +$('#sp-o').value || 1);
+    const S = (r, c) => `${r} × ${c}`;
+    const rows = [
+      ['X', '輸入', S(n, di), '—'], ['W', '權重', S(di, dO), '—'], ['b', '偏差', S(1, dO), '—'], ['Y = XW + b', '輸出', S(n, dO), `(${n}×${di})(${di}×${dO})`],
+      ['dY', '上游梯度（已知）', S(n, dO), '和 Y 同形狀'],
+      ['dW', '要和 W 同形狀', S(di, dO), `Xᵀ dY：(${di}×${n})(${n}×${dO})`],
+      ['dX', '要和 X 同形狀', S(n, di), `dY Wᵀ：(${n}×${dO})(${dO}×${di})`],
+      ['db', '要和 b 同形狀', S(1, dO), `dY 沿批次（${n} 列）加總`]
+    ];
+    $('#sp-tbl').innerHTML = `<thead><tr><th>量</th><th>說明</th><th>形狀</th><th>怎麼來</th></tr></thead><tbody>${rows.map(r => `<tr><td><code>${r[0]}</code></td><td>${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td></tr>`).join('')}</tbody>`;
+  }
+  ['sp-n','sp-i','sp-o'].forEach(id => $('#'+id).addEventListener('input', render)); render();
+})();
+
+/* ---------- 第 17 節：梯度驗證器 ---------- */
+(function(){
+  let seed = 1, cur = 'quad';
+  const rnd = () => { seed = (seed*16807) % 2147483647; return Math.round(((seed/2147483647)*4 - 2)*10)/10; };
+  const vec = n => Array.from({length:n}, rnd), mat = (r, c) => Array.from({length:r}, () => vec(c));
+  const mv = (M, v) => M.map(r => r.reduce((s, x, j) => s + x*v[j], 0)), T = M => M[0].map((_, j) => M.map(r => r[j]));
+  const dotv = (a, b) => a.reduce((s, x, i) => s + x*b[i], 0);
+  let D;
+  function gen(){ D = {c:vec(3), A:mat(3,3), w:vec(3), v:vec(3), X:mat(4,3), y:vec(4)}; }
+  const F = {
+    lin: {n:'cᵀw', f:w => dotv(D.c, w), g:() => D.c, s:'c'},
+    norm: {n:'‖w‖²', f:w => dotv(w, w), g:() => D.w.map(x => 2*x), s:'2w'},
+    quad: {n:'wᵀAw', f:w => dotv(w, mv(D.A, w)), g:() => { const a = mv(D.A, D.w), b = mv(T(D.A), D.w); return a.map((x, i) => x + b[i]); }, s:'(A + Aᵀ)w'},
+    bil: {n:'wᵀAv（對 w）', f:w => dotv(w, mv(D.A, D.v)), g:() => mv(D.A, D.v), s:'Av'},
+    ls: {n:'‖Xw − y‖²', f:w => { const r = mv(D.X, w).map((x, i) => x - D.y[i]); return dotv(r, r); }, g:() => { const r = mv(D.X, D.w).map((x, i) => x - D.y[i]); return mv(T(D.X), r).map(x => 2*x); }, s:'2Xᵀ(Xw − y)'},
+    l1: {n:'‖w‖₁', f:w => w.reduce((s, x) => s + Math.abs(x), 0), g:() => D.w.map(Math.sign), s:'sign(w)', d:() => ''},
+    lse: {n:'log-sum-exp', f:w => { const m = Math.max(...w); return m + Math.log(w.reduce((s, x) => s + Math.exp(x - m), 0)); }, g:() => smx(D.w), s:'softmax(w)', d:() => ''},
+    ce: {n:'softmax 交叉熵', f:w => -Math.log(smx(w)[1]), g:() => smx(D.w).map((p, i) => p - (i === 1 ? 1 : 0)), s:'p − y', d:() => 'y = (0, 1, 0)，L = −log softmax(w)₂'},
+    bce: {n:'sigmoid 二元交叉熵', f:w => -Math.log(1/(1 + Math.exp(-dotv(D.c, w)))), g:() => { const p = 1/(1 + Math.exp(-dotv(D.c, D.w))); return D.c.map(x => (p - 1)*x); }, s:'(p − y)x', d:() => `x = ${fmtV(D.c)}，y = 1，L = −log σ(xᵀw)`},
+    cos: {n:'餘弦相似度 cos(w, v)', f:w => dotv(w, D.v)/Math.sqrt(dotv(w, w)*dotv(D.v, D.v)), g:() => { const na = Math.sqrt(dotv(D.w, D.w)), nb = Math.sqrt(dotv(D.v, D.v)), cs = dotv(D.w, D.v)/(na*nb); return D.w.map((x, i) => D.v[i]/(na*nb) - cs*x/(na*na)); }, s:'v/(‖w‖‖v‖) − cos·w/‖w‖²', d:() => `v = ${fmtV(D.v)}`},
+    wrong: {n:'錯誤示範：wᵀAw 用 2Aw', f:w => dotv(w, mv(D.A, w)), g:() => mv(D.A, D.w).map(x => 2*x), s:'2Aw（A 不對稱）'}
+  };
+  function smx(z){ const m = Math.max(...z), e = z.map(x => Math.exp(x - m)), s = e.reduce((a, b) => a + b, 0); return e.map(x => x/s); }
+  $('#gc-btns').innerHTML = Object.keys(F).map(k => `<button class="btn" data-g="${k}" aria-pressed="${k === cur}">${F[k].n}</button>`).join('');
+  $('#gc-btns').addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (!b) return; cur = b.dataset.g; $('#gc-btns').querySelectorAll('[data-g]').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
+  const fmtV = v => '(' + v.map(x => f4(x)).join(', ') + ')';
+  const fmtM = M => '[' + M.map(r => '[' + r.map(x => f4(x)).join(', ') + ']').join(', ') + ']';
+  function render(){
+    const fn = F[cur], g = fn.g(), h = 1e-6;
+    const num = [0,1,2].map(k => { const p = D.w.slice(), m = D.w.slice(); p[k] += h; m[k] -= h; return (fn.f(p) - fn.f(m))/(2*h); });
+    const err = Math.max(...g.map((x, i) => Math.abs(x - num[i])));
+    const given = fn.d ? fn.d() : cur === 'lin' ? `c = ${fmtV(D.c)}` : cur === 'norm' ? '' : cur === 'ls' ? `X = ${fmtM(D.X)}<br>y = ${fmtV(D.y)}` : cur === 'bil' ? `A = ${fmtM(D.A)}<br>v = ${fmtV(D.v)}` : `A = ${fmtM(D.A)}`;
+    $('#gc-out').innerHTML = `f(w) = ${fn.n.replace('（對 w）','').replace('錯誤示範：wᵀAw 用 2Aw','wᵀAw').replace('餘弦相似度 ','')}<br>${given}${given ? '<br>' : ''}w = ${fmtV(D.w)}<br><br><table style="min-width:0"><thead><tr><th></th><th>公式 ${fn.s}</th><th>數值微分</th></tr></thead><tbody>${[0,1,2].map(k => `<tr><td>∂f/∂w${'₁₂₃'[k]}</td><td class="num">${f4(g[k])}</td><td class="num">${f4(num[k])}</td></tr>`).join('')}</tbody></table><br>最大差距 = ${err.toExponential(1)}　${err < 1e-4 ? '<span class="chip good">公式正確</span>' : '<span class="chip bad">公式錯了</span>'}`;
+  }
+  $('#gc-re').addEventListener('click', () => { gen(); render(); });
+  gen(); render();
+})();
+
+/* ---------- 第 23 節：softmax ---------- */
+(function(){
+  const cv = $('#cv-sm'); let yi = 1;
+  $('#sm-y').addEventListener('click', e => { const b = e.target.closest('[data-y]'); if (!b) return; yi = +b.dataset.y; $('#sm-y').querySelectorAll('[data-y]').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(); });
+  function draw(){
+    const z = [0,1,2].map(i => +$('#sm-'+i).value), T = +$('#sm-t').value;
+    [0,1,2].forEach(i => $('#sm-'+i+'v').textContent = z[i].toFixed(1)); $('#sm-tv').textContent = T.toFixed(2);
+    const zt = z.map(v => v/T), m = Math.max(...zt), e = zt.map(v => Math.exp(v - m)), S = e.reduce((a, b) => a + b, 0), p = e.map(v => v/S);
+    const {ctx, w, h} = sizeCanvas(cv, .7, 260); const pad = 28, bw = (w - 2*pad)/3;
+    ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(pad - 8, h - 30); ctx.lineTo(w - pad + 8, h - 30); ctx.stroke();
+    p.forEach((v, i) => { const bh = v*(h - 70), x = pad + i*bw + bw*.18;
+      ctx.fillStyle = i === yi ? tok('--good') : tok('--row'); ctx.globalAlpha = i === yi ? .85 : .7; ctx.fillRect(x, h - 30 - bh, bw*.64, bh); ctx.globalAlpha = 1;
+      ctx.fillStyle = tok('--ink'); ctx.font = '13px ' + tok('--f-mono'); ctx.textAlign = 'center'; ctx.fillText(v.toFixed(3), x + bw*.32, h - 36 - bh);
+      ctx.fillStyle = tok('--muted'); ctx.fillText('類別 ' + (i+1) + (i === yi ? '（答案）' : ''), x + bw*.32, h - 10); });
+    ctx.textAlign = 'left';
+    const J = p.map((pi, i) => p.map((pj, j) => (i === j ? pi : 0) - pi*pj));
+    const lse = Math.log(S) + m;
+    $('#sm-out').innerHTML = `z/T = (${zt.map(f4).join(', ')})<br>p = softmax(z/T) = (${p.map(v => v.toFixed(3)).join(', ')})<br>p 的總和 = ${f4(p.reduce((a, b) => a + b, 0))}<br>LSE(z/T) = ${f4(lse)}<br><br>雅可比 J = diag(p) − ppᵀ：<br>${J.map(r => '[' + r.map(v => (v >= 0 ? '&nbsp;' : '') + v.toFixed(3)).join(', ') + ']').join('<br>')}<br><br>交叉熵 L = −log p<sub>${yi+1}</sub> = <b>${f4(-Math.log(p[yi]))}</b><br>∂L/∂(z/T) = p − y = (<span style="color:var(--pen)">${p.map((v, i) => (v - (i === yi ? 1 : 0)).toFixed(3)).join(', ')}</span>)<br><span style="color:var(--muted)">答案那一格是負的（梯度下降會把它的分數往上推），其他是正的（往下壓）。</span>`;
+  }
+  ['sm-0','sm-1','sm-2','sm-t'].forEach(id => $('#'+id).addEventListener('input', draw)); onR(draw);
+})();
+
+/* ---------- 第 29 節：練習題 ---------- */
+(function(){
+  const Q = [
+    {q:'A 是 3×4、B 是 4×2，AB 的形狀是？', o:['3×2','4×4','3×4','乘不起來'], a:0, e:'(3×4)(4×2)：中間的 4 對上，結果是 3×2。（第 3 節）'},
+    {q:'A 是 3×4、B 是 3×2，下列哪個乘法可以算？', o:['AB','BA','AᵀB','ABᵀ'], a:2, e:'Aᵀ 是 4×3，(4×3)(3×2) = 4×2。（第 3、5 節）'},
+    {q:'(ABC)ᵀ 等於？', o:['AᵀBᵀCᵀ','CᵀBᵀAᵀ','CBA','(CBA)ᵀ'], a:1, e:'轉置要把順序整個倒過來。（第 5 節）'},
+    {q:'yᵀXw（y 是 n×1、X 是 n×d、w 是 d×1）等於下列哪一個？', o:['wᵀXy','wᵀXᵀy','Xᵀyw','yXwᵀ'], a:1, e:'它是 1×1 的純量，轉置等於自己：(yᵀXw)ᵀ = wᵀXᵀy。（第 5 節）'},
+    {q:'[[2,1],[1,1]] 的反矩陣是？', o:['[[1,−1],[−1,2]]','[[1,1],[1,2]]','[[−1,1],[1,−2]]','不存在'], a:0, e:'行列式 2−1 = 1；對角互換、副對角變號。（第 6 節）'},
+    {q:'台灣教科書說的「行向量」是？', o:['橫的 row vector（1×n）','直的 column vector（n×1）','對角矩陣','純量'], a:1, e:'台灣：行 = column、列 = row；中國大陸相反。（第 1 節）'},
+    {q:'∇_w(cᵀw) 是？', o:['cᵀ','c','w','0'], a:1, e:'cᵀw = Σ cᵢwᵢ，對 w_k 微分得 c_k。（第 11 節）'},
+    {q:'A = [[1,2],[3,4]]、w = (1,1)，∇_w(wᵀAw) 是？', o:['(6, 14)','(7, 13)','(3, 7)','(4, 6)'], a:1, e:'(A+Aᵀ)w = [[2,5],[5,8]](1,1) = (7, 13)。2Aw = (6,14) 是錯的，因為 A 不對稱。（第 12 節）'},
+    {q:'什麼時候 ∇_w(wᵀAw) 可以寫成 2Aw？', o:['永遠可以','A 是方陣時','A 是對稱矩陣時','A 可逆時'], a:2, e:'A = Aᵀ 時 (A+Aᵀ)w = 2Aw。XᵀX、Hessian 都是對稱的。（第 12 節）'},
+    {q:'∇_v(wᵀAv) 是？', o:['Av','Aᵀw','Aw','wᵀA'], a:1, e:'Σ wᵢAᵢₖ = (Aᵀw)_k，形狀和 v 相同。（第 13 節）'},
+    {q:'∇_w‖Xw − y‖² 是？', o:['2(Xw − y)','2X(Xw − y)','2Xᵀ(Xw − y)','2(Xw − y)ᵀX'], a:2, e:'連鎖律：雅可比是 X，要乘 Xᵀ。形狀檢查：答案要 d×1。（第 14 節）'},
+    {q:'Y = XW，X 是 64×100、W 是 100×10，dW 怎麼算？', o:['dY Xᵀ','Xᵀ dY','dY Wᵀ','X dY'], a:1, e:'dW 要是 100×10：(100×64)(64×10)。（第 15 節）'},
+    {q:'½‖Xw − y‖² 的 Hessian 是？', o:['X','XᵀX','2XᵀX','I'], a:1, e:'梯度 Xᵀ(Xw − y) = XᵀXw − Xᵀy，再對 w 微分得 XᵀX。（第 16 節）'},
+    {q:'Python 裡 A * B 和 A @ B 的差別？', o:['完全一樣','* 是逐元素乘，@ 是矩陣乘法','* 是矩陣乘法，@ 是逐元素乘','* 只能用於向量'], a:1, e:'這是最常見的寫錯。（第 9 節）'},
+    {q:'Y = XW + b，Y 是 32×10，dY 已知。db（形狀 10）怎麼算？', o:['dY 的第一列','dY 沿批次（32 列）加總','dY 的平均','dY 乘 Wᵀ'], a:1, e:'b 被廣播（複製）到 32 列，廣播的反向就是加總。（第 20 節）'},
+    {q:'X 形狀 (64, 128)，X.sum(axis=0) 的形狀是？', o:['(64,)','(128,)','(1,)','(64, 128)'], a:1, e:'axis 寫哪一軸，那一軸就消失：第 0 軸（64）被加總掉。（第 20 節）'},
+    {q:'y = ReLU(x)，已知 dy，dx 是？', o:['dy','dy ⊙ 1[x > 0]','dy ⊙ x','ReLU(dy)'], a:1, e:'逐元素函數的反向是 dy ⊙ f′(x)，ReLU 的導數在 x > 0 時是 1、否則 0。（第 22 節）'},
+    {q:'sigmoid 的導數 σ′(x) 是？', o:['σ(x)²','1 − σ(x)','σ(x)(1 − σ(x))','1 − tanh²x'], a:2, e:'最大值在 x = 0，等於 0.25。（第 22 節）'},
+    {q:'softmax + 交叉熵，損失對 logits z 的梯度是？', o:['p − y','y − p','diag(p) − ppᵀ','−log p'], a:0, e:'雅可比矩陣乘上 −y/p 之後全部抵消，只剩預測減答案。（第 23 節）'},
+    {q:'為什麼實作 softmax 要先減掉最大值？', o:['讓結果變稀疏','避免 exp 溢位，而且結果不變','讓梯度變大','讓總和變成 0'], a:1, e:'分子分母同乘 e^(−max) 不改變比例，但避免 e^1000 這種溢位。（第 23 節）'},
+    {q:'注意力裡為什麼要除以 √d_k？', o:['讓矩陣變方陣','qᵀk 的變異數約等於 d_k，除掉後 softmax 才不會飽和','讓 V 正規化','減少參數'], a:1, e:'d_k 項相加讓變異數變成 d_k；分數太大時 softmax 近似 one-hot，梯度幾乎為 0。（第 25 節）'},
+    {q:'O = PV，已知 dO，dV 是？', o:['dO Pᵀ','Pᵀ dO','P dO','dO V'], a:1, e:'和 Y = XW 的 dW = Xᵀ dY 同一條規則，這裡 X 換成 P。（第 15、25 節）'},
+    {q:'LoRA 用 ΔW = BA（B 是 d×r、A 是 r×d）取代完整的 d×d 修正。d = 4096、r = 8 時參數量大約是完整的？', o:['50%','12.5%','0.39%','0.01%'], a:2, e:'2×4096×8 = 65,536，除以 4096² = 16,777,216，約 0.39%。（第 28 節）'},
+    {q:"np.einsum('ik,kj->ij', A, B) 等於？", o:['A * B','A @ B','A.T @ B','np.outer(A, B)'], a:1, e:'k 沒出現在輸出，被加總掉：Σₖ AᵢₖBₖⱼ，就是矩陣乘法。（第 28 節）'}
+  ];
+  const ans = {};
+  $('#quiz').innerHTML = Q.map((q, i) => `<div class="q" data-i="${i}"><div class="qt">${i+1}. ${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="ex" hidden>${q.e}</div></div>`).join('');
+  const score = () => { const k = Object.keys(ans).length, c = Object.entries(ans).filter(([i, j]) => Q[i].a === j).length; $('#qz-score').textContent = `已作答 ${k} / ${Q.length}，答對 ${c} 題`; };
+  document.querySelectorAll('#quiz .q').forEach(el => {
+    const i = +el.dataset.i;
+    el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+      const j = +b.dataset.j; ans[i] = j;
+      el.querySelectorAll('.opt').forEach(x => { x.disabled = true; const k = +x.dataset.j; if (k === Q[i].a) x.classList.add('right'); else if (k === j) x.classList.add('wrong'); });
+      const ex = el.querySelector('.ex'); ex.hidden = false; ex.insertAdjacentHTML('afterbegin', `<b>${j === Q[i].a ? '答對了。' : '再想想。'}</b> `); score();
+    }));
+  });
+  score();
+})();
+</script>
+
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>引用的論文、影片與圖表，版權屬原作者，不在上述授權範圍內。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p>需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body></html>
