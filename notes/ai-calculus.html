@@ -1,0 +1,1126 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>AI 微積分筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 與線代、機率筆記同一套方格筆記本版型；藍色＝函數值／前向，琥珀色＝導數／梯度（反向） */
+:root{
+  --paper:#F5F7F4; --sheet:#FFFFFF; --sunk:#ECF0EC; --ink:#1B2430; --muted:#5A6672; --rule:#D8E0DA; --grid:#E3EAE5;
+  --row:#2560B5; --row-soft:#DCE8F8; --col:#B8620E; --col-soft:#F8E6D0;
+  --pen:#B2382E; --pen-soft:#F6DFDC; --good:#2E7A4F; --good-soft:#DCEFE3; --violet:#6750A4; --violet-soft:#E9E4F5;
+  --f-display:"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+    --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+    --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+  --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+  --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+a{color:var(--row)}
+:focus-visible{outline:2px solid var(--row);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.r{color:var(--row);font-weight:600}.c{color:var(--col);font-weight:600}.pen{color:var(--pen)}
+
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;box-sizing:border-box;max-height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;overscroll-behavior:contain;padding-block:28px 40px}
+.side .brand{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.3}
+.side .sub{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
+.toc{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc .part{font-size:12px;letter-spacing:.08em;color:var(--muted);padding:14px 8px 4px;font-weight:500}
+.toc a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:5px 8px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.45}
+.toc a:hover{background:var(--sunk)}
+.toc a.on{background:var(--row-soft)}
+.toc .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+main{min-width:0;padding-block:12px 80px}
+.mbar{display:none}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .side{display:none}
+  .mbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);padding-block:8px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .mbar select{width:100%;font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);color:var(--ink)}
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+
+.hero{padding-block:36px 20px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero h1{font-size:clamp(32px,5vw,48px)}
+.hero .lead{margin-top:14px;color:var(--muted);max-width:36em}
+.hero .lead b{color:var(--ink)}
+.hero-fig{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:16px;overflow-x:auto}
+@media (max-width:720px){.hero{grid-template-columns:minmax(0,1fr)}}
+
+.part-head{margin-top:56px;padding:22px 22px;border-radius:14px;background:var(--row-soft);display:grid;gap:6px}
+.part-head.b{background:var(--col-soft)}
+.part-head .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.part-head h2{font-size:clamp(26px,3.6vw,34px)}
+.part-head p{max-width:62ch}
+
+section.sec{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:28px clamp(16px,3vw,32px);margin-top:28px;scroll-margin-top:16px}
+@media (max-width:900px){section.sec{scroll-margin-top:60px}}
+.sec .label{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.sec h2{font-size:clamp(23px,3vw,29px);margin-bottom:16px}
+.sec h3{font-size:19px;margin:30px 0 10px}
+.prose{max-width:68ch;display:grid;gap:12px}
+.prose>*,.box>*,.steps>div>div,.prose li{min-width:0;overflow-wrap:break-word}
+.prose ul,.prose ol{margin:0;padding-left:1.4em;display:grid;gap:6px}
+.formula{overflow-x:auto;padding:8px 0;max-width:100%}
+.formula mjx-container{margin:0!important}
+.box{border-radius:10px;padding:14px 16px;display:grid;gap:6px;max-width:68ch;font-size:15px;margin-top:14px}
+.box b.t{font-size:13px;letter-spacing:.04em}
+.box.key{background:var(--row-soft)} .box.warn{background:var(--pen-soft)} .box.tip{background:var(--good-soft)} .box.amber{background:var(--col-soft)}
+.tbl{overflow-x:auto;max-width:100%;margin-top:10px}
+table{border-collapse:collapse;font-size:14.5px;min-width:100%}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:700}
+td.num{font-family:var(--f-mono);white-space:nowrap}
+code{font-family:var(--f-mono);font-size:.9em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+pre{margin:0;overflow-x:auto;background:var(--sunk);border-radius:10px;padding:14px 16px;font-family:var(--f-mono);font-size:13px;line-height:1.65}
+pre code{background:none;padding:0}
+.cm{color:var(--muted)}
+.steps{counter-reset:s;display:grid;gap:10px;margin-top:10px;max-width:72ch}
+.steps>div{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px}
+.steps>div::before{counter-increment:s;content:counter(s);font-family:var(--f-mono);font-size:13px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--sheet);display:flex;align-items:center;justify-content:center;margin-top:4px}
+
+/* demo */
+.demo{border:1.5px dashed var(--rule);border-radius:12px;padding:16px;margin-top:22px;display:grid;gap:12px;background:var(--paper)}
+.demo>*{min-width:0}
+.demo h4{font-size:17px}
+.demo .hint{font-size:14px;color:var(--muted);max-width:70ch}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.ctrl{display:flex;align-items:center;gap:8px;font-size:13.5px;min-width:0}
+.ctrl label{color:var(--muted);white-space:nowrap}
+.ctrl input[type=range]{width:130px;accent-color:var(--row)}
+.ctrl output{font-family:var(--f-mono);font-size:13px;min-width:3.6em}
+.btn{font:inherit;font-size:13.5px;padding:6px 12px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1.3}
+.btn:hover{border-color:var(--row)}
+.btn[aria-pressed="true"]{background:var(--row-soft);border-color:var(--row)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.out{font-family:var(--f-mono);font-size:13.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;overflow-x:auto;line-height:1.7}
+.cv{width:100%;min-width:0}
+.cv canvas{display:block;width:100%;border-radius:8px;background:var(--sheet);border:1px solid var(--rule)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}}
+.chip{display:inline-block;font-size:12.5px;font-weight:500;padding:1px 9px;border-radius:999px;font-family:var(--f-body)}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.bad{background:var(--pen-soft);color:var(--pen)} .chip.info{background:var(--row-soft);color:var(--row)}
+
+/* matrix widgets */
+.mx{display:inline-grid;gap:3px;padding:4px 7px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;vertical-align:middle}
+.mx input,.mx .cell{width:44px;height:34px;box-sizing:border-box;text-align:center;font-family:var(--f-mono);font-size:14px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);color:var(--ink);padding:0}
+.mx .cell{display:flex;align-items:center;justify-content:center}
+.mx button.cell{cursor:pointer}
+.mx .hr{background:var(--row-soft);border-color:var(--row);color:var(--row);font-weight:700}
+.mx .hc{background:var(--col-soft);border-color:var(--col);color:var(--col);font-weight:700}
+.mx .ho{background:var(--violet-soft);border-color:var(--violet);color:var(--violet);font-weight:700}
+.mxrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--f-mono)}
+.mxlab{display:grid;gap:4px;justify-items:center;font-size:12.5px;color:var(--muted)}
+
+/* quiz */
+.quiz{display:grid;gap:16px;margin-top:20px}
+.q{display:grid;gap:8px;border-top:1px dashed var(--rule);padding-top:14px}
+.q .qt{font-weight:500}
+.q .opts{display:grid;gap:6px}
+.q .opt{text-align:left;font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);color:var(--ink);cursor:pointer}
+.q .opt:hover:not(:disabled){border-color:var(--row)}
+.q .opt.right{background:var(--good-soft);border-color:var(--good)} .q .opt.wrong{background:var(--pen-soft);border-color:var(--pen)}
+.q .ex{font-size:14.5px;background:var(--sunk);border-radius:8px;padding:9px 12px}
+.score{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+</style>
+<meta name="description" content="從「斜率」重新開始：導數、連鎖律、泰勒展開、積分，到偏微分、梯度、雅可比與 Hessian，再用在梯度下降、Adam、牛頓法、反向傳播與自動微分。">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>:root{--line:var(--rule);--accent:var(--row);--bg:var(--paper);--surface2:var(--sunk)}.ls-foot{max-width:960px}</style>
+</head><body>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
+<div class="shell">
+<aside class="side" aria-label="目錄">
+  <div class="brand">AI 微積分<br>筆記</div>
+  <div class="sub">從斜率開始，到看懂反向傳播與 Adam</div>
+  <ol class="toc" id="toc"></ol>
+</aside>
+
+<main>
+  <div class="mbar"><select id="jump" aria-label="跳到章節"></select></div>
+
+  <header class="hero">
+    <div>
+      <h1>AI 微積分筆記</h1>
+      <p class="lead">寫給微積分忘得差不多、卻要看懂神經網路怎麼訓練的人。<b>上篇</b>從「斜率」重新開始：導數、微分規則、連鎖律、泰勒展開、積分；<b>中篇</b>走到多變數：偏微分、梯度、雅可比、Hessian、凸性；<b>下篇</b>把它們用在 AI：梯度下降、Momentum 與 Adam、牛頓法、計算圖與反向傳播、自動微分、梯度消失。</p>
+      <p class="lead">顏色約定：<span class="r">藍色是函數值／前向</span>，<span class="c">琥珀色是導數／梯度（反向）</span>，<span class="pen">紅色是常見錯誤</span>。姊妹篇：<a href="linear-algebra.html">線代與矩陣微分筆記</a>、<a href="probability-statistics.html">機率統計與 AI 筆記</a>。</p>
+    </div>
+    <div class="hero-fig" aria-label="訓練神經網路的一步">
+      <div class="steps" style="margin:0">
+        <div><div><span class="r">前向</span>：算出預測和損失 \(L\)</div></div>
+        <div><div><span class="c">反向</span>：用連鎖律算 \(\partial L/\partial w\)</div></div>
+        <div><div>更新：\(w\leftarrow w-\eta\,\partial L/\partial w\)</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px">深度學習的訓練就是不斷重複這三步。第 2、3 步全是微積分。</div>
+    </div>
+  </header>
+
+  <!-- ================= 上篇 ================= -->
+  <div class="part-head" id="partA">
+    <div class="eyebrow">上篇</div>
+    <h2>單變數微積分</h2>
+    <p>一個輸入、一個輸出。把「導數就是斜率」這個核心直覺找回來，之後所有東西都是它的延伸。</p>
+  </div>
+
+  <section class="sec" id="s1">
+    <div class="label">第 1 節</div>
+    <h2>為什麼 AI 需要微積分</h2>
+    <div class="prose">
+      <p>訓練神經網路 = 找一組參數 \(w\)，讓損失 \(L(w)\) 最小。參數可能有幾十億個，不可能一個一個試。微積分給了兩個關鍵工具：</p>
+      <ul>
+        <li><strong>導數／梯度</strong>告訴我們：把參數往哪個方向改一點點，損失下降最快。這就是<strong>梯度下降</strong>（第 17 節）。</li>
+        <li><strong>連鎖律</strong>讓我們能有效率地算出每一個參數的梯度，即使網路有一百層。這就是<strong>反向傳播</strong>（第 20 節）。</li>
+      </ul>
+      <p>另外，<strong>積分</strong>出現在機率裡：連續分佈的機率、期望值都是積分（第 9 節）；<strong>泰勒展開</strong>解釋了為什麼梯度下降有效、學習率為什麼不能太大（第 8、17 節）。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>微積分概念</th><th>在 AI 的角色</th><th>節</th></tr></thead>
+      <tbody>
+        <tr><td>導數、偏微分</td><td>每個參數該往哪裡改</td><td class="num">3、10</td></tr>
+        <tr><td>連鎖律</td><td>反向傳播</td><td class="num">5、12、20</td></tr>
+        <tr><td>梯度</td><td>梯度下降的方向</td><td class="num">11、17</td></tr>
+        <tr><td>泰勒展開</td><td>為什麼梯度下降有效、牛頓法</td><td class="num">8、14、19</td></tr>
+        <tr><td>Hessian、凸性</td><td>損失地形的形狀、鞍點</td><td class="num">13、14</td></tr>
+        <tr><td>積分</td><td>機率、期望值、歸一化</td><td class="num">9、15</td></tr>
+        <tr><td>拉格朗日乘數</td><td>有限制的最佳化（SVM、最大熵）</td><td class="num">16</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="s2">
+    <div class="label">第 2 節</div>
+    <h2>函數、極限與兩個特別的函數</h2>
+    <div class="prose">
+      <p><strong>函數</strong>就是一個輸入對應一個輸出的規則 \(y=f(x)\)。神經網路本身就是一個巨大的函數：輸入圖片，輸出類別機率。</p>
+      <p><strong>極限</strong> \(\lim_{x\to a}f(x)=L\)：\(x\) 越來越靠近 \(a\) 時，\(f(x)\) 越來越靠近 \(L\)（不管 \(f(a)\) 本身是多少，甚至沒定義）。導數的定義就靠它。</p>
+      <p><strong>連續</strong>：\(\lim_{x\to a}f(x)=f(a)\)，畫圖時筆不用離開紙。ReLU 在 0 是連續的，但在 0 有一個「尖角」，不可微（第 6 節）。</p>
+    </div>
+    <h3>指數 \(e^x\) 與自然對數 \(\ln x\)</h3>
+    <div class="prose"><p>AI 裡最常見的兩個函數，互為反函數：\(e^{\ln x}=x\)、\(\ln(e^x)=x\)。\(e\approx2.71828\)。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>指數</th><th>對數</th><th>用在</th></tr></thead>
+      <tbody>
+        <tr><td>\(e^{a+b}=e^ae^b\)</td><td>\(\ln(ab)=\ln a+\ln b\)</td><td>相乘的機率取 log 變相加（對數概似）</td></tr>
+        <tr><td>\(e^{a-b}=e^a/e^b\)</td><td>\(\ln(a/b)=\ln a-\ln b\)</td><td>softmax 減最大值不改變結果</td></tr>
+        <tr><td>\((e^a)^k=e^{ka}\)</td><td>\(\ln(a^k)=k\ln a\)</td><td>\(\log p^k=k\log p\)</td></tr>
+        <tr><td>\(e^x&gt;0\) 永遠成立</td><td>\(\ln x\) 只對 \(x&gt;0\) 有定義</td><td>softmax 輸出一定為正；\(\log 0\) 會變成 \(-\infty\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><b class="t">為什麼是 e？</b>
+      <p>因為 \(e^x\) 的導數就是它自己：\(\frac{d}{dx}e^x=e^x\)。只有以 \(e\) 為底才有這個性質，所以所有公式都最乾淨。其他底數可以換：\(a^x=e^{x\ln a}\)，\(\log_2x=\ln x/\ln2\)。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3">
+    <div class="label">第 3 節</div>
+    <h2>導數：瞬間的斜率</h2>
+    <div class="prose"><p>兩點連線的斜率是 \(\frac{f(x+h)-f(x)}{h}\)（割線）。讓 \(h\) 越來越小，割線就變成切線，斜率的極限就是<strong>導數</strong>：</p></div>
+    <div class="formula">\[ f'(x)=\frac{df}{dx}=\lim_{h\to0}\frac{f(x+h)-f(x)}{h} \]</div>
+    <div class="prose">
+      <p><strong>意義</strong>：\(x\) 增加一點點 \(\Delta x\)，\(f\) 大約增加 \(f'(x)\,\Delta x\)。導數就是「輸出對輸入的敏感度」。</p>
+      <p>例：\(f(x)=x^2\)，\(\frac{(x+h)^2-x^2}{h}=\frac{2xh+h^2}{h}=2x+h\to2x\)。在 \(x=3\)，斜率是 6：\(x\) 從 3 變成 3.01，\(f\) 從 9 變成約 \(9+6\times0.01=9.06\)（實際 9.0601）。</p>
+      <p><strong>正負號</strong>：\(f'(x)&gt;0\) 表示往右走函數上升，\(f'(x)&lt;0\) 表示下降，\(f'(x)=0\) 是平的（可能是最高點、最低點）。梯度下降就是：導數是正的就往左走，是負的就往右走。</p>
+    </div>
+    <div class="box amber"><b class="t">記號</b>
+      <p>\(f'(x)\)、\(\frac{df}{dx}\)、\(\frac{d}{dx}f\)、\(\dot f\) 都是同一個意思。\(\frac{df}{dx}\) 這種寫法（萊布尼茲記號）最適合連鎖律，看起來像分數可以約分：\(\frac{dL}{dx}=\frac{dL}{du}\frac{du}{dx}\)。二階導數寫 \(f''(x)\) 或 \(\frac{d^2f}{dx^2}\)，是「斜率的變化率」，也就是彎曲程度。</p>
+    </div>
+    <div class="demo">
+      <h4>割線變切線</h4>
+      <p class="hint">選一個函數，拖動位置 \(x\) 和間距 \(h\)。<span class="c">琥珀色</span>是割線，紅色虛線是真正的切線。\(h\) 越小，兩條線越接近。</p>
+      <div class="btns" id="dv-pick"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="dv-x">x</label><input type="range" id="dv-x" min="-2.5" max="2.5" step="0.01" value="1"><output id="dv-xv"></output></div>
+        <div class="ctrl"><label for="dv-h">h</label><input type="range" id="dv-h" min="0.01" max="2" step="0.01" value="1"><output id="dv-hv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-dv" aria-label="函數、割線與切線"></canvas></div>
+        <div class="out" id="dv-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s4">
+    <div class="label">第 4 節</div>
+    <h2>微分規則</h2>
+    <div class="prose"><p>不用每次都用極限算。記住少數幾個基本函數，加上四條組合規則，任何式子都能微分。</p></div>
+    <h3>基本函數</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>\(f(x)\)</th><th>\(f'(x)\)</th><th>備註</th></tr></thead>
+      <tbody>
+        <tr><td>\(c\)（常數）</td><td>\(0\)</td><td></td></tr>
+        <tr><td>\(x^n\)</td><td>\(nx^{n-1}\)</td><td>冪次法則；\(n\) 可以是負數、分數：\(\frac{d}{dx}\sqrt x=\frac1{2\sqrt x}\)、\(\frac{d}{dx}\frac1x=-\frac1{x^2}\)</td></tr>
+        <tr><td>\(e^x\)</td><td>\(e^x\)</td><td></td></tr>
+        <tr><td>\(\ln x\)</td><td>\(1/x\)</td><td>交叉熵的梯度裡常出現 \(1/p\)</td></tr>
+        <tr><td>\(a^x\)</td><td>\(a^x\ln a\)</td><td></td></tr>
+        <tr><td>\(\sin x\)、\(\cos x\)</td><td>\(\cos x\)、\(-\sin x\)</td><td>位置編碼、RoPE</td></tr>
+        <tr><td>\(\lvert x\rvert\)</td><td>\(\operatorname{sign}(x)\)（\(x\ne0\)）</td><td>L1 損失、L1 正則化</td></tr>
+      </tbody>
+    </table></div>
+    <h3>組合規則</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>規則</th><th>公式</th><th>例子</th></tr></thead>
+      <tbody>
+        <tr><td>線性</td><td>\((af+bg)'=af'+bg'\)</td><td>\((3x^2+2x)'=6x+2\)</td></tr>
+        <tr><td>乘法</td><td>\((fg)'=f'g+fg'\)</td><td>\((x^2\sin x)'=2x\sin x+x^2\cos x\)</td></tr>
+        <tr><td>除法</td><td>\(\left(\frac fg\right)'=\frac{f'g-fg'}{g^2}\)</td><td>\(\left(\frac{1}{1+e^{-x}}\right)'=\frac{e^{-x}}{(1+e^{-x})^2}\)</td></tr>
+        <tr><td>連鎖</td><td>\(\big(f(g(x))\big)'=f'(g(x))\,g'(x)\)</td><td>\(\big((3x+1)^5\big)'=5(3x+1)^4\cdot3\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box warn"><b class="t">常見錯誤</b>
+      <p><span class="pen">\((fg)'\ne f'g'\)</span>：乘積的導數不是導數的乘積。<span class="pen">\(\frac{d}{dx}e^{2x}\ne e^{2x}\)</span>：要乘上內層的導數 2（連鎖律）。<span class="pen">\(\frac{d}{dx}\ln(x^2+1)\ne\frac1{x^2+1}\)</span>：還要乘 \(2x\)。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s5">
+    <div class="label">第 5 節</div>
+    <h2>連鎖律：整個深度學習的引擎</h2>
+    <div class="prose"><p>函數套函數：\(y=f(u)\)、\(u=g(x)\)。\(x\) 改一點，\(u\) 改 \(g'(x)\) 倍；\(u\) 改一點，\(y\) 改 \(f'(u)\) 倍。所以 \(x\) 對 \(y\) 的影響是兩個倍率<strong>相乘</strong>：</p></div>
+    <div class="formula">\[ \frac{dy}{dx}=\frac{dy}{du}\cdot\frac{du}{dx} \]</div>
+    <div class="prose"><p>類比：齒輪 A 轉一圈，B 轉 3 圈；B 轉一圈，C 轉 2 圈；A 轉一圈 C 就轉 6 圈。多層就一直乘下去：</p></div>
+    <div class="formula">\[ y=f_3(f_2(f_1(x)))\quad\Longrightarrow\quad \frac{dy}{dx}=f_3'(u_2)\cdot f_2'(u_1)\cdot f_1'(x),\qquad u_1=f_1(x),\ u_2=f_2(u_1) \]</div>
+    <h3>例子</h3>
+    <div class="steps">
+      <div><div>\(\sin(x^2)\)：外層 \(\sin u\)、內層 \(u=x^2\)。導數 \(\cos(x^2)\cdot2x\)。</div></div>
+      <div><div>\(e^{-x^2/2}\)（常態分佈的形狀）：外層 \(e^u\)、內層 \(u=-x^2/2\)。導數 \(e^{-x^2/2}\cdot(-x)=-x\,e^{-x^2/2}\)。</div></div>
+      <div><div>一個神經元的損失 \(L=(\sigma(wx+b)-y)^2\)，對 \(w\) 微分：三層函數，三個因子相乘
+        \(\frac{dL}{dw}=\underbrace{2(a-y)}_{dL/da}\cdot\underbrace{\sigma'(z)}_{da/dz}\cdot\underbrace{x}_{dz/dw}\)，其中 \(z=wx+b\)、\(a=\sigma(z)\)。第 20 節會把這個例子代入數字，一步一步算。</div></div>
+    </div>
+    <div class="box key"><b class="t">反向傳播 = 有系統地用連鎖律</b>
+      <p>從損失 \(L\) 往回走，每經過一層就乘上那一層的局部導數。先算出的 \(\frac{dL}{da}\) 會被重複使用，所以不必為每個參數從頭算一次。這就是反向傳播比「每個參數分別算導數」快幾十億倍的原因（第 20 節）。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s6">
+    <div class="label">第 6 節</div>
+    <h2>AI 常見函數的導數</h2>
+    <h3>sigmoid：導數可以用自己表示</h3>
+    <div class="formula">\[ \sigma(x)=\frac{1}{1+e^{-x}},\qquad \sigma'(x)=\frac{e^{-x}}{(1+e^{-x})^2}=\underbrace{\frac{1}{1+e^{-x}}}_{\sigma(x)}\cdot\underbrace{\frac{e^{-x}}{1+e^{-x}}}_{1-\sigma(x)}=\sigma(x)\big(1-\sigma(x)\big) \]</div>
+    <div class="prose"><p>前向時已經算好 \(\sigma(x)\)，反向時直接拿來用，不必再算一次指數。最大值在 \(x=0\)：\(0.5\times0.5=0.25\)。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>函數</th><th>\(f(x)\)</th><th>\(f'(x)\)</th><th>導數最大值</th></tr></thead>
+      <tbody>
+        <tr><td>sigmoid</td><td>\(\frac1{1+e^{-x}}\)</td><td>\(\sigma(1-\sigma)\)</td><td class="num">0.25</td></tr>
+        <tr><td>tanh</td><td>\(\frac{e^x-e^{-x}}{e^x+e^{-x}}\)</td><td>\(1-\tanh^2x\)</td><td class="num">1</td></tr>
+        <tr><td>ReLU</td><td>\(\max(0,x)\)</td><td>\(x&gt;0\)：1；\(x&lt;0\)：0</td><td class="num">1</td></tr>
+        <tr><td>Leaky ReLU</td><td>\(\max(\alpha x,x)\)</td><td>1 或 \(\alpha\)</td><td class="num">1</td></tr>
+        <tr><td>softplus</td><td>\(\ln(1+e^x)\)</td><td>\(\sigma(x)\)</td><td class="num">→ 1</td></tr>
+        <tr><td>SiLU / Swish</td><td>\(x\,\sigma(x)\)</td><td>\(\sigma(x)+x\,\sigma(x)(1-\sigma(x))\)</td><td class="num">≈ 1.1</td></tr>
+        <tr><td>GELU</td><td>\(x\,\Phi(x)\)</td><td>\(\Phi(x)+x\,\phi(x)\)</td><td class="num">≈ 1.13</td></tr>
+        <tr><td>\(\ln x\)</td><td></td><td>\(1/x\)</td><td>交叉熵 \(-\ln p\) 的導數 \(-1/p\)</td></tr>
+        <tr><td>\(x^2\)</td><td></td><td>\(2x\)</td><td>MSE 的導數</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box warn"><b class="t">ReLU 在 0 不可微怎麼辦？</b>
+      <p>\(x=0\) 處左邊斜率 0、右邊斜率 1，沒有唯一的切線。實務上直接規定 \(x=0\) 時導數取 0（PyTorch 的做法）。數學上這叫<strong>次梯度</strong>（subgradient）：0 到 1 之間任何值都合理。浮點數剛好等於 0 的機會很小，所以不影響訓練。</p>
+    </div>
+    <h3>softmax + 交叉熵</h3>
+    <div class="prose"><p>多類分類最重要的一組導數。\(p=\operatorname{softmax}(z)\)，\(L=-\ln p_y\)，結果非常簡單：</p></div>
+    <div class="formula">\[ \frac{\partial L}{\partial z_k}=p_k-\mathbb 1[k=y] \]</div>
+    <div class="prose"><p>完整推導見線代筆記第 23 節。sigmoid + 二元交叉熵也一樣是「預測減答案」：\(\frac{\partial L}{\partial z}=\sigma(z)-y\)。</p></div>
+  </section>
+
+  <section class="sec" id="s7">
+    <div class="label">第 7 節</div>
+    <h2>極值、二階導數與凸性</h2>
+    <div class="prose">
+      <p>最低點（或最高點）的地方切線是平的：\(f'(x)=0\)，這種點叫<strong>臨界點</strong>（critical point）。是最低還是最高，看<strong>二階導數</strong>（彎曲方向）：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>\(f'(x)=0\) 且</th><th>形狀</th><th>結論</th></tr></thead>
+      <tbody>
+        <tr><td>\(f''(x)&gt;0\)</td><td>開口向上 ∪</td><td>局部最小值</td></tr>
+        <tr><td>\(f''(x)&lt;0\)</td><td>開口向下 ∩</td><td>局部最大值</td></tr>
+        <tr><td>\(f''(x)=0\)</td><td>不一定</td><td>要看更高階，例如 \(x^3\) 在 0 是平的但不是極值</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p>例：\(f(x)=x^3-3x\)，\(f'(x)=3x^2-3=0\Rightarrow x=\pm1\)。\(f''(x)=6x\)：\(x=1\) 時 \(f''=6&gt;0\) 是局部最小，\(x=-1\) 時 \(f''=-6&lt;0\) 是局部最大。</p>
+      <p><strong>局部 vs 全域</strong>：局部最小只是附近最低，不一定是全部裡面最低。</p>
+      <p><strong>凸函數</strong>（convex）：整條曲線都是 ∪ 形（\(f''(x)\ge0\) 處處成立）。凸函數的局部最小<strong>就是</strong>全域最小，梯度下降保證找得到。線性回歸的 MSE、邏輯回歸的交叉熵對參數都是凸的；但多層神經網路的損失<strong>不是凸的</strong>，有很多局部最小和鞍點。神奇的是，在高維度裡，大部分局部最小的損失都差不多好。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s8">
+    <div class="label">第 8 節</div>
+    <h2>泰勒展開：用多項式近似任何函數</h2>
+    <div class="prose"><p>在 \(a\) 附近，任何（夠平滑的）函數都能用多項式近似：</p></div>
+    <div class="formula">\[ f(a+h)=f(a)+f'(a)\,h+\frac{f''(a)}{2!}h^2+\frac{f'''(a)}{3!}h^3+\cdots \]</div>
+    <div class="prose">
+      <p>只取到一次項叫<strong>線性近似</strong>（用切線代替曲線），取到二次項叫<strong>二次近似</strong>（用拋物線代替）。\(h\) 越小近似越準。</p>
+      <p>例：\(e^{0.1}\approx1+0.1+\frac{0.01}{2}=1.105\)（真值 1.10517）；\(\ln(1.1)\approx0.1-\frac{0.01}{2}=0.095\)（真值 0.09531）。</p>
+    </div>
+    <div class="box key"><b class="t">泰勒展開解釋了最佳化演算法</b>
+      <p><strong>梯度下降</strong>：一次近似 \(f(w-\eta f'(w))\approx f(w)-\eta f'(w)^2\)。只要 \(\eta\) 夠小、\(f'\ne0\)，函數值一定下降。但 \(\eta\) 太大時，被忽略的二次項 \(\frac{f''}2\eta^2f'^2\) 會蓋過，反而上升，這就是學習率太大會發散的原因。</p>
+      <p><strong>牛頓法</strong>：用二次近似 \(f(w+h)\approx f(w)+f'(w)h+\frac12f''(w)h^2\)，對 \(h\) 微分設為 0，得到 \(h=-f'(w)/f''(w)\)，一步跳到拋物線的最低點（第 19 節）。</p>
+    </div>
+    <div class="demo">
+      <h4>泰勒近似</h4>
+      <p class="hint">選函數和展開點 \(a\)，增加階數，看多項式（<span class="c">琥珀色</span>）怎麼越來越貼近原函數（<span class="r">藍色</span>）。離 \(a\) 越遠，近似越差。</p>
+      <div class="btns" id="ty-pick"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="ty-a">展開點 a</label><input type="range" id="ty-a" min="-2" max="2" step="0.05" value="0"><output id="ty-av"></output></div>
+        <div class="ctrl"><label for="ty-n">階數</label><input type="range" id="ty-n" min="0" max="8" step="1" value="1"><output id="ty-nv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-ty" aria-label="函數與泰勒多項式"></canvas></div>
+        <div class="out" id="ty-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s9">
+    <div class="label">第 9 節</div>
+    <h2>積分：面積與累加</h2>
+    <div class="prose">
+      <p><strong>定積分</strong> \(\int_a^bf(x)\,dx\) 是曲線下的（帶正負號的）面積。做法：切成很多細長條，寬 \(\Delta x\)、高 \(f(x_i)\)，加總，再讓 \(\Delta x\to0\)（黎曼和）。\(\int\) 符號就是拉長的 S（Sum）。</p>
+      <p><strong>微積分基本定理</strong>：積分和微分互為反運算。如果 \(F'(x)=f(x)\)（\(F\) 叫反導數），則</p>
+    </div>
+    <div class="formula">\[ \int_a^bf(x)\,dx=F(b)-F(a),\qquad \text{例：}\int_0^1x^2\,dx=\Big[\tfrac{x^3}{3}\Big]_0^1=\tfrac13 \]</div>
+    <div class="tbl"><table>
+      <thead><tr><th>\(f(x)\)</th><th>反導數 \(\int f\,dx\)</th></tr></thead>
+      <tbody>
+        <tr><td>\(x^n\)（\(n\ne-1\)）</td><td>\(\frac{x^{n+1}}{n+1}+C\)</td></tr>
+        <tr><td>\(1/x\)</td><td>\(\ln\lvert x\rvert+C\)</td></tr>
+        <tr><td>\(e^x\)</td><td>\(e^x+C\)</td></tr>
+        <tr><td>\(e^{-\lambda x}\)</td><td>\(-\frac1\lambda e^{-\lambda x}+C\)</td></tr>
+      </tbody>
+    </table></div>
+    <h3>積分在 AI 裡</h3>
+    <div class="prose"><ul>
+      <li><strong>機率</strong>：連續分佈 \(P(a\le X\le b)=\int_a^bp(x)\,dx\)，且 \(\int p(x)\,dx=1\)。</li>
+      <li><strong>期望值</strong>：\(\mathbb E[g(X)]=\int g(x)\,p(x)\,dx\)。例：指數分佈 \(\mathbb E[X]=\int_0^\infty x\,\lambda e^{-\lambda x}dx=1/\lambda\)。</li>
+      <li><strong>歸一化常數</strong>：\(\int_{-\infty}^{\infty}e^{-x^2}dx=\sqrt\pi\approx1.7725\)，所以常態分佈的密度前面要乘 \(\frac{1}{\sqrt{2\pi}\sigma}\)，面積才是 1。</li>
+      <li><strong>算不出來的積分</strong>：高維積分（例如 \(p(x)=\int p(x\mid z)p(z)dz\)）通常沒有公式解，AI 用蒙地卡羅採樣（機率筆記第 21 節）或變分下界 ELBO（機率筆記第 22 節）處理。</li>
+    </ul></div>
+    <div class="demo">
+      <h4>黎曼和</h4>
+      <p class="hint">用 n 個長方形（取每段中點的高度）近似曲線下面積。n 越大，誤差越小。</p>
+      <div class="btns" id="ri-pick"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="ri-n">長方形數 n</label><input type="range" id="ri-n" min="1" max="100" step="1" value="4"><output id="ri-nv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-ri" aria-label="黎曼和"></canvas></div>
+        <div class="out" id="ri-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 中篇 ================= -->
+  <div class="part-head b" id="partB">
+    <div class="eyebrow">中篇</div>
+    <h2>多變數微積分</h2>
+    <p>神經網路有很多參數，損失是「很多個輸入、一個輸出」的函數。把單變數的概念推廣到多維。</p>
+  </div>
+
+  <section class="sec" id="s10">
+    <div class="label">第 10 節</div>
+    <h2>多變數函數與偏微分</h2>
+    <div class="prose">
+      <p>\(f(x,y)\) 有兩個輸入。可以想成地形：\((x,y)\) 是地圖上的位置，\(f\) 是海拔。畫成<strong>等高線圖</strong>：同一條線上 \(f\) 值相同。</p>
+      <p><strong>偏微分</strong>：其他變數都當常數，只對其中一個微分。\(\frac{\partial f}{\partial x}\) 就是「只往東走時的坡度」，\(\frac{\partial f}{\partial y}\) 是「只往北走時的坡度」。符號 \(\partial\) 讀作 partial（偏）。</p>
+    </div>
+    <div class="formula">\[ f(x,y)=x^2y+3y\qquad\Longrightarrow\qquad \frac{\partial f}{\partial x}=2xy,\qquad \frac{\partial f}{\partial y}=x^2+3 \]</div>
+    <div class="prose"><p>算 \(\partial f/\partial x\) 時把 \(y\) 當成數字：\(x^2y\) 變成 \(2x\cdot y\)，\(3y\) 是常數變成 0。在點 \((1,2)\)：\(\partial f/\partial x=4\)、\(\partial f/\partial y=4\)。</p></div>
+    <div class="box key"><b class="t">在神經網路裡</b>
+      <p>損失 \(L(w_1,w_2,\dots,w_n)\) 有 n 個參數。\(\frac{\partial L}{\partial w_i}\) 就是「只動 \(w_i\)、其他不動時，損失變化多快」。PyTorch 裡每個參數的 <code>.grad</code> 存的就是這個值。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s11">
+    <div class="label">第 11 節</div>
+    <h2>梯度：最陡的上坡方向</h2>
+    <div class="prose"><p>把所有偏微分排成一個向量，就是<strong>梯度</strong>：</p></div>
+    <div class="formula">\[ \nabla f=\Big(\frac{\partial f}{\partial x_1},\ \frac{\partial f}{\partial x_2},\ \dots,\ \frac{\partial f}{\partial x_n}\Big),\qquad \text{例：}\nabla(x^2y+3y)\big|_{(1,2)}=(4,\ 4) \]</div>
+    <h3>方向導數</h3>
+    <div class="prose"><p>往任意單位方向 \(u\) 走，坡度是梯度和 \(u\) 的內積：</p></div>
+    <div class="formula">\[ D_uf=\nabla f\cdot u=\lVert\nabla f\rVert\cos\theta \]</div>
+    <div class="prose">
+      <p>例：在 \((1,2)\) 往 \(u=(0.6,0.8)\) 走，坡度 \(4\times0.6+4\times0.8=5.6\)。</p>
+      <p>由 \(\cos\theta\) 可以看出三件事，也是梯度下降的理論基礎：</p>
+      <ul>
+        <li>\(\theta=0\)（順著梯度）坡度最大 \(\lVert\nabla f\rVert\)：<strong>梯度指向最陡的上坡</strong>。上例 \(\lVert\nabla f\rVert=\sqrt{32}\approx5.657\)，比 5.6 大。</li>
+        <li>\(\theta=180°\)（逆著梯度）坡度最負：<strong>負梯度是最陡的下坡</strong>，所以梯度下降往 \(-\nabla f\) 走。</li>
+        <li>\(\theta=90°\)：坡度 0，走在等高線上。<strong>梯度永遠垂直於等高線</strong>。</li>
+      </ul>
+    </div>
+    <div class="demo">
+      <h4>等高線與梯度</h4>
+      <p class="hint">選一個二維函數，點地圖上任何一點。<span class="c">琥珀色</span>箭頭是梯度（上坡），紅色是負梯度（梯度下降要走的方向）。注意箭頭永遠和等高線垂直。</p>
+      <div class="btns" id="ct-pick"></div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-ct" aria-label="等高線與梯度向量"></canvas></div>
+        <div class="out" id="ct-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s12">
+    <div class="label">第 12 節</div>
+    <h2>多變數連鎖律</h2>
+    <div class="prose"><p>當一個變數透過<strong>好幾條路徑</strong>影響輸出時，每條路徑各自用連鎖律相乘，再<strong>全部相加</strong>：</p></div>
+    <div class="formula">\[ z=f(x,y),\quad x=x(t),\quad y=y(t)\qquad\Longrightarrow\qquad \frac{dz}{dt}=\frac{\partial f}{\partial x}\frac{dx}{dt}+\frac{\partial f}{\partial y}\frac{dy}{dt} \]</div>
+    <div class="prose">
+      <p>例：\(f(x,y)=x^2y\)，\(x=t^2\)、\(y=\sin t\)。\(\frac{dz}{dt}=2xy\cdot2t+x^2\cdot\cos t\)。代回 \(x=t^2\)、\(y=\sin t\) 得 \(4t^3\sin t+t^4\cos t\)，和直接微分 \(t^4\sin t\) 的結果一樣。</p>
+      <p>一般形式：\(\frac{\partial L}{\partial x_j}=\sum_i\frac{\partial L}{\partial u_i}\frac{\partial u_i}{\partial x_j}\)。這就是反向傳播在多個神經元之間的規則。</p>
+    </div>
+    <div class="box key"><b class="t">「路徑相加」在神經網路的例子</b>
+      <p>一個神經元的輸出送到下一層的很多個神經元，所以它的梯度是所有下游神經元傳回來的梯度相加。殘差連接 \(y=x+F(x)\)：\(x\) 走兩條路，\(\frac{\partial L}{\partial x}=\frac{\partial L}{\partial y}\big(1+F'(x)\big)\)，那個「1」讓梯度能直接穿過去，不會消失（第 22 節）。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s13">
+    <div class="label">第 13 節</div>
+    <h2>雅可比矩陣與 Hessian</h2>
+    <h3>雅可比矩陣：向量對向量的導數</h3>
+    <div class="prose"><p>如果輸出也是向量 \(y=g(x)\)，\(y\in\mathbb R^m\)、\(x\in\mathbb R^n\)，把所有 \(\partial y_i/\partial x_j\) 排成 \(m\times n\) 的表：</p></div>
+    <div class="formula">\[ J=\begin{bmatrix}\frac{\partial y_1}{\partial x_1} & \cdots & \frac{\partial y_1}{\partial x_n}\\ \vdots & \ddots & \vdots\\ \frac{\partial y_m}{\partial x_1} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix},\qquad \text{例：}y=Ax\Rightarrow J=A \]</div>
+    <div class="prose"><p>連鎖律變成矩陣相乘：\(J_{h\circ g}=J_h\,J_g\)。神經網路一層一層的雅可比相乘，就是整個網路的雅可比。（詳見線代筆記第 10、14 節。）</p></div>
+    <h3>Hessian：二階偏導數的矩陣</h3>
+    <div class="formula">\[ H=\begin{bmatrix}\frac{\partial^2f}{\partial x^2} & \frac{\partial^2f}{\partial x\partial y}\\ \frac{\partial^2f}{\partial y\partial x} & \frac{\partial^2f}{\partial y^2}\end{bmatrix},\qquad \text{例：}f=x^2y+3y\ \Rightarrow\ H=\begin{bmatrix}2y & 2x\\ 2x & 0\end{bmatrix} \]</div>
+    <div class="prose"><p>Hessian 描述「梯度怎麼變」，也就是地形的彎曲程度。對平滑的函數，微分的順序可以交換（\(\frac{\partial^2f}{\partial x\partial y}=\frac{\partial^2f}{\partial y\partial x}\)），所以 Hessian 是<strong>對稱矩陣</strong>。n 個參數的 Hessian 有 \(n^2\) 個元素：10 億個參數就是 \(10^{18}\) 個，存不下，所以深度學習很少直接用它。</p></div>
+  </section>
+
+  <section class="sec" id="s14">
+    <div class="label">第 14 節</div>
+    <h2>多變數泰勒、凸性與鞍點</h2>
+    <div class="formula">\[ f(w+h)\approx f(w)+\nabla f(w)^\top h+\tfrac12h^\top H\,h \]</div>
+    <div class="prose"><p>和單變數一模一樣：一次項變成梯度和 \(h\) 的內積，二次項變成 Hessian 的二次型。在臨界點（\(\nabla f=0\)）附近，形狀完全由 \(H\) 的<strong>特徵值</strong>決定：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Hessian 特徵值</th><th>形狀</th><th>臨界點的種類</th></tr></thead>
+      <tbody>
+        <tr><td>全部 \(&gt;0\)（正定）</td><td>碗</td><td>局部最小</td></tr>
+        <tr><td>全部 \(&lt;0\)（負定）</td><td>倒扣的碗</td><td>局部最大</td></tr>
+        <tr><td>有正有負</td><td>馬鞍</td><td><strong>鞍點</strong>：某些方向是最低、某些方向是最高</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p>例：\(f=x^2-y^2\) 在原點，\(H=\operatorname{diag}(2,-2)\)，沿 x 方向是谷底、沿 y 方向是山頂，是鞍點。</p>
+      <p><strong>高維時鞍點遠比局部最小常見</strong>：要成為局部最小，Hessian 的幾百萬個特徵值必須<strong>全部</strong>是正的；只要有一個是負的就是鞍點。梯度在鞍點也是 0，純梯度下降可能在附近停滯很久；SGD 的隨機雜訊和 Momentum 能幫忙逃出去。</p>
+      <p><strong>條件數</strong>：特徵值最大和最小的比 \(\kappa=\lambda_{\max}/\lambda_{\min}\)。\(\kappa\) 很大代表細長的山谷，梯度下降會在兩側來回彈跳（第 17 節的動畫可以看到）。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s15">
+    <div class="label">第 15 節</div>
+    <h2>多重積分與變數變換</h2>
+    <div class="prose">
+      <p>二維的積分 \(\iint f(x,y)\,dx\,dy\) 是曲面下的體積。機率裡，聯合密度 \(p(x,y)\) 的總積分是 1；對其中一個變數積分就得到邊際分佈：\(p(x)=\int p(x,y)\,dy\)。</p>
+      <p><strong>變數變換</strong>：如果 \(y=g(x)\) 是一對一的變換，密度要乘上「面積被拉伸多少倍」的修正：</p>
+    </div>
+    <div class="formula">\[ \text{一維：}p_Y(y)=p_X(x)\left\lvert\frac{dx}{dy}\right\rvert,\qquad \text{多維：}p_Y(y)=p_X(x)\,\big\lvert\det J_{g^{-1}}(y)\big\rvert \]</div>
+    <div class="prose"><p>例：\(X\sim\text{Uniform}(0,1)\)、\(Y=2X\)。\(Y\) 散布在 \((0,2)\)，範圍變兩倍，密度要變一半才能讓總面積還是 1：\(p_Y=1\times\frac12\)。行列式就是多維的「拉伸倍率」（線代筆記第 4 節）。<strong>Normalizing flow</strong> 生成模型就是靠這個公式：用一連串可逆變換把簡單分佈變成複雜分佈，同時精確算出機率。</p></div>
+  </section>
+
+  <section class="sec" id="s16">
+    <div class="label">第 16 節</div>
+    <h2>有限制的最佳化：拉格朗日乘數</h2>
+    <div class="prose"><p>在限制 \(g(x)=0\) 下最小化（或最大化）\(f(x)\)。在最佳點，\(f\) 的等高線和限制曲線剛好相切，兩者的梯度平行：</p></div>
+    <div class="formula">\[ \nabla f=\lambda\nabla g\qquad\Longleftrightarrow\qquad \nabla_x\mathcal L=0,\quad \mathcal L(x,\lambda)=f(x)-\lambda\,g(x) \]</div>
+    <div class="prose">
+      <p>例：周長固定 \(x+y=10\)，最大化面積 \(xy\)。\(\mathcal L=xy-\lambda(x+y-10)\)：\(\partial_x\mathcal L=y-\lambda=0\)、\(\partial_y\mathcal L=x-\lambda=0\)，所以 \(x=y=5\)，正方形面積最大。</p>
+      <p><strong>在 AI 的例子</strong>：</p>
+      <ul>
+        <li><strong>最大熵</strong>：在 \(\sum_ip_i=1\) 的限制下最大化熵 \(-\sum p_i\ln p_i\)，解出來每個 \(p_i\) 相等，均勻分佈的熵最大。</li>
+        <li><strong>SVM</strong>：在「每個點都分對且留有間隔」的限制下最大化間隔，對偶問題就是用拉格朗日乘數推出來的。</li>
+        <li><strong>softmax 從何而來</strong>：在期望分數固定的限制下最大化熵，解出來就是 \(p_i\propto e^{z_i}\)。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= 下篇 ================= -->
+  <div class="part-head" id="partC" style="background:var(--violet-soft)">
+    <div class="eyebrow">下篇</div>
+    <h2>微積分與 AI</h2>
+    <p>最佳化演算法、計算圖、反向傳播、自動微分：神經網路訓練實際在做的事。</p>
+  </div>
+
+  <section class="sec" id="s17">
+    <div class="label">第 17 節</div>
+    <h2>梯度下降</h2>
+    <div class="formula">\[ w_{t+1}=w_t-\eta\,\nabla L(w_t) \]</div>
+    <div class="prose">
+      <p>站在山上、蒙著眼睛，用腳感覺哪邊最陡往下，就往那邊走一小步。\(\eta\) 是<strong>學習率</strong>（步長）。</p>
+      <ul>
+        <li><strong>\(\eta\) 太小</strong>：每步都很穩，但要走非常久。</li>
+        <li><strong>\(\eta\) 太大</strong>：跨過谷底跑到對面，越彈越高，發散。對二次函數，條件是 \(\eta&lt;2/\lambda_{\max}\)（\(\lambda_{\max}\) 是 Hessian 最大特徵值）。例：\(f=x^2+10y^2\)，\(H=\operatorname{diag}(2,20)\)，學習率必須小於 0.1。</li>
+        <li><strong>條件數大</strong>：陡的方向限制了學習率，平緩的方向就走得很慢。下面的「細長山谷」可以看到鋸齒狀的路徑。</li>
+      </ul>
+      <p><strong>隨機梯度下降（SGD）</strong>：每步只用一小批資料估計梯度，便宜很多，雜訊還有助於逃離鞍點。</p>
+    </div>
+    <div class="demo">
+      <h4>最佳化器比賽</h4>
+      <p class="hint">選地形和學習率，點地圖設定起點，四種方法同時從那裡出發走 60 步。試試：細長山谷用 SGD 會鋸齒；學習率調大會發散；鞍點從靠近 \(y=0\) 的地方出發，SGD 會卡很久。</p>
+      <div class="btns" id="gd-pick"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="gd-lr">學習率 η</label><input type="range" id="gd-lr" min="-3" max="0" step="0.05" value="-1.3"><output id="gd-lrv"></output></div>
+        <div class="ctrl"><label for="gd-st">步數</label><input type="range" id="gd-st" min="1" max="200" step="1" value="60"><output id="gd-stv"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-gd" aria-label="最佳化路徑"></canvas></div>
+        <div class="out" id="gd-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s18">
+    <div class="label">第 18 節</div>
+    <h2>Momentum、RMSProp 與 Adam</h2>
+    <div class="prose"><p>純梯度下降的兩個問題：細長山谷裡來回彈跳、不同參數需要不同的步長。改良的方法都只用到一階導數（梯度），加上「記憶」：</p></div>
+    <h3>Momentum：加上慣性</h3>
+    <div class="formula">\[ v_{t+1}=\beta v_t+\nabla L(w_t),\qquad w_{t+1}=w_t-\eta\,v_{t+1}\qquad(\beta\approx0.9) \]</div>
+    <div class="prose"><p>像滾下山的球。來回彈跳的方向，正負梯度互相抵消；一致的方向不斷累積、越滾越快。</p></div>
+    <h3>RMSProp：每個參數自己的步長</h3>
+    <div class="formula">\[ s_{t+1}=\rho s_t+(1-\rho)\,g_t^2,\qquad w_{t+1}=w_t-\frac{\eta}{\sqrt{s_{t+1}}+\epsilon}\,g_t \]</div>
+    <div class="prose"><p>\(g_t^2\) 是逐元素平方。梯度一直很大的參數，除以大數、步長變小；梯度很小的參數，步長相對變大。等於自動把細長山谷「拉圓」。</p></div>
+    <h3>Adam：兩者合體</h3>
+    <div class="formula">\[ \begin{aligned} m_t&amp;=\beta_1m_{t-1}+(1-\beta_1)g_t &amp;&amp;\text{（梯度的移動平均，一階矩）}\\ v_t&amp;=\beta_2v_{t-1}+(1-\beta_2)g_t^2 &amp;&amp;\text{（梯度平方的移動平均，二階矩）}\\ \hat m_t&amp;=\frac{m_t}{1-\beta_1^t},\quad \hat v_t=\frac{v_t}{1-\beta_2^t} &amp;&amp;\text{（偏差校正）}\\ w_t&amp;=w_{t-1}-\eta\,\frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon} \end{aligned} \]</div>
+    <div class="prose">
+      <p>預設 \(\beta_1=0.9\)、\(\beta_2=0.999\)、\(\epsilon=10^{-8}\)。<strong>偏差校正</strong>：\(m_0=0\)，剛開始幾步的移動平均會被 0 拉低，除以 \(1-\beta^t\) 修正回來（\(t=1\) 時 \(m_1=0.1g_1\)，除以 \(0.1\) 剛好得到 \(g_1\)）。</p>
+      <p><strong>AdamW</strong>：把權重衰減從梯度裡拿出來，直接 \(w\leftarrow w-\eta\lambda w\)，是現在訓練 Transformer 的標準選擇。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s19">
+    <div class="label">第 19 節</div>
+    <h2>牛頓法與二階方法</h2>
+    <div class="prose"><p>用二次近似（第 8、14 節），一步跳到拋物面的最低點：</p></div>
+    <div class="formula">\[ \text{一維：}w\leftarrow w-\frac{f'(w)}{f''(w)},\qquad \text{多維：}w\leftarrow w-H^{-1}\nabla f \]</div>
+    <div class="prose">
+      <p>優點：自動適應曲率（陡的方向小步、平的方向大步），不用調學習率；在最小值附近收斂極快（二次收斂，每步正確位數約翻倍）。對二次函數一步就到。</p>
+      <p>同樣的想法也能解方程 \(g(x)=0\)：\(x\leftarrow x-g(x)/g'(x)\)。例：求 \(\sqrt2\)，解 \(x^2-2=0\)，從 1 開始：1.5 → 1.41667 → 1.4142157 → 1.41421356…，三步就有 6 位正確。</p>
+      <p><strong>缺點</strong>：Hessian 是 \(n\times n\)，存不下也算不起（第 13 節）；遇到鞍點時 \(H\) 有負特徵值，牛頓法會往鞍點<strong>衝過去</strong>而不是逃開。所以深度學習用的是近似：L-BFGS（用最近幾步的梯度變化估計 \(H^{-1}\)）、Adam（某種程度上可看成對角近似）、Shampoo、K-FAC 等。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s20">
+    <div class="label">第 20 節</div>
+    <h2>計算圖與反向傳播</h2>
+    <div class="prose"><p>把計算拆成一連串簡單步驟，畫成一張圖。以第 5 節的單一神經元為例：\(x=2,\ w=0.5,\ b=-0.5,\ y=1\)。</p></div>
+    <div class="demo">
+      <h4>一步一步看反向傳播</h4>
+      <p class="hint">按「下一步」。先做<span class="r">前向</span>（由左到右算出數值），再做<span class="c">反向</span>（由右到左，每個節點的梯度 = 下游梯度 × 局部導數）。可以改輸入數字。</p>
+      <div class="ctrls">
+        <div class="ctrl"><label for="bp-x">x</label><input type="number" step="0.1" id="bp-x" value="2" class="btn" style="width:70px"></div>
+        <div class="ctrl"><label for="bp-w">w</label><input type="number" step="0.1" id="bp-w" value="0.5" class="btn" style="width:70px"></div>
+        <div class="ctrl"><label for="bp-b">b</label><input type="number" step="0.1" id="bp-b" value="-0.5" class="btn" style="width:70px"></div>
+        <div class="ctrl"><label for="bp-y">y</label><input type="number" step="0.1" id="bp-y" value="1" class="btn" style="width:70px"></div>
+      </div>
+      <div class="btns"><button class="btn" id="bp-prev">上一步</button><button class="btn" id="bp-next">下一步</button><button class="btn" id="bp-all">全部顯示</button><button class="btn" id="bp-reset">重來</button></div>
+      <div class="cv"><canvas id="cv-bp" aria-label="計算圖"></canvas></div>
+      <div class="out" id="bp-out"></div>
+    </div>
+    <h3>數字結果</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>前向</th><th>值</th><th>反向（局部導數）</th><th>梯度</th></tr></thead>
+      <tbody>
+        <tr><td>\(z=wx+b\)</td><td class="num">0.5</td><td>\(\partial z/\partial w=x=2\)、\(\partial z/\partial b=1\)</td><td class="num">\(\partial L/\partial w\approx-0.3549\)、\(\partial L/\partial b\approx-0.1774\)</td></tr>
+        <tr><td>\(a=\sigma(z)\)</td><td class="num">0.6225</td><td>\(\sigma(z)(1-\sigma(z))\approx0.2350\)</td><td class="num">\(\partial L/\partial z\approx-0.1774\)</td></tr>
+        <tr><td>\(L=(a-y)^2\)</td><td class="num">0.1425</td><td>\(2(a-y)\approx-0.7551\)</td><td class="num">\(\partial L/\partial a\approx-0.7551\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p>梯度是負的，代表把 \(w\) 加大，損失會下降（\(a\) 會更接近 1）。用數值微分驗證：\(\frac{L(w+h)-L(w-h)}{2h}\approx-0.35489\)，完全一致。</p>
+      <p><strong>為什麼反向比較快？</strong>參數有 n 個、輸出（損失）只有 1 個。反向從那 1 個輸出出發，走一趟就得到全部 n 個參數的梯度，成本約等於一次前向。如果用數值微分，每個參數都要多算一次前向，n 個參數就要 n 次。GPT 級的模型有上千億個參數，差距就是上千億倍。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s21">
+    <div class="label">第 21 節</div>
+    <h2>自動微分：PyTorch 怎麼算梯度</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>方法</th><th>做法</th><th>缺點</th></tr></thead>
+      <tbody>
+        <tr><td>手推公式</td><td>像本頁一樣自己推，寫成程式</td><td>容易錯、每換一個模型就要重推</td></tr>
+        <tr><td>符號微分</td><td>電腦代數系統（如 SymPy）推出公式</td><td>公式會爆炸性變長</td></tr>
+        <tr><td>數值微分</td><td>\(\frac{f(x+h)-f(x-h)}{2h}\)</td><td>每個參數都要算一次，太慢；有誤差（第 23 節）</td></tr>
+        <tr><td><strong>自動微分</strong></td><td>每個基本運算都知道自己的局部導數，按計算圖套連鎖律</td><td>要記住前向的中間值（佔記憶體）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p>自動微分（autodiff）不是近似，算出來的是<strong>精確</strong>的導數（到浮點數精度）。PyTorch 預先寫好了每個基本運算（加、乘、exp、matmul、conv…）的反向規則；你寫前向程式時，它在背後記下計算圖，呼叫 <code>backward()</code> 就沿著圖反向套連鎖律。</p>
+      <p><strong>兩種模式</strong>：<strong>前向模式</strong>從輸入往輸出推導數，一趟得到「一個輸入對所有輸出」的導數；<strong>反向模式</strong>從輸出往輸入推，一趟得到「一個輸出對所有輸入」的導數。深度學習是「很多參數、一個損失」，所以用反向模式（反向傳播就是反向模式自動微分）。</p>
+    </div>
+    <pre><code>import torch
+x, y = torch.tensor(2.0), torch.tensor(1.0)
+w = torch.tensor(0.5, requires_grad=True)   <span class="cm"># 要算梯度的參數</span>
+b = torch.tensor(-0.5, requires_grad=True)
+
+z = w * x + b            <span class="cm"># 前向：PyTorch 同時記下計算圖</span>
+a = torch.sigmoid(z)
+L = (a - y) ** 2
+
+L.backward()             <span class="cm"># 反向：沿著圖套連鎖律</span>
+print(w.grad, b.grad)    <span class="cm"># tensor(-0.3549) tensor(-0.1774)，和第 20 節手算一樣</span>
+
+with torch.no_grad():    <span class="cm"># 更新參數時不要記錄計算圖</span>
+    w -= 0.1 * w.grad
+    b -= 0.1 * b.grad
+w.grad.zero_(); b.grad.zero_()   <span class="cm"># 梯度預設會累加，下一步前要清零</span></code></pre>
+    <div class="box warn"><b class="t">常見坑</b>
+      <p>忘了 <code>optimizer.zero_grad()</code>：梯度會一直累加上去。推論時沒用 <code>torch.no_grad()</code>：浪費記憶體記錄計算圖。用 <code>.item()</code> 或 <code>.detach()</code> 取出的值不會再傳梯度。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s22">
+    <div class="label">第 22 節</div>
+    <h2>梯度消失與梯度爆炸</h2>
+    <div class="prose"><p>深度網路的梯度是一長串導數相乘（連鎖律）：</p></div>
+    <div class="formula">\[ \frac{\partial L}{\partial w_1}=\frac{\partial L}{\partial h_L}\prod_{l=2}^{L}\frac{\partial h_l}{\partial h_{l-1}}\cdots \]</div>
+    <div class="prose">
+      <p>每一個因子如果都小於 1，乘起來指數級縮小（<strong>梯度消失</strong>）；都大於 1 就指數級變大（<strong>梯度爆炸</strong>）。sigmoid 的導數最大只有 0.25：10 層就是 \(0.25^{10}\approx9.5\times10^{-7}\)，前面幾層幾乎學不動。RNN 在時間上展開成很長的鏈，問題更嚴重。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>對策</th><th>原理</th></tr></thead>
+      <tbody>
+        <tr><td>ReLU 類激活函數</td><td>正區導數是 1，不會縮小</td></tr>
+        <tr><td>好的初始化（Xavier、He）</td><td>讓每層的變異數維持不變，乘積不偏離 1 太多</td></tr>
+        <tr><td>殘差連接（ResNet、Transformer）</td><td>\(\frac{\partial}{\partial x}(x+F(x))=1+F'(x)\)，梯度有一條「直通」的路</td></tr>
+        <tr><td>正規化層（BatchNorm、LayerNorm）</td><td>把每層的輸入拉回穩定的範圍</td></tr>
+        <tr><td>LSTM、GRU 的門控</td><td>細胞狀態用加法更新，類似殘差</td></tr>
+        <tr><td>梯度裁剪（gradient clipping）</td><td>梯度範數超過上限就等比例縮小，防爆炸</td></tr>
+      </tbody>
+    </table></div>
+    <div class="demo">
+      <h4>層數與梯度大小</h4>
+      <p class="hint">模擬一個很深的網路，每層隨機取一個輸入值，看梯度從輸出往回傳到每一層時剩多少（對數刻度）。換激活函數、加殘差連接比較看看。開啟殘差時，每個分支的權重會再縮小 \(1/\sqrt{\text{層數}}\)，這是實務上常見的做法，否則加總起來的訊號會越來越大。</p>
+      <div class="btns" id="vg-pick"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="vg-l">層數</label><input type="range" id="vg-l" min="2" max="50" step="1" value="20"><output id="vg-lv"></output></div>
+        <div class="ctrl"><label for="vg-g">權重尺度</label><input type="range" id="vg-g" min="0.5" max="2" step="0.05" value="1"><output id="vg-gv"></output></div>
+        <button class="btn" id="vg-res" aria-pressed="false">殘差連接</button>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-vg" aria-label="每一層的梯度大小"></canvas></div>
+        <div class="out" id="vg-out"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="s23">
+    <div class="label">第 23 節</div>
+    <h2>數值微分與梯度檢查</h2>
+    <div class="formula">\[ \text{前向差分：}\frac{f(x+h)-f(x)}{h}=f'(x)+O(h),\qquad \text{中央差分：}\frac{f(x+h)-f(x-h)}{2h}=f'(x)+O(h^2) \]</div>
+    <div class="prose">
+      <p>用泰勒展開就能看出來：前向差分的誤差是 \(\frac{f''}{2}h\)；中央差分時 \(h^2\) 項正負抵消，誤差變成 \(\frac{f'''}{6}h^2\)，準很多。</p>
+      <p>但 \(h\) 也不能太小：兩個很接近的數相減，浮點數的捨入誤差（約 \(10^{-16}\)）會被除以 \(h\) 放大。所以誤差對 \(h\) 是 V 字形，最佳的 \(h\)：前向差分約 \(10^{-8}\)，中央差分約 \(10^{-5}\)。</p>
+      <p><strong>梯度檢查</strong>：自己寫反向傳播（或自訂 PyTorch 運算）後，挑幾個參數用中央差分比對，相對誤差在 \(10^{-7}\) 以下就放心。PyTorch 有現成的 <code>torch.autograd.gradcheck</code>（建議用 float64）。</p>
+    </div>
+    <div class="demo">
+      <h4>誤差 vs h</h4>
+      <p class="hint">對 \(f(x)=\sin x\) 在 \(x=1\) 做數值微分，畫出誤差 \(\lvert\text{估計}-\cos1\rvert\) 隨 \(h\) 的變化（兩軸都是對數）。右半邊斜率是 1（前向）和 2（中央），左半邊被浮點誤差主導。</p>
+      <div class="cv"><canvas id="cv-nd" aria-label="數值微分誤差"></canvas></div>
+      <div class="out" id="nd-out"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="s24">
+    <div class="label">第 24 節</div>
+    <h2>公式速查表</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>主題</th><th>公式</th><th>節</th></tr></thead>
+      <tbody>
+        <tr><td>導數定義</td><td>\(f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}\)</td><td class="num">3</td></tr>
+        <tr><td>冪次</td><td>\((x^n)'=nx^{n-1}\)</td><td class="num">4</td></tr>
+        <tr><td>指數、對數</td><td>\((e^x)'=e^x\)，\((\ln x)'=1/x\)</td><td class="num">4</td></tr>
+        <tr><td>乘法、除法</td><td>\((fg)'=f'g+fg'\)，\((f/g)'=(f'g-fg')/g^2\)</td><td class="num">4</td></tr>
+        <tr><td>連鎖律</td><td>\(\frac{dy}{dx}=\frac{dy}{du}\frac{du}{dx}\)</td><td class="num">5</td></tr>
+        <tr><td>sigmoid</td><td>\(\sigma'=\sigma(1-\sigma)\)</td><td class="num">6</td></tr>
+        <tr><td>tanh</td><td>\(\tanh'=1-\tanh^2\)</td><td class="num">6</td></tr>
+        <tr><td>softmax + CE</td><td>\(\partial L/\partial z=p-y\)</td><td class="num">6</td></tr>
+        <tr><td>極值判斷</td><td>\(f'=0\)，\(f''&gt;0\) 最小、\(f''&lt;0\) 最大</td><td class="num">7</td></tr>
+        <tr><td>泰勒</td><td>\(f(a+h)\approx f(a)+f'(a)h+\frac12f''(a)h^2\)</td><td class="num">8</td></tr>
+        <tr><td>微積分基本定理</td><td>\(\int_a^bf\,dx=F(b)-F(a)\)</td><td class="num">9</td></tr>
+        <tr><td>高斯積分</td><td>\(\int e^{-x^2}dx=\sqrt\pi\)</td><td class="num">9</td></tr>
+        <tr><td>方向導數</td><td>\(D_uf=\nabla f\cdot u\)</td><td class="num">11</td></tr>
+        <tr><td>多變數連鎖律</td><td>\(\frac{\partial L}{\partial x_j}=\sum_i\frac{\partial L}{\partial u_i}\frac{\partial u_i}{\partial x_j}\)</td><td class="num">12</td></tr>
+        <tr><td>多變數泰勒</td><td>\(f(w+h)\approx f+\nabla f^\top h+\frac12h^\top Hh\)</td><td class="num">14</td></tr>
+        <tr><td>變數變換</td><td>\(p_Y(y)=p_X(x)\lvert\det J_{g^{-1}}\rvert\)</td><td class="num">15</td></tr>
+        <tr><td>拉格朗日</td><td>\(\nabla f=\lambda\nabla g\)</td><td class="num">16</td></tr>
+        <tr><td>梯度下降</td><td>\(w\leftarrow w-\eta\nabla L\)，二次函數需 \(\eta&lt;2/\lambda_{\max}\)</td><td class="num">17</td></tr>
+        <tr><td>Momentum</td><td>\(v\leftarrow\beta v+g\)，\(w\leftarrow w-\eta v\)</td><td class="num">18</td></tr>
+        <tr><td>Adam</td><td>\(w\leftarrow w-\eta\,\hat m/(\sqrt{\hat v}+\epsilon)\)</td><td class="num">18</td></tr>
+        <tr><td>牛頓法</td><td>\(w\leftarrow w-H^{-1}\nabla f\)</td><td class="num">19</td></tr>
+        <tr><td>中央差分</td><td>\(\frac{f(x+h)-f(x-h)}{2h}\)，誤差 \(O(h^2)\)</td><td class="num">23</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="s25">
+    <div class="label">第 25 節</div>
+    <h2>練習題</h2>
+    <div class="prose"><p>每題選完會立刻顯示解說。答錯了就回到對應的節再看一次。</p></div>
+    <div class="score" id="qz-score"></div>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <footer>本頁的數字例子都已用 Python 實際計算驗證。練習進度不會被保存，重新整理就會清空。姊妹篇：<a href="linear-algebra.html">線代與矩陣微分筆記</a>、<a href="probability-statistics.html">機率統計與 AI 筆記</a>。</footer>
+</main>
+</div>
+
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code','canvas','select','option']}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f4 = v => { if (!isFinite(v)) return String(v); const r = Math.round(v*1e4)/1e4; return Object.is(r, -0) ? '0' : String(r); };
+
+/* ---------- 目錄 ---------- */
+(function(){
+  const secs = [...document.querySelectorAll('section.sec')];
+  const title = s => s.querySelector('h2').textContent.replace(/\s+/g,' ').trim();
+  const parts = {s1:'上篇　單變數微積分', s10:'中篇　多變數微積分', s17:'下篇　微積分與 AI'};
+  let h = '';
+  secs.forEach((s, i) => { if (parts[s.id]) h += `<li class="part">${parts[s.id]}</li>`; h += `<li><a href="#${s.id}" data-id="${s.id}"><span class="n">${i+1}</span><span>${s.querySelector('h2').innerHTML}</span></a></li>`; });
+  $('#toc').innerHTML = h;
+  $('#jump').innerHTML = '<option value="top">回到開頭</option>' + secs.map((s, i) => `<option value="${s.id}">${i+1}. ${title(s)}</option>`).join('');
+  $('#jump').addEventListener('change', e => { const el = document.getElementById(e.target.value); (el || document.body).scrollIntoView(); });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) document.querySelectorAll('.toc a').forEach(a => a.classList.toggle('on', a.dataset.id === e.target.id)); }), {rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s => io.observe(s));
+})();
+
+/* ---------- 工具 ---------- */
+function sizeCanvas(cv, aspect, maxH){
+  const w = Math.max(220, cv.parentElement.clientWidth); let h = Math.round(w*aspect); if (maxH) h = Math.min(h, maxH);
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(w*d); cv.height = Math.round(h*d); cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); ctx.clearRect(0,0,w,h);
+  return {ctx, w, h};
+}
+function arrow(ctx, x1, y1, x2, y2, color, lw = 2.4){
+  const a = Math.atan2(y2-y1, x2-x1), L = Math.hypot(x2-x1, y2-y1); if (L < 2) return; const hd = Math.min(10, L*.4);
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a)*hd*.7, y2 - Math.sin(a)*hd*.7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hd*Math.cos(a-.4), y2 - hd*Math.sin(a-.4)); ctx.lineTo(x2 - hd*Math.cos(a+.4), y2 - hd*Math.sin(a+.4)); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+const renders = []; const onR = f => { renders.push(f); f(); };
+let rq; window.addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => renders.forEach(f => f())); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renders.forEach(f => f()));
+new MutationObserver(() => renders.forEach(f => f())).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; }; }
+function gaussFrom(r){ return () => { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r()); }; }
+function txt(ctx, s, x, y, color, align = 'left', size = 12){ ctx.fillStyle = color || tok('--muted'); ctx.font = size + 'px ' + tok('--f-mono'); ctx.textAlign = align; ctx.fillText(s, x, y); ctx.textAlign = 'left'; }
+function linePath(ctx, pts, color, lw = 2.2, dash){ ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash); ctx.beginPath(); let st = false; pts.forEach(([x, y]) => { if (!isFinite(y) || Math.abs(y) > 1e5){ st = false; return; } if (!st){ ctx.moveTo(x, y); st = true; } else ctx.lineTo(x, y); }); ctx.stroke(); ctx.restore(); }
+function setOut(id, v){ const o = $('#'+id+'v'); if (o) o.textContent = v; }
+function bindRange(ids, fn){ ids.forEach(id => $('#'+id).addEventListener('input', fn)); }
+function picker(boxId, items, cur, onPick){ const box = $('#'+boxId); box.innerHTML = Object.keys(items).map(k => `<button class="btn" data-k="${k}" aria-pressed="${k === cur}">${items[k].n}</button>`).join(''); box.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; box.querySelectorAll('[data-k]').forEach(x => x.setAttribute('aria-pressed', x === b)); onPick(b.dataset.k); }); }
+function plotFrame(ctx, w, h, xr, yr, pad = {l:30, r:10, t:10, b:22}){
+  const X = x => pad.l + (x - xr[0])/(xr[1] - xr[0])*(w - pad.l - pad.r), Y = y => h - pad.b - (y - yr[0])/(yr[1] - yr[0])*(h - pad.t - pad.b);
+  ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath();
+  if (yr[0] < 0 && yr[1] > 0){ ctx.moveTo(pad.l, Y(0)); ctx.lineTo(w - pad.r, Y(0)); }
+  if (xr[0] < 0 && xr[1] > 0){ ctx.moveTo(X(0), pad.t); ctx.lineTo(X(0), h - pad.b); }
+  ctx.rect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b); ctx.stroke();
+  return {X, Y};
+}
+const sig = x => 1/(1 + Math.exp(-x));
+
+/* ---------- 第 3 節：割線與切線 ---------- */
+(function(){
+  const cv = $('#cv-dv');
+  const F = {
+    sq: {n:'x²', f:x => x*x, d:x => 2*x, fs:'2x', yr:[-1, 7]},
+    cub: {n:'x³ − 3x', f:x => x**3 - 3*x, d:x => 3*x*x - 3, fs:'3x² − 3', yr:[-4, 4]},
+    sin: {n:'sin x', f:Math.sin, d:Math.cos, fs:'cos x', yr:[-1.6, 1.6]},
+    exp: {n:'eˣ', f:Math.exp, d:Math.exp, fs:'eˣ', yr:[-1, 9]},
+    sig: {n:'sigmoid', f:sig, d:x => sig(x)*(1 - sig(x)), fs:'σ(x)(1 − σ(x))', yr:[-.2, 1.2]},
+    relu: {n:'ReLU', f:x => Math.max(0, x), d:x => x > 0 ? 1 : 0, fs:'x > 0 時 1，否則 0', yr:[-1, 3]}
+  };
+  let cur = 'sq'; picker('dv-pick', F, cur, k => { cur = k; draw(); });
+  function draw(){
+    const fn = F[cur], x0 = +$('#dv-x').value, h = +$('#dv-h').value; setOut('dv-x', x0.toFixed(2)); setOut('dv-h', h.toFixed(2));
+    const {ctx, w, h:H} = sizeCanvas(cv, .7, 300), xr = [-3, 3], {X, Y} = plotFrame(ctx, w, H, xr, fn.yr);
+    const pts = []; for (let i = 0; i <= 300; i++){ const x = xr[0] + 6*i/300; pts.push([X(x), Y(fn.f(x))]); }
+    ctx.save(); ctx.beginPath(); ctx.rect(30, 10, w - 40, H - 32); ctx.clip();
+    linePath(ctx, pts, tok('--row'), 2.6);
+    const sec = (fn.f(x0 + h) - fn.f(x0))/h, tan = fn.d(x0);
+    linePath(ctx, [[X(xr[0]), Y(fn.f(x0) + sec*(xr[0] - x0))], [X(xr[1]), Y(fn.f(x0) + sec*(xr[1] - x0))]], tok('--col'), 2);
+    linePath(ctx, [[X(xr[0]), Y(fn.f(x0) + tan*(xr[0] - x0))], [X(xr[1]), Y(fn.f(x0) + tan*(xr[1] - x0))]], tok('--pen'), 1.6, [6, 4]);
+    [[x0, tok('--ink')], [x0 + h, tok('--col')]].forEach(([x, c]) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(X(x), Y(fn.f(x)), 5, 0, 7); ctx.fill(); });
+    ctx.restore();
+    $('#dv-out').innerHTML = `f(x) = ${fn.n}，f′(x) = ${fn.fs}<br><br>x = ${x0.toFixed(2)}，h = ${h.toFixed(2)}<br>f(x) = ${f4(fn.f(x0))}<br>f(x+h) = ${f4(fn.f(x0 + h))}<br><br><span style="color:var(--col)">割線斜率 [f(x+h) − f(x)] / h = <b>${f4(sec)}</b></span><br><span style="color:var(--pen)">切線斜率 f′(x) = <b>${f4(tan)}</b></span><br>差距 = ${f4(Math.abs(sec - tan))}<br><br><span style="color:var(--muted)">${cur === 'relu' && Math.abs(x0) < .05 ? 'ReLU 在 0 有尖角：從右邊逼近斜率是 1、從左邊是 0，沒有唯一的切線。' : 'h 拖到最小，割線斜率會非常接近 f′(x)。'}</span>`;
+  }
+  bindRange(['dv-x','dv-h'], draw); onR(draw);
+})();
+
+/* ---------- 第 8 節：泰勒 ---------- */
+(function(){
+  const cv = $('#cv-ty');
+  const fact = n => n <= 1 ? 1 : n*fact(n - 1);
+  const F = {
+    exp: {n:'eˣ', f:Math.exp, dk:(k, a) => Math.exp(a), yr:[-1, 8], xr:[-3, 3]},
+    sin: {n:'sin x', f:Math.sin, dk:(k, a) => [Math.sin, Math.cos, x => -Math.sin(x), x => -Math.cos(x)][k % 4](a), yr:[-2.5, 2.5], xr:[-6, 6]},
+    cos: {n:'cos x', f:Math.cos, dk:(k, a) => [Math.cos, x => -Math.sin(x), x => -Math.cos(x), Math.sin][k % 4](a), yr:[-2.5, 2.5], xr:[-6, 6]},
+    ln: {n:'ln(1 + x)', f:x => x > -1 ? Math.log(1 + x) : NaN, dk:(k, a) => k === 0 ? Math.log(1 + a) : ((k % 2 ? 1 : -1)*fact(k - 1)/(1 + a)**k), yr:[-3, 2.5], xr:[-1.5, 3], amin:-.8}
+  };
+  let cur = 'exp'; picker('ty-pick', F, cur, k => { cur = k; draw(); });
+  function draw(){
+    const fn = F[cur], n = +$('#ty-n').value; let a = +$('#ty-a').value; if (fn.amin !== undefined) a = Math.max(a, fn.amin); setOut('ty-a', a.toFixed(2)); setOut('ty-n', String(n));
+    const c = Array.from({length:n + 1}, (_, k) => fn.dk(k, a)/fact(k)), P = x => c.reduce((s, ck, k) => s + ck*(x - a)**k, 0);
+    const {ctx, w, h} = sizeCanvas(cv, .7, 300), {X, Y} = plotFrame(ctx, w, h, fn.xr, fn.yr);
+    ctx.save(); ctx.beginPath(); ctx.rect(30, 10, w - 40, h - 32); ctx.clip();
+    const xs = Array.from({length:401}, (_, i) => fn.xr[0] + (fn.xr[1] - fn.xr[0])*i/400);
+    linePath(ctx, xs.map(x => [X(x), Y(fn.f(x))]), tok('--row'), 2.8);
+    linePath(ctx, xs.map(x => [X(x), Y(P(x))]), tok('--col'), 2.2);
+    ctx.fillStyle = tok('--pen'); ctx.beginPath(); ctx.arc(X(a), Y(fn.f(a)), 5, 0, 7); ctx.fill(); ctx.restore();
+    const terms = c.map((ck, k) => k === 0 ? f4(ck) : `${Math.abs(ck - 1) < 1e-12 ? '' : f4(ck) + '·'}${a ? '(x' + (a > 0 ? '−' : '+') + f4(Math.abs(a)) + ')' : 'x'}${k > 1 ? '^' + k : ''}`).filter((_, k) => Math.abs(c[k]) > 1e-12);
+    const probe = a + .5;
+    $('#ty-out').innerHTML = `${fn.n} 在 a = ${a.toFixed(2)} 的 ${n} 階泰勒多項式：<br>${terms.join(' + ').replace(/\+ -/g, '− ') || '0'}<br><br>在 x = a + 0.5 = ${f4(probe)}：<br>真值 ${f4(fn.f(probe))}<br>近似 ${f4(P(probe))}<br>誤差 ${Math.abs(fn.f(probe) - P(probe)).toExponential(2)}<br><br><span style="color:var(--muted)">1 階 = 切線（梯度下降用的近似），2 階 = 拋物線（牛頓法用的近似）。</span>`;
+  }
+  bindRange(['ty-a','ty-n'], draw); onR(draw);
+})();
+
+/* ---------- 第 9 節：黎曼和 ---------- */
+(function(){
+  const cv = $('#cv-ri');
+  const F = {
+    sq: {n:'x²，[0, 1]', f:x => x*x, a:0, b:1, ex:1/3, es:'1/3'},
+    sin: {n:'sin x，[0, π]', f:Math.sin, a:0, b:Math.PI, ex:2, es:'2'},
+    gau: {n:'e^(−x²)，[−3, 3]', f:x => Math.exp(-x*x), a:-3, b:3, ex:1.7724146965190428, es:'≈ √π（尾巴極小）'},
+    inv: {n:'1/x，[1, 3]', f:x => 1/x, a:1, b:3, ex:Math.log(3), es:'ln 3'}
+  };
+  let cur = 'sq'; picker('ri-pick', F, cur, k => { cur = k; draw(); });
+  function draw(){
+    const fn = F[cur], n = +$('#ri-n').value; setOut('ri-n', String(n));
+    const dx = (fn.b - fn.a)/n; let s = 0; const mids = []; for (let i = 0; i < n; i++){ const m = fn.a + (i + .5)*dx; mids.push(m); s += fn.f(m)*dx; }
+    const xs = Array.from({length:301}, (_, i) => fn.a + (fn.b - fn.a)*i/300), ymax = Math.max(...xs.map(fn.f))*1.1;
+    const {ctx, w, h} = sizeCanvas(cv, .65, 280), {X, Y} = plotFrame(ctx, w, h, [fn.a, fn.b], [0, ymax]);
+    mids.forEach(m => { const x0 = X(m - dx/2), x1 = X(m + dx/2); ctx.fillStyle = tok('--col-soft'); ctx.fillRect(x0, Y(fn.f(m)), x1 - x0, Y(0) - Y(fn.f(m))); if (n <= 40){ ctx.strokeStyle = tok('--col'); ctx.lineWidth = 1; ctx.strokeRect(x0, Y(fn.f(m)), x1 - x0, Y(0) - Y(fn.f(m))); } });
+    linePath(ctx, xs.map(x => [X(x), Y(fn.f(x))]), tok('--row'), 2.6);
+    txt(ctx, f4(fn.a), X(fn.a), h - 6, null, 'center'); txt(ctx, f4(Math.round(fn.b*100)/100), X(fn.b), h - 6, null, 'center');
+    $('#ri-out').innerHTML = `∫ ${fn.n}<br><br>n = ${n} 個長方形，寬 Δx = ${f4(dx)}<br>中點和 Σ f(xᵢ)Δx = <b>${f4(s)}</b><br>精確值 = ${f4(fn.ex)}（${fn.es}）<br>誤差 = ${Math.abs(s - fn.ex).toExponential(2)}<br><br><span style="color:var(--muted)">中點法的誤差大約和 1/n² 成正比：n 變 10 倍，誤差變 1/100。</span>`;
+  }
+  bindRange(['ri-n'], draw); onR(draw);
+})();
+
+/* ---------- 共用：二維函數 ---------- */
+const F2 = {
+  bowl: {n:'碗 x² + y²', f:(x, y) => x*x + y*y, g:(x, y) => [2*x, 2*y], H:() => [[2,0],[0,2]], box:[-2.2, 2.2, -2.2, 2.2], st:[-1.8, 1.6]},
+  valley: {n:'細長山谷 ½x² + 10y²', f:(x, y) => .5*x*x + 10*y*y, g:(x, y) => [x, 20*y], H:() => [[1,0],[0,20]], box:[-2.2, 2.2, -1.2, 1.2], st:[-2, .9]},
+  saddle: {n:'鞍點 x² − y² + ¼y⁴', f:(x, y) => x*x - y*y + .25*y**4, g:(x, y) => [2*x, -2*y + y**3], H:(x, y) => [[2,0],[0,-2 + 3*y*y]], box:[-2.2, 2.2, -2.2, 2.2], st:[-1.8, .02]},
+  rosen: {n:'香蕉谷 (1−x)² + 5(y−x²)²', f:(x, y) => (1 - x)**2 + 5*(y - x*x)**2, g:(x, y) => [-2*(1 - x) - 20*x*(y - x*x), 10*(y - x*x)], H:(x, y) => [[2 - 20*y + 60*x*x, -20*x],[-20*x, 10]], box:[-2, 2, -1, 3], st:[-1.5, 2.5]}
+};
+function contourMap(ctx, w, h, fn, X0, Y0){
+  const [x0, x1, y0, y1] = fn.box, res = 3, cw = Math.ceil(w/res), ch = Math.ceil(h/res), vals = new Float64Array(cw*ch);
+  let mn = Infinity, mx = -Infinity;
+  for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++){ const v = fn.f(x0 + (i*res)/w*(x1 - x0), y1 - (j*res)/h*(y1 - y0)); vals[j*cw + i] = v; mn = Math.min(mn, v); mx = Math.max(mx, v); }
+  const band = v => Math.floor(Math.sqrt((v - mn)/((mx - mn) || 1))*16);
+  const lo = tok('--row-soft'), hi = tok('--col-soft'), edge = tok('--muted');
+  for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++){ const b = band(vals[j*cw + i]); ctx.fillStyle = b < 6 ? lo : hi; ctx.globalAlpha = .35 + .03*b; ctx.fillRect(i*res, j*res, res, res);
+    if ((i < cw - 1 && band(vals[j*cw + i + 1]) !== b) || (j < ch - 1 && band(vals[(j + 1)*cw + i]) !== b)){ ctx.globalAlpha = .55; ctx.fillStyle = edge; ctx.fillRect(i*res, j*res, res, res); } }
+  ctx.globalAlpha = 1;
+}
+function mapper(fn, w, h){ const [x0, x1, y0, y1] = fn.box; return {P:(x, y) => [(x - x0)/(x1 - x0)*w, (y1 - y)/(y1 - y0)*h], inv:(px, py) => [x0 + px/w*(x1 - x0), y1 - py/h*(y1 - y0)]}; }
+
+/* ---------- 第 11 節：等高線與梯度 ---------- */
+(function(){
+  const cv = $('#cv-ct'); let cur = 'bowl', pt = [1, 1], geo = null;
+  picker('ct-pick', F2, cur, k => { cur = k; pt = [1, .6]; draw(); });
+  cv.addEventListener('click', e => { if (!geo) return; const r = cv.getBoundingClientRect(); pt = geo.inv(e.clientX - r.left, e.clientY - r.top); draw(); });
+  function draw(){
+    const fn = F2[cur], {ctx, w, h} = sizeCanvas(cv, .8, 340); geo = mapper(fn, w, h); contourMap(ctx, w, h, fn);
+    const [x, y] = pt, g = fn.g(x, y), gn = Math.hypot(...g), [px, py] = geo.P(x, y), sc = Math.min(70, 30 + gn*6)/(gn || 1);
+    arrow(ctx, px, py, px + g[0]*sc, py - g[1]*sc, tok('--col'), 3);
+    arrow(ctx, px, py, px - g[0]*sc, py + g[1]*sc, tok('--pen'), 3);
+    ctx.fillStyle = tok('--ink'); ctx.beginPath(); ctx.arc(px, py, 5, 0, 7); ctx.fill();
+    const H = fn.H(x, y), tr = H[0][0] + H[1][1], det = H[0][0]*H[1][1] - H[0][1]*H[1][0], ds = Math.sqrt(Math.max(0, tr*tr/4 - det)), l1 = tr/2 + ds, l2 = tr/2 - ds;
+    $('#ct-out').innerHTML = `f(x, y) = ${fn.n.split(' ').slice(1).join(' ')}<br>點 (${f4(x)}, ${f4(y)})，f = ${f4(fn.f(x, y))}<br><br><span style="color:var(--col)">∇f = (∂f/∂x, ∂f/∂y) = (${f4(g[0])}, ${f4(g[1])})</span><br>‖∇f‖ = ${f4(gn)}（最陡的坡度）<br><span style="color:var(--pen)">−∇f = (${f4(-g[0])}, ${f4(-g[1])})：下坡方向</span><br><br>Hessian = [[${f4(H[0][0])}, ${f4(H[0][1])}], [${f4(H[1][0])}, ${f4(H[1][1])}]]<br>特徵值 ${f4(l1)}、${f4(l2)}：${l2 > 0 ? '這裡是碗形（凸）' : l1 < 0 ? '這裡往下彎' : '這裡是馬鞍形（一正一負）'}<br><span style="color:var(--muted)">（箭頭長度有壓縮，方向才是重點）</span>`;
+  }
+  onR(draw);
+})();
+
+/* ---------- 第 17 節：最佳化器比賽 ---------- */
+(function(){
+  const cv = $('#cv-gd'); let cur = 'valley', start = null, geo = null;
+  picker('gd-pick', F2, cur, k => { cur = k; start = null; draw(); });
+  cv.addEventListener('click', e => { if (!geo) return; const r = cv.getBoundingClientRect(); start = geo.inv(e.clientX - r.left, e.clientY - r.top); draw(); });
+  const OPT = [
+    {n:'SGD', c:'--row', run:(fn, w, lr, T) => { const p = [w.slice()]; for (let t = 0; t < T; t++){ const g = fn.g(...w); w = [w[0] - lr*g[0], w[1] - lr*g[1]]; p.push(w); if (!isFinite(w[0]) || Math.hypot(...w) > 1e3) break; } return p; }},
+    {n:'Momentum', c:'--col', run:(fn, w, lr, T) => { const p = [w.slice()]; let v = [0, 0]; for (let t = 0; t < T; t++){ const g = fn.g(...w); v = [.9*v[0] + g[0], .9*v[1] + g[1]]; w = [w[0] - lr*v[0], w[1] - lr*v[1]]; p.push(w); if (!isFinite(w[0]) || Math.hypot(...w) > 1e3) break; } return p; }},
+    {n:'RMSProp', c:'--good', run:(fn, w, lr, T) => { const p = [w.slice()]; let s = [0, 0]; for (let t = 0; t < T; t++){ const g = fn.g(...w); s = s.map((sv, i) => .9*sv + .1*g[i]*g[i]); w = w.map((wv, i) => wv - lr*g[i]/(Math.sqrt(s[i]) + 1e-8)); p.push(w); if (!isFinite(w[0]) || Math.hypot(...w) > 1e3) break; } return p; }},
+    {n:'Adam', c:'--violet', run:(fn, w, lr, T) => { const p = [w.slice()]; let m = [0, 0], v = [0, 0]; for (let t = 1; t <= T; t++){ const g = fn.g(...w); m = m.map((mv, i) => .9*mv + .1*g[i]); v = v.map((vv, i) => .999*vv + .001*g[i]*g[i]); w = w.map((wv, i) => wv - lr*(m[i]/(1 - .9**t))/(Math.sqrt(v[i]/(1 - .999**t)) + 1e-8)); p.push(w); if (!isFinite(w[0]) || Math.hypot(...w) > 1e3) break; } return p; }},
+    {n:'牛頓法', c:'--pen', run:(fn, w, lr, T) => { const p = [w.slice()]; for (let t = 0; t < Math.min(T, 30); t++){ const g = fn.g(...w); if (Math.hypot(...g) < 1e-12) break; const H = fn.H(...w), det = H[0][0]*H[1][1] - H[0][1]*H[1][0]; if (Math.abs(det) < 1e-9) break; const s = [(H[1][1]*g[0] - H[0][1]*g[1])/det, (-H[1][0]*g[0] + H[0][0]*g[1])/det]; w = [w[0] - s[0], w[1] - s[1]]; p.push(w); if (!isFinite(w[0]) || Math.hypot(...w) > 1e3) break; } return p; }}
+  ];
+  function draw(){
+    const fn = F2[cur], lr = 10**(+$('#gd-lr').value), T = +$('#gd-st').value; setOut('gd-lr', lr < .01 ? lr.toFixed(4) : lr.toFixed(3)); setOut('gd-st', String(T));
+    const st = start || fn.st, {ctx, w, h} = sizeCanvas(cv, .8, 360); geo = mapper(fn, w, h); contourMap(ctx, w, h, fn);
+    const res = OPT.map(o => ({o, p:o.run(fn, st.slice(), lr, T)}));
+    res.forEach(({o, p}) => { ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip(); linePath(ctx, p.map(q => geo.P(...q)), tok(o.c), 2); ctx.fillStyle = tok(o.c); p.forEach(q => { const [a, b] = geo.P(...q); ctx.fillRect(a - 1.5, b - 1.5, 3, 3); }); ctx.restore(); });
+    const [sx, sy] = geo.P(...st); ctx.fillStyle = tok('--ink'); ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 7); ctx.fill();
+    $('#gd-out').innerHTML = `${fn.n}<br>起點 (${f4(st[0])}, ${f4(st[1])})，η = ${lr.toPrecision(3)}<br><br>${res.map(({o, p}) => { const e = p[p.length - 1], fv = fn.f(...e), bad = !isFinite(fv) || Math.hypot(...e) > 1e3; return `<span style="color:var(${o.c})">■ ${o.n}</span>：${bad ? '<span class="chip bad">發散</span>' : `${p.length - 1} 步後 f = ${fv < 1e-4 && fv > -1e-4 ? fv.toExponential(1) : f4(fv)}`}`; }).join('<br>')}<br><br><span style="color:var(--muted)">${cur === 'valley' ? 'Hessian 特徵值 1 和 20：SGD 需要 η &lt; 2/20 = 0.1 才不發散。' : cur === 'saddle' ? '原點是鞍點，真正的最低點在 (0, ±1.414)。牛頓法會被吸進鞍點。' : cur === 'rosen' ? '最低點在 (1, 1)，谷底彎曲又平坦，是經典的難題。' : '圓形的碗，所有方法都很順利。'}牛頓法不使用 η，最多 30 步。</span>`;
+  }
+  bindRange(['gd-lr','gd-st'], draw); onR(draw);
+})();
+
+/* ---------- 第 20 節：反向傳播逐步 ---------- */
+(function(){
+  const cv = $('#cv-bp'); let step = 0; const MAX = 9;
+  const N = { x:[0,.2,'x'], w:[0,.5,'w'], b:[0,.82,'b'], u:[.27,.36,'u = w·x'], z:[.51,.55,'z = u + b'], a:[.75,.55,'a = σ(z)'], y:[.75,.85,'y'], L:[1,.62,'L = (a−y)²'] };
+  const E = [['x','u'],['w','u'],['u','z'],['b','z'],['z','a'],['a','L'],['y','L']];
+  function vals(){
+    const x = +$('#bp-x').value, w = +$('#bp-w').value, b = +$('#bp-b').value, y = +$('#bp-y').value;
+    const u = w*x, z = u + b, a = sig(z), L = (a - y)**2, dL = 1, da = 2*(a - y), dz = da*a*(1 - a), du = dz, db = dz, dw = du*x, dx = du*w;
+    return {v:{x, w, b, y, u, z, a, L}, g:{L:dL, a:da, z:dz, u:du, b:db, w:dw, x:dx}};
+  }
+  const fwdAt = {u:1, z:2, a:3, L:4}, bwdAt = {L:5, a:6, z:7, u:8, b:8, w:9, x:9};
+  const EXPL = [
+    '起點：輸入 x、參數 w、b、答案 y 已知。按「下一步」開始前向計算。',
+    '前向 ①：u = w·x',
+    '前向 ②：z = u + b',
+    '前向 ③：a = σ(z)',
+    '前向 ④：L = (a − y)²。前向完成，得到損失。',
+    '反向 ①：從終點出發，∂L/∂L = 1。',
+    '反向 ②：∂L/∂a = 2(a − y)。局部導數 × 上游梯度 1。',
+    '反向 ③：∂L/∂z = ∂L/∂a · σ′(z) = ∂L/∂a · a(1 − a)。注意 a 是前向已經算好的值，直接拿來用。',
+    '反向 ④：加法節點把梯度原封不動地複製給兩個輸入：∂L/∂u = ∂L/∂z × 1，∂L/∂b = ∂L/∂z × 1。',
+    '反向 ⑤：乘法節點把梯度「交換」乘上另一個輸入：∂L/∂w = ∂L/∂u · x，∂L/∂x = ∂L/∂u · w。完成！'
+  ];
+  function draw(){
+    const narrow = cv.parentElement.clientWidth < 560, {v, g} = vals(), {ctx, w, h} = sizeCanvas(cv, narrow ? 1.35 : .5, narrow ? 460 : 300), bw = narrow ? Math.min(120, (w - 24)/3) : Math.min(120, w*.18), bh = 54;
+    const NP = {x:[0,0], w:[.5,0], b:[1,0], u:[.25,1], z:[.5,2], a:[.5,3], y:[1,3], L:[.75,4]};
+    const pos = k => narrow ? [6 + bw/2 + NP[k][0]*(w - bw - 12), 6 + bh/2 + NP[k][1]/4*(h - bh - 12)] : [6 + bw/2 + N[k][0]*(w - bw - 12), N[k][1]*h];
+    E.forEach(([s, t]) => { const [x1, y1] = pos(s), [x2, y2] = pos(t); const back = step >= 5 && bwdAt[s] !== undefined && bwdAt[s] <= step; if (narrow) arrow(ctx, x1, y1 + bh/2, x2, y2 - bh/2 - 2, back ? tok('--col') : tok('--muted'), back ? 2.4 : 1.4); else arrow(ctx, x1 + bw/2*.9, y1, x2 - bw/2*.95, y2, back ? tok('--col') : tok('--muted'), back ? 2.4 : 1.4); });
+    Object.keys(N).forEach(k => { const [cx, cy] = pos(k), x = cx - bw/2, y = cy - bh/2;
+      const shown = fwdAt[k] === undefined || fwdAt[k] <= step, gshown = bwdAt[k] !== undefined && bwdAt[k] <= step, active = fwdAt[k] === step || bwdAt[k] === step;
+      ctx.fillStyle = tok('--sheet'); ctx.strokeStyle = active ? tok('--pen') : tok('--rule'); ctx.lineWidth = active ? 2.5 : 1.2; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, bw, bh, 8) : ctx.rect(x, y, bw, bh); ctx.fill(); ctx.stroke();
+      txt(ctx, N[k][2], cx, y + 14, tok('--ink'), 'center', 11);
+      if (shown) txt(ctx, '值 ' + f4(v[k]), cx, y + 31, tok('--row'), 'center', 11);
+      if (gshown) txt(ctx, '梯度 ' + f4(g[k]), cx, y + 46, tok('--col'), 'center', 11); });
+    $('#bp-out').innerHTML = `步驟 ${step} / ${MAX}：${EXPL[step]}<br><br><span style="color:var(--row)">藍色 = 前向的值</span>　<span style="color:var(--col)">琥珀色 = 反向的梯度 ∂L/∂(節點)</span>${step >= 9 ? `<br><br>梯度下降 η = 0.1：w ← ${f4(v.w)} − 0.1 × (${f4(g.w)}) = ${f4(v.w - .1*g.w)}，b ← ${f4(v.b - .1*g.b)}` : ''}`;
+  }
+  $('#bp-next').addEventListener('click', () => { step = Math.min(MAX, step + 1); draw(); });
+  $('#bp-prev').addEventListener('click', () => { step = Math.max(0, step - 1); draw(); });
+  $('#bp-all').addEventListener('click', () => { step = MAX; draw(); });
+  $('#bp-reset').addEventListener('click', () => { step = 0; draw(); });
+  ['bp-x','bp-w','bp-b','bp-y'].forEach(id => $('#'+id).addEventListener('input', draw));
+  onR(draw);
+})();
+
+/* ---------- 第 22 節：梯度消失 ---------- */
+(function(){
+  const cv = $('#cv-vg'); let act = 'sig', res = false;
+  const A = { sig:{n:'sigmoid', f:sig, d:x => sig(x)*(1 - sig(x)), gain:1}, tanh:{n:'tanh', f:Math.tanh, d:x => 1 - Math.tanh(x)**2, gain:1}, relu:{n:'ReLU', f:x => Math.max(0, x), d:x => x > 0 ? 1 : 0, gain:Math.SQRT2} };
+  picker('vg-pick', A, act, k => { act = k; draw(); });
+  $('#vg-res').addEventListener('click', e => { res = !res; e.target.setAttribute('aria-pressed', res); draw(); });
+  function draw(){
+    const L = +$('#vg-l').value, gs = +$('#vg-g').value; setOut('vg-l', String(L)); setOut('vg-g', gs.toFixed(2));
+    const n = 32, r = mulberry32(42), g = gaussFrom(r), a = A[act], std = a.gain*gs/Math.sqrt(n)/(res ? Math.sqrt(L) : 1);
+    const Ws = [], pres = []; let hcur = Array.from({length:n}, g);
+    for (let l = 0; l < L; l++){ const W = Array.from({length:n}, () => Array.from({length:n}, () => g()*std)); const pre = W.map(row => row.reduce((s, v, j) => s + v*hcur[j], 0)); Ws.push(W); pres.push(pre); const out = pre.map(a.f); hcur = res ? hcur.map((v, i) => v + out[i]) : out; }
+    let d = Array.from({length:n}, g); const nrm = v => Math.sqrt(v.reduce((s, x) => s + x*x, 0)); const d0 = nrm(d); d = d.map(x => x/d0);
+    const norms = new Array(L);
+    for (let l = L - 1; l >= 0; l--){ const t = d.map((x, i) => x*a.d(pres[l][i])); const back = Array.from({length:n}, (_, j) => Ws[l].reduce((s, row, i) => s + row[j]*t[i], 0)); d = res ? d.map((x, j) => x + back[j]) : back; norms[l] = nrm(d); }
+    const lg = norms.map(v => Math.log10(Math.max(v, 1e-30))), lo = Math.min(-1, ...lg) - .5, hi = Math.max(1, ...lg) + .5;
+    const {ctx, w, h} = sizeCanvas(cv, .62, 280), pad = {l:40, r:10, t:10, b:22}, X = i => pad.l + (i + .5)/L*(w - pad.l - pad.r), Y = v => h - pad.b - (v - lo)/(hi - lo)*(h - pad.t - pad.b);
+    ctx.strokeStyle = tok('--rule'); ctx.beginPath(); ctx.moveTo(pad.l, Y(0)); ctx.lineTo(w - pad.r, Y(0)); ctx.stroke();
+    for (let e = Math.ceil(lo); e <= Math.floor(hi); e += Math.max(1, Math.ceil((hi - lo)/6))) txt(ctx, '1e' + e, pad.l - 4, Y(e) + 4, null, 'right', 10);
+    const bw = Math.max(2, (w - pad.l - pad.r)/L*.7);
+    lg.forEach((v, i) => { ctx.fillStyle = v < -3 ? tok('--pen') : v > 3 ? tok('--violet') : tok('--col'); ctx.fillRect(X(i) - bw/2, Math.min(Y(v), Y(0)), bw, Math.abs(Y(v) - Y(0))); });
+    txt(ctx, '第 1 層', X(0), h - 6, null, 'center', 10); txt(ctx, '第 ' + L + ' 層', X(L - 1), h - 6, null, 'right', 10);
+    $('#vg-out').innerHTML = `${a.n}${res ? ' + 殘差連接' : ''}，${L} 層，寬 32<br>初始化標準差 = ${a.gain === 1 ? '' : '√2 ×'} ${gs.toFixed(2)} / √32${res ? ' / √' + L + '（殘差分支縮小）' : ''}<br><br>輸出端梯度範數 = 1<br>傳到第 ${L} 層：${norms[L - 1].toExponential(2)}<br>傳到第 1 層：<b>${norms[0].toExponential(2)}</b><br><br>${norms[0] < 1e-3 ? '<span class="chip bad">梯度消失：前面的層幾乎學不動</span>' : norms[0] > 1e3 ? '<span class="chip info">梯度爆炸</span>' : '<span class="chip good">梯度大小穩定</span>'}<br><br><span style="color:var(--muted)">參考：sigmoid 導數最大 0.25，0.25¹⁰ ≈ 9.5×10⁻⁷。ReLU 搭配 He 初始化（尺度 1）時，梯度大致維持不變。</span>`;
+  }
+  bindRange(['vg-l','vg-g'], draw); onR(draw);
+})();
+
+/* ---------- 第 23 節：數值微分誤差 ---------- */
+(function(){
+  const cv = $('#cv-nd'), x = 1, tru = Math.cos(1);
+  const hs = Array.from({length:161}, (_, i) => 10**(-16 + i*.1));
+  const fw = hs.map(h => Math.abs((Math.sin(x + h) - Math.sin(x))/h - tru)), ce = hs.map(h => Math.abs((Math.sin(x + h) - Math.sin(x - h))/(2*h) - tru));
+  function draw(){
+    const {ctx, w, h} = sizeCanvas(cv, .5, 280), {X, Y} = plotFrame(ctx, w, h, [-16, 0], [-17, 1], {l:44, r:10, t:10, b:22});
+    const L = v => Math.log10(Math.max(v, 1e-17));
+    linePath(ctx, hs.map((hh, i) => [X(Math.log10(hh)), Y(L(fw[i]))]), tok('--row'), 2);
+    linePath(ctx, hs.map((hh, i) => [X(Math.log10(hh)), Y(L(ce[i]))]), tok('--col'), 2);
+    for (let e = -16; e <= 0; e += 4) txt(ctx, '1e' + e, X(e), h - 6, null, 'center', 10);
+    for (let e = -16; e <= 0; e += 4) txt(ctx, '1e' + e, 40, Y(e) + 4, null, 'right', 10);
+    txt(ctx, '■ 前向差分', X(-15.5), Y(-1), tok('--row')); txt(ctx, '■ 中央差分', X(-15.5), Y(-2.6), tok('--col'));
+    const best = arr => { let k = 0; arr.forEach((v, i) => { if (v < arr[k]) k = i; }); return k; }, bf = best(fw), bc = best(ce);
+    $('#nd-out').innerHTML = `f(x) = sin x，x = 1，真正的導數 cos 1 = ${tru.toFixed(10)}<br><br><span style="color:var(--row)">前向差分</span>最佳 h ≈ ${hs[bf].toExponential(0)}，誤差 ${fw[bf].toExponential(1)}<br><span style="color:var(--col)">中央差分</span>最佳 h ≈ ${hs[bc].toExponential(0)}，誤差 ${ce[bc].toExponential(1)}<br><br>h = 1e-3：前向誤差 ${Math.abs((Math.sin(1.001) - Math.sin(1))/1e-3 - tru).toExponential(1)}，中央誤差 ${Math.abs((Math.sin(1.001) - Math.sin(.999))/2e-3 - tru).toExponential(1)}`;
+  }
+  onR(draw);
+})();
+
+/* ---------- 第 25 節：練習題 ---------- */
+(function(){
+  const Q = [
+    {q:'f(x) = x² 在 x = 3 的導數是？', o:['3','6','9','2'], a:1, e:'f′(x) = 2x。x 從 3 增加 0.01，f 大約增加 0.06。（第 3 節）'},
+    {q:'f′(x) < 0 代表什麼？', o:['函數在最低點','往右走函數下降','函數是凸的','函數不可微'], a:1, e:'導數是斜率，負的代表往右走下坡。梯度下降此時會往右走（減去負數）。（第 3 節）'},
+    {q:'d/dx (x² sin x) = ？', o:['2x cos x','2x sin x + x² cos x','2x sin x − x² cos x','x² cos x'], a:1, e:'乘法法則 (fg)′ = f′g + fg′。（第 4 節）'},
+    {q:'d/dx e^(3x) = ？', o:['e^(3x)','3e^(3x)','3x e^(3x−1)','e^3'], a:1, e:'連鎖律：外層 eᵘ 導數 eᵘ，乘上內層 3x 的導數 3。（第 5 節）'},
+    {q:'d/dx ln(x² + 1) = ？', o:['1/(x² + 1)','2x/(x² + 1)','2x ln(x² + 1)','1/(2x)'], a:1, e:'外層 ln u 的導數 1/u，乘上內層導數 2x。（第 4、5 節）'},
+    {q:'sigmoid 的導數 σ′(x) 可以寫成？', o:['σ(x)²','σ(x)(1 − σ(x))','1 − σ(x)²','e^(−x)'], a:1, e:'前向算好的 σ(x) 直接拿來用。最大值 0.25。（第 6 節）'},
+    {q:'f′(a) = 0 且 f″(a) > 0，a 是？', o:['局部最大','局部最小','鞍點','反曲點'], a:1, e:'切線平、開口向上 ∪。（第 7 節）'},
+    {q:'用一次泰勒近似，e^0.1 ≈ ？', o:['1','1.1','1.105','1.2'], a:1, e:'e^h ≈ 1 + h = 1.1。加上二次項 h²/2 才是 1.105。（第 8 節）'},
+    {q:'∫₀¹ x² dx = ？', o:['1/2','1/3','1','2'], a:1, e:'反導數 x³/3，代入 1 和 0 相減。（第 9 節）'},
+    {q:'f(x, y) = x²y + 3y，∂f/∂y = ？', o:['2xy','x² + 3','x²','2x + 3'], a:1, e:'把 x 當常數，x²y 對 y 的導數是 x²，3y 是 3。（第 10 節）'},
+    {q:'梯度 ∇f 的方向是？', o:['等高線的方向','最陡的上坡方向','最陡的下坡方向','永遠指向原點'], a:1, e:'方向導數 ∇f·u 在 u 和梯度同向時最大。梯度下降走 −∇f。（第 11 節）'},
+    {q:'梯度和等高線的關係是？', o:['平行','垂直','45 度','無關'], a:1, e:'沿等高線走 f 不變，方向導數為 0，所以和梯度垂直。（第 11 節）'},
+    {q:'一個變數透過兩條路徑影響輸出時，多變數連鎖律要？', o:['取比較大的那條','兩條路徑的導數相乘','兩條路徑各自相乘後相加','取平均'], a:2, e:'∂L/∂x = Σᵢ (∂L/∂uᵢ)(∂uᵢ/∂x)。（第 12 節）'},
+    {q:'Hessian 的特徵值一正一負，臨界點是？', o:['局部最小','局部最大','鞍點','全域最小'], a:2, e:'某些方向往上彎、某些方向往下彎。（第 14 節）'},
+    {q:'為什麼深度學習很少直接用 Hessian？', o:['Hessian 永遠是 0','n 個參數的 Hessian 有 n² 個元素，存不下也算不起','Hessian 不對稱','Hessian 只適用於單變數'], a:1, e:'10 億參數就是 10¹⁸ 個元素。（第 13、19 節）'},
+    {q:'f = ½x² + 10y² 用梯度下降，學習率最大不能超過？', o:['0.05','0.1','1','2'], a:1, e:'Hessian 特徵值 1 和 20，需要 η < 2/20 = 0.1。（第 17 節）'},
+    {q:'Momentum 的主要好處是？', o:['不用算梯度','在來回彈跳的方向抵消、一致的方向加速','自動選學習率','保證找到全域最小'], a:1, e:'像滾下山的球有慣性。（第 18 節）'},
+    {q:'Adam 為什麼需要偏差校正？', o:['讓梯度變大','m、v 從 0 開始，前幾步的移動平均會偏小','避免除以 0','讓學習率遞減'], a:1, e:'t = 1 時 m₁ = 0.1g₁，除以 1 − 0.9 = 0.1 修正回 g₁。（第 18 節）'},
+    {q:'牛頓法 w ← w − f′(w)/f″(w) 用的是哪種近似？', o:['一次（線性）','二次（拋物線）','三次','不用近似'], a:1, e:'對二次泰勒展開求最低點。（第 8、19 節）'},
+    {q:'在計算圖中，加法節點 z = u + b 反向時怎麼處理梯度？', o:['梯度相乘','原封不動複製給兩個輸入','除以 2','交換後乘上另一個輸入'], a:1, e:'∂z/∂u = ∂z/∂b = 1。乘法節點才是「交換乘上另一個輸入」。（第 20 節）'},
+    {q:'深度學習用反向模式自動微分，主要是因為？', o:['比較精確','參數很多、損失只有一個，一趟反向就得到全部梯度','比較省記憶體','前向模式不能處理矩陣'], a:1, e:'反向模式一趟得到「一個輸出對所有輸入」的導數。（第 20、21 節）'},
+    {q:'PyTorch 每次 backward 前通常要先？', o:['重新建立模型','把梯度清零','關掉 autograd','把資料轉成 float64'], a:1, e:'梯度預設會累加，忘了 zero_grad() 是常見錯誤。（第 21 節）'},
+    {q:'10 層 sigmoid 網路，導數最多乘到約？', o:['0.25','2.5 × 10⁻³','9.5 × 10⁻⁷','1'], a:2, e:'0.25¹⁰ ≈ 9.5 × 10⁻⁷，這就是梯度消失。（第 22 節）'},
+    {q:'殘差連接 y = x + F(x) 為什麼能緩解梯度消失？', o:['讓 F 變簡單','∂y/∂x = 1 + F′(x)，有一條梯度直通的路','減少參數','讓激活函數變線性'], a:1, e:'即使 F′ 很小，還有那個 1。（第 12、22 節）'},
+    {q:'中央差分比前向差分好的原因是？', o:['只要算一次 f','誤差是 O(h²) 而不是 O(h)','可以用很大的 h','沒有浮點誤差'], a:1, e:'泰勒展開的 h² 項正負抵消。（第 23 節）'}
+  ];
+  const ans = {};
+  $('#quiz').innerHTML = Q.map((q, i) => `<div class="q" data-i="${i}"><div class="qt">${i+1}. ${q.q}</div><div class="opts">${q.o.map((o, j) => `<button class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="ex" hidden>${q.e}</div></div>`).join('');
+  const score = () => { const k = Object.keys(ans).length, c = Object.entries(ans).filter(([i, j]) => Q[i].a === j).length; $('#qz-score').textContent = `已作答 ${k} / ${Q.length}，答對 ${c} 題`; };
+  document.querySelectorAll('#quiz .q').forEach(el => {
+    const i = +el.dataset.i;
+    el.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+      const j = +b.dataset.j; ans[i] = j;
+      el.querySelectorAll('.opt').forEach(x => { x.disabled = true; const k = +x.dataset.j; if (k === Q[i].a) x.classList.add('right'); else if (k === j) x.classList.add('wrong'); });
+      const ex = el.querySelector('.ex'); ex.hidden = false; ex.insertAdjacentHTML('afterbegin', `<b>${j === Q[i].a ? '答對了。' : '再想想。'}</b> `); score();
+    }));
+  });
+  score();
+})();
+</script>
+
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>引用的論文、影片與圖表，版權屬原作者，不在上述授權範圍內。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p>需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body></html>
