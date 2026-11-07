@@ -158,7 +158,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
 </style>
 <style>:root{--line:var(--rule);--accent:var(--row);--bg:var(--paper);--surface2:var(--sunk)}.ls-foot{max-width:960px}</style>
 </head><body>
-<div class="ls-top"><a href="../index.html">← 學習空間</a><span>iamkylee@gmail.com</span></div>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
 <div class="shell">
 <aside class="side" aria-label="目錄">
   <div class="brand">線代與<br>矩陣微分筆記</div>
@@ -233,7 +233,9 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     </div>
     <h3>長度（範數，norm）</h3>
     <div class="formula">\[ \lVert w\rVert=\sqrt{w^\top w}=\sqrt{\textstyle\sum_i w_i^2},\qquad \lVert w\rVert^2=w^\top w \]</div>
-    <div class="prose"><p>例：\(w=(3,4)\)，\(\lVert w\rVert=5\)。權重衰減的 \(\tfrac\lambda2\lVert w\rVert^2\)、均方誤差 \(\lVert Xw-y\rVert^2\) 都是「長度的平方」，也就是自己和自己做內積。</p></div>
+    <div class="prose"><p><strong>例：\(w=(3,4)\)，求 \(\lVert w\rVert\)。</strong></p></div>
+    <div class="formula">\[ \lVert w\rVert=\sqrt{w_1^2+w_2^2}=\sqrt{3^2+4^2}=\sqrt{9+16}=\sqrt{25}=5 \]</div>
+    <div class="prose"><p>步驟：① 每個元素平方（\(3^2=9\)、\(4^2=16\)）；② 全部加起來（\(9+16=25\)）；③ 開根號（\(\sqrt{25}=5\)）。用內積寫是同一件事：\(w^\top w=3\cdot3+4\cdot4=25\)，所以 \(\lVert w\rVert^2=25\)、\(\lVert w\rVert=5\)。</p><p><strong>幾何意義就是畢氏定理</strong>：從原點走到 \((3,4)\)，等於往右 3、往上 4。這兩段是直角三角形的兩股，向量本身是斜邊，斜邊長 \(\sqrt{3^2+4^2}=5\)（經典的 3-4-5 直角三角形）。三維也一樣：\(\lVert(1,2,2)\rVert=\sqrt{1+4+4}=3\)。</p><p>權重衰減的 \(\tfrac\lambda2\lVert w\rVert^2\)、均方誤差 \(\lVert Xw-y\rVert^2\) 都是「長度的平方」，也就是自己和自己做內積。</p></div>
 
     <div class="demo">
       <h4>內積與夾角</h4>
