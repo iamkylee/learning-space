@@ -202,7 +202,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       </tbody>
     </table></div>
     <div class="prose" style="margin-top:14px">
-      <p><strong>矩陣的形狀永遠是「列數 × 欄數」</strong>，也就是先說有幾橫排、再說有幾直行。\(A\in\mathbb R^{2\times3}\) 讀作「A 是 2 列 3 欄的實數矩陣」。第 \(i\) 列、第 \(j\) 欄的元素寫成 \(A_{ij}\)（或 \(a_{ij}\)），<strong>第一個下標是列、第二個是欄</strong>。</p>
+      <p><strong>矩陣的形狀永遠是「列數 × 欄數」</strong>，也就是先說有幾橫排、再說有幾直行。\(A\in\mathbb R^{2\times3}\) 讀作「A 是 2 列 3 欄的實數矩陣」（\(\in\) 讀作「屬於」，\(\mathbb R\) 是所有實數，也就是一般的小數；右上角的 \(2\times3\) 是形狀。同理 \(w\in\mathbb R^n\) 是「n 個實數排成的向量」）。第 \(i\) 列、第 \(j\) 欄的元素寫成 \(A_{ij}\)（或 \(a_{ij}\)），<strong>第一個下標是列、第二個是欄</strong>。</p>
     </div>
     <div class="formula">\[ A=\begin{bmatrix} a_{11} & a_{12} & a_{13}\\ a_{21} & a_{22} & a_{23}\end{bmatrix}=\begin{bmatrix} 1 & 2 & 3\\ 4 & 5 & 6\end{bmatrix},\qquad a_{12}=2,\quad a_{21}=4 \]</div>
     <div class="prose">
@@ -212,6 +212,34 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <div class="box warn"><b class="t">「行」和「列」的陷阱</b>
       <p>台灣的教科書：<strong>列 = row（橫）、行 = column（直）</strong>，所以「行向量」是直的 column vector。中國大陸的用法剛好相反（行 = row、列 = column）。看網路資料或 AI 的回答時，遇到「行向量」「列向量」先確認是哪一邊的用法，最保險的做法是看英文或直接看形狀。本頁一律寫「列（row）」「欄（column）」。</p>
     </div>
+    <h3>符號小辭典</h3>
+    <div class="prose"><p>本頁會出現的符號，第一次看到時可以回來查。每個在正文第一次出現的地方也會再解釋一次。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>符號</th><th>讀法</th><th>意思</th><th>詳見</th></tr></thead>
+      <tbody>
+        <tr><td>\(\in\)</td><td>屬於</td><td>\(x\in\mathbb R^n\)：x 是 n 個實數組成的向量</td><td class="num">1</td></tr>
+        <tr><td>\(\mathbb R\)</td><td>實數</td><td>一般的數（可以有小數、負數）</td><td class="num">1</td></tr>
+        <tr><td>\(A_{ij}\)</td><td>A 的 i, j 元素</td><td>第 i 列、第 j 欄的那一格</td><td class="num">1</td></tr>
+        <tr><td>\(\sum_i\)</td><td>Sigma，加總</td><td>把所有 i 的項加起來</td><td class="num">2</td></tr>
+        <tr><td>\(\lVert w\rVert\)</td><td>w 的範數</td><td>向量的長度</td><td class="num">2</td></tr>
+        <tr><td>\(\theta,\ \cos\theta\)</td><td>theta、餘弦</td><td>夾角；方向一致程度（−1 到 1）</td><td class="num">2</td></tr>
+        <tr><td>\(\eta\)</td><td>eta</td><td>學習率</td><td class="num">2</td></tr>
+        <tr><td>\(\leftarrow\)</td><td>更新為</td><td>用右邊的新值取代左邊</td><td class="num">2</td></tr>
+        <tr><td>\(A^\top\)</td><td>A transpose</td><td>轉置，列和欄互換</td><td class="num">5</td></tr>
+        <tr><td>\(\det A\)</td><td>determinant，行列式</td><td>矩陣把面積放大幾倍；2×2 是 \(ad-bc\)</td><td class="num">4</td></tr>
+        <tr><td>\(I\)</td><td>單位矩陣</td><td>對角線為 1，矩陣世界的「1」</td><td class="num">6</td></tr>
+        <tr><td>\(A^{-1}\)</td><td>A inverse，反矩陣</td><td>把 A 的變換還原</td><td class="num">6</td></tr>
+        <tr><td>\(a\odot b\)</td><td>Hadamard 積</td><td>同位置相乘</td><td class="num">7</td></tr>
+        <tr><td>\(\lambda\)</td><td>lambda</td><td>特徵值（在正則化裡則代表強度係數）</td><td class="num">8</td></tr>
+        <tr><td>\(\partial f/\partial w\)</td><td>partial，偏導數</td><td>只動 w 時 f 變多快</td><td class="num">10</td></tr>
+        <tr><td>\(\nabla f\)</td><td>nabla、梯度</td><td>所有偏導數排成的向量</td><td class="num">10</td></tr>
+        <tr><td>\(J\)</td><td>Jacobian，雅可比矩陣</td><td>向量對向量的導數表</td><td class="num">10</td></tr>
+        <tr><td>\(\delta_{ik}\)</td><td>Kronecker delta</td><td>\(i=k\) 時 1，否則 0</td><td class="num">11</td></tr>
+        <tr><td>\(H,\ \nabla^2f\)</td><td>Hessian</td><td>二階偏導數組成的矩陣</td><td class="num">16</td></tr>
+        <tr><td>\(\operatorname{diag}(v)\)</td><td>對角矩陣</td><td>v 放在對角線、其餘為 0</td><td class="num">18</td></tr>
+        <tr><td>\(\operatorname{tr}(A)\)</td><td>trace，跡</td><td>對角線元素的和</td><td class="num">21</td></tr>
+      </tbody>
+    </table></div>
   </section>
 
   <!-- 2 -->
@@ -221,14 +249,17 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <h3>加法與純量乘法</h3>
     <div class="prose"><p>都是逐元素做。形狀必須相同才能相加。</p></div>
     <div class="formula">\[ \begin{bmatrix}1\\2\end{bmatrix}+\begin{bmatrix}3\\-1\end{bmatrix}=\begin{bmatrix}4\\1\end{bmatrix},\qquad 3\begin{bmatrix}1\\2\end{bmatrix}=\begin{bmatrix}3\\6\end{bmatrix} \]</div>
-    <div class="prose"><p>梯度下降 \(w\leftarrow w-\eta\nabla L\) 就只用到這兩個運算：把梯度向量乘上純量 \(\eta\)，再和 \(w\) 相減。</p></div>
+    <div class="prose"><p>梯度下降 \(w\leftarrow w-\eta\nabla L\) 就只用到這兩個運算：把梯度向量乘上純量 \(\eta\)，再和 \(w\) 相減。（符號說明：\(\leftarrow\) 是「用右邊算出的新值取代 \(w\)」；\(\nabla L\)（讀作 nabla L 或 grad L）是<strong>梯度</strong>，一個和 \(w\) 同樣長的向量，告訴每個參數該往哪邊改，第 10 節詳細介紹；\(\eta\)（讀作 eta）是學習率，一個小正數，例如 0.01，控制每步走多遠。）</p></div>
 
     <h3>內積（dot product）</h3>
     <div class="prose"><p>兩個一樣長的向量，對應元素相乘再全部加起來，得到一個<strong>純量</strong>：</p></div>
     <div class="formula">\[ a^\top b=a\cdot b=\sum_{i=1}^{n}a_ib_i,\qquad \begin{bmatrix}1\\2\\3\end{bmatrix}^\top\begin{bmatrix}4\\5\\6\end{bmatrix}=1\cdot4+2\cdot5+3\cdot6=32 \]</div>
+    <div class="box amber"><b class="t">\(\sum\) 符號怎麼讀</b>
+      <p>\(\sum\)（希臘字母 Sigma 的大寫）就是「全部加起來」。\(\sum_{i=1}^{n}a_ib_i\) 讀作「i 從 1 到 n，把 \(a_ib_i\) 全部相加」，也就是 \(a_1b_1+a_2b_2+\cdots+a_nb_n\)。下面的 \(i\) 是計數用的編號，換成 \(j\)、\(t\) 意思都一樣；範圍很明顯時常省略，只寫 \(\sum_i\)。兩個 \(\sum\) 疊在一起 \(\sum_i\sum_j\) 就是「所有 \((i,j)\) 的組合都加一次」。另外，右上角的 \(\top\)（transpose）是轉置，把直的向量變成橫的，第 5 節詳細介紹。</p>
+    </div>
     <div class="prose">
       <p>寫成 \(a^\top b\) 是把它看成矩陣乘法：\((1\times n)(n\times1)=1\times1\)，也就是一個數。</p>
-      <p><strong>幾何意義</strong>：\(a^\top b=\lVert a\rVert\,\lVert b\rVert\cos\theta\)。方向越接近，內積越大；互相垂直時內積為 0（稱為正交，orthogonal）。</p>
+      <p><strong>幾何意義</strong>：\(a^\top b=\lVert a\rVert\,\lVert b\rVert\cos\theta\)。方向越接近，內積越大；互相垂直時內積為 0（稱為正交，orthogonal）。這裡 \(\lVert a\rVert\) 是向量的長度（下面馬上介紹），\(\theta\)（讀作 theta）是兩個向量的夾角，\(\cos\theta\) 是三角函數餘弦：夾角 0° 時 \(\cos=1\)、90° 時 \(\cos=0\)、180° 時 \(\cos=-1\)，所以它把「方向有多一致」變成 −1 到 1 之間的數。</p>
       <p><strong>在深度學習</strong>：一個神經元的輸出 \(z=w^\top x+b\) 就是一個內積加偏差；Transformer 的注意力分數 \(q^\top k\) 也是內積，衡量兩個向量有多「對齊」。</p>
     </div>
     <h3>長度（範數，norm）</h3>
@@ -300,7 +331,104 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <h2>矩陣是一種變換</h2>
     <div class="prose">
       <p>\(y=Ax\) 把向量 \(x\) 變成 \(y\)。用第 3 節的「看法 ②」：\(A\) 的<strong>第 1 欄就是 \((1,0)\) 被送到的位置</strong>，第 2 欄就是 \((0,1)\) 被送到的位置。只要知道這兩個基底去哪，整個平面怎麼變形就決定了。</p>
-      <p>單位正方形會變成一個平行四邊形，它的<strong>面積就是行列式</strong> \(\det A=ad-bc\)（帶正負號；負的代表翻面）。</p>
+      <p>單位正方形會變成一個平行四邊形，它的<strong>面積就是行列式</strong> \(\det A=ad-bc\)（帶正負號；負的代表翻面）。下面詳細說明。</p>
+    </div>
+    <h3>什麼是行列式（det）？</h3>
+    <div class="prose">
+      <p><strong>行列式</strong>（determinant，寫成 \(\det A\) 或 \(\lvert A\rvert\)）是從一個<strong>方陣</strong>算出來的<strong>一個數字</strong>。它回答一個問題：<strong>這個矩陣把面積（三維是體積）放大了幾倍？</strong></p>
+      <p>2×2 矩陣的算法：<strong>主對角線相乘，減掉副對角線相乘</strong>。</p>
+    </div>
+    <div class="formula">\[ A=\begin{bmatrix}a & b\\ c & d\end{bmatrix}\qquad\Longrightarrow\qquad \det A=\underbrace{a\cdot d}_{\searrow\ \text{主對角線}}-\underbrace{b\cdot c}_{\swarrow\ \text{副對角線}} \]</div>
+    <div class="tbl"><table>
+      <thead><tr><th>矩陣</th><th>計算</th><th>det</th><th>意思</th></tr></thead>
+      <tbody>
+        <tr><td>\(\begin{bmatrix}2 & 0\\0 & 3\end{bmatrix}\)</td><td>\(2\cdot3-0\cdot0\)</td><td class="num">6</td><td>橫向拉 2 倍、直向拉 3 倍，面積變 6 倍</td></tr>
+        <tr><td>\(\begin{bmatrix}2 & 1\\1 & 1\end{bmatrix}\)</td><td>\(2\cdot1-1\cdot1\)</td><td class="num">1</td><td>形狀變了（歪掉），但面積不變</td></tr>
+        <tr><td>\(\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}\)</td><td>\(1\cdot4-2\cdot3\)</td><td class="num">−2</td><td>面積變 2 倍，而且<strong>翻面</strong>（像照鏡子）</td></tr>
+        <tr><td>\(\begin{bmatrix}1 & 2\\2 & 4\end{bmatrix}\)</td><td>\(1\cdot4-2\cdot2\)</td><td class="num">0</td><td>兩欄同方向（第 2 欄是第 1 欄的 2 倍），平面被<strong>壓扁成一條線</strong>，面積變 0</td></tr>
+        <tr><td>\(I=\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}\)</td><td>\(1\cdot1-0\cdot0\)</td><td class="num">1</td><td>什麼都沒變</td></tr>
+      </tbody>
+    </table></div>
+    <h3>為什麼剛好是 \(ad-bc\)？</h3>
+    <div class="prose">
+      <p>矩陣的兩欄 \((a,c)\) 和 \((b,d)\) 是單位正方形的兩個邊被送到的位置，它們撐出一個平行四邊形。把它放進一個 \((a+b)\times(c+d)\) 的大長方形，扣掉周圍多出來的部分：兩個面積 \(\tfrac{ac}{2}\) 的三角形、兩個面積 \(\tfrac{bd}{2}\) 的三角形、兩個面積 \(bc\) 的小長方形：</p>
+    </div>
+    <div class="formula">\[ (a+b)(c+d)-ac-bd-2bc=ac+ad+bc+bd-ac-bd-2bc=ad-bc \]</div>
+    <h3>用圖來看：以 \(a=3,\ b=1,\ c=1,\ d=2\) 為例</h3>
+    <div class="prose"><p>矩陣 \(\begin{bmatrix}3 & 1\\1 & 2\end{bmatrix}\) 的兩欄是 \((a,c)=(3,1)\) 和 \((b,d)=(1,2)\)。從原點畫出這兩個向量，再補成平行四邊形（紫色），它的第四個角在 \((a+b,\ c+d)=(4,3)\)。</p></div>
+    <figure class="det-fig" style="margin:14px 0 0;max-width:460px">
+      <svg viewBox="0 0 430 310" width="100%" role="img" aria-label="平行四邊形放在 4 乘 3 的大長方形裡，四周有兩個琥珀色三角形、兩個藍色三角形、兩個紅色小長方形" style="display:block;font-family:var(--f-mono)">
+        <!-- 格線 -->
+        <g stroke="var(--grid)" stroke-width="1">
+          <line x1="120" y1="20" x2="120" y2="260"/><line x1="200" y1="20" x2="200" y2="260"/><line x1="280" y1="20" x2="280" y2="260"/>
+          <line x1="40" y1="100" x2="360" y2="100"/><line x1="40" y1="180" x2="360" y2="180"/>
+        </g>
+        <!-- 兩個琥珀色三角形：ac/2 -->
+        <polygon points="40,260 280,260 280,180" fill="var(--col-soft)" stroke="var(--col)" stroke-width="1.5"/>
+        <polygon points="120,100 120,20 360,20" fill="var(--col-soft)" stroke="var(--col)" stroke-width="1.5"/>
+        <!-- 兩個藍色三角形：bd/2 -->
+        <polygon points="40,260 40,100 120,100" fill="var(--row-soft)" stroke="var(--row)" stroke-width="1.5"/>
+        <polygon points="280,180 360,180 360,20" fill="var(--row-soft)" stroke="var(--row)" stroke-width="1.5"/>
+        <!-- 兩個紅色小長方形：bc -->
+        <rect x="280" y="180" width="80" height="80" fill="var(--pen-soft)" stroke="var(--pen)" stroke-width="1.5"/>
+        <rect x="40" y="20" width="80" height="80" fill="var(--pen-soft)" stroke="var(--pen)" stroke-width="1.5"/>
+        <!-- 平行四邊形 -->
+        <polygon points="40,260 280,180 360,20 120,100" fill="var(--violet-soft)" stroke="var(--violet)" stroke-width="2.5"/>
+        <!-- 大長方形外框 -->
+        <rect x="40" y="20" width="320" height="240" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+        <!-- 區塊標籤 -->
+        <g font-size="13" text-anchor="middle" font-weight="600">
+          <text x="200" y="245" fill="var(--col)">ac/2 = 1.5</text>
+          <text x="245" y="44" fill="var(--col)">ac/2 = 1.5</text>
+          <text x="64" y="197" fill="var(--row)">bd</text><text x="64" y="213" fill="var(--row)">/2</text><text x="64" y="229" fill="var(--row)">=1</text>
+          <text x="338" y="84" fill="var(--row)">bd</text><text x="338" y="100" fill="var(--row)">/2</text><text x="338" y="116" fill="var(--row)">=1</text>
+          <text x="320" y="225" fill="var(--pen)">bc=1</text>
+          <text x="80" y="65" fill="var(--pen)">bc=1</text>
+          <text x="200" y="145" fill="var(--violet)" font-size="15">ad − bc = 5</text>
+        </g>
+        <!-- 邊長標示 -->
+        <g font-size="12.5" fill="var(--muted)" text-anchor="middle">
+          <text x="160" y="280">a = 3</text><text x="320" y="280">b = 1</text>
+          <text x="80" y="14">b</text><text x="240" y="14">a</text>
+          <text x="392" y="224">c = 1</text><text x="392" y="104">d = 2</text>
+          <text x="22" y="184">d</text><text x="22" y="64">c</text>
+        </g>
+        <!-- 頂點 -->
+        <g font-size="12" fill="var(--ink)">
+          <circle cx="40" cy="260" r="3.5"/><text x="30" y="298">(0, 0)</text>
+          <circle cx="280" cy="180" r="3.5"/><text x="214" y="172">(a, c)</text>
+          <circle cx="120" cy="100" r="3.5"/><text x="128" y="120">(b, d)</text>
+          <circle cx="360" cy="20" r="3.5"/>
+        </g>
+      </svg>
+      <figcaption style="font-size:13px;color:var(--muted);margin-top:6px">外框是 \((a+b)\times(c+d)=4\times3\) 的大長方形。紫色平行四邊形以外的部分，剛好是 2 個琥珀色三角形、2 個藍色三角形、2 個紅色小長方形。</figcaption>
+    </figure>
+    <div class="tbl"><table>
+      <thead><tr><th>區塊</th><th>怎麼看出邊長</th><th>面積公式</th><th>這個例子</th></tr></thead>
+      <tbody>
+        <tr><td>大長方形（外框）</td><td>寬：從 0 走到 \(a+b\)；高：從 0 走到 \(c+d\)</td><td>\((a+b)(c+d)\)</td><td class="num">4 × 3 = 12</td></tr>
+        <tr><td><span class="c">琥珀色三角形 ×2</span></td><td>下面那個：從原點沿底邊走 \(a\)，再往上 \(c\) 到達點 \((a,c)\)。直角三角形，兩股是 \(a\) 和 \(c\)。上面那個一模一樣（轉 180°）</td><td>每個 \(\tfrac12ac\)，兩個共 \(ac\)</td><td class="num">1.5 × 2 = 3</td></tr>
+        <tr><td><span class="r">藍色三角形 ×2</span></td><td>左邊那個：從原點沿左邊往上 \(d\)，再往右 \(b\) 到達點 \((b,d)\)。兩股是 \(b\) 和 \(d\)。右邊那個一模一樣</td><td>每個 \(\tfrac12bd\)，兩個共 \(bd\)</td><td class="num">1 × 2 = 2</td></tr>
+        <tr><td><span class="pen">紅色小長方形 ×2</span></td><td>右下角：寬是底邊剩下的 \(b\)，高是右邊下段的 \(c\)。左上角同理（寬 \(b\)、高 \(c\)）</td><td>每個 \(bc\)，兩個共 \(2bc\)</td><td class="num">1 × 2 = 2</td></tr>
+        <tr><td><strong>紫色平行四邊形</strong></td><td>大長方形扣掉上面全部</td><td>\((a+b)(c+d)-ac-bd-2bc\)</td><td class="num"><b>12 − 3 − 2 − 2 = 5</b></td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>用公式直接算：\(\det\begin{bmatrix}3 & 1\\1 & 2\end{bmatrix}=3\times2-1\times1=5\)，和扣掉的結果一樣。展開時 \(ac\)、\(bd\) 會和三角形抵消，\(bc\) 則是 \(+bc-2bc=-bc\)，最後只剩 \(ad-bc\)。</p></div>
+    <div class="prose"><p>這就是平行四邊形的面積。下方的互動圖可以直接拖動，看紫色平行四邊形的面積和 det 怎麼一起變。</p></div>
+    <h3>行列式告訴我們什麼</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>det 的值</th><th>幾何意義</th><th>代數意義</th></tr></thead>
+      <tbody>
+        <tr><td>\(\lvert\det A\rvert&gt;1\)</td><td>面積放大</td><td></td></tr>
+        <tr><td>\(0&lt;\lvert\det A\rvert&lt;1\)</td><td>面積縮小</td><td></td></tr>
+        <tr><td>\(\det A&lt;0\)</td><td>翻面（方向反轉）</td><td></td></tr>
+        <tr><td>\(\det A=0\)</td><td>壓扁成一條線（或一點），資訊被丟掉</td><td><strong>沒有反矩陣</strong>（第 6 節）；\(Ax=b\) 沒有唯一解</td></tr>
+        <tr><td>\(\det A\ne0\)</td><td>可以還原</td><td>有反矩陣，叫做「可逆」（invertible）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px">
+      <p>兩條實用性質：\(\det(AB)=\det A\cdot\det B\)（先放大 2 倍再放大 3 倍，總共 6 倍）；\(\det A=\lambda_1\lambda_2\cdots\lambda_n\)（所有特徵值相乘，第 8 節）。</p>
+      <p>3×3 以上也有公式，但手算很繁瑣，實務上都交給 <code>np.linalg.det(A)</code>。在 AI 裡，行列式主要出現在多維常態分佈的公式（\(\lvert\Sigma\rvert\)）和 normalizing flow 生成模型；判斷「矩陣能不能反過來」時也會用到它的概念。</p>
     </div>
     <div class="demo">
       <h4>拖動矩陣，看網格怎麼變形</h4>
@@ -341,7 +469,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       <p><strong>純量轉置的妙用</strong>：\(y^\top Xw\) 是 \((1\times n)(n\times d)(d\times1)=1\times1\)，一個數。所以 \(y^\top Xw=(y^\top Xw)^\top=w^\top X^\top y\)。兩個看起來不一樣的式子其實相等，展開最小平方時會把 \(-y^\top Xw-w^\top X^\top y\) 合併成 \(-2y^\top Xw\)。</p>
     </div>
     <h3>對稱矩陣</h3>
-    <div class="prose"><p>\(A^\top=A\) 的方陣叫<strong>對稱矩陣</strong>（symmetric），也就是 \(A_{ij}=A_{ji}\)，沿對角線鏡射相同。最重要的例子：<strong>\(X^\top X\) 永遠是對稱的</strong>，因為 \((X^\top X)^\top=X^\top (X^\top)^\top=X^\top X\)。Hessian 矩陣（第 9 章）也是對稱的。這會讓下篇很多公式化簡：\(A+A^\top\) 變成 \(2A\)。</p></div>
+    <div class="prose"><p>\(A^\top=A\) 的方陣叫<strong>對稱矩陣</strong>（symmetric），也就是 \(A_{ij}=A_{ji}\)，沿對角線鏡射相同。最重要的例子：<strong>\(X^\top X\) 永遠是對稱的</strong>，因為 \((X^\top X)^\top=X^\top (X^\top)^\top=X^\top X\)。Hessian 矩陣（把函數「微分兩次」得到的矩陣，描述地形的彎曲程度，第 16 節介紹）也是對稱的。這會讓下篇很多公式化簡：\(A+A^\top\) 變成 \(2A\)。</p></div>
   </section>
 
   <!-- 6 -->
@@ -356,7 +484,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <div class="prose"><p>2×2 的口訣：<strong>對角互換、副對角變號、除以行列式</strong>。驗算：\(\begin{bmatrix}2 & 1\\1 & 1\end{bmatrix}\begin{bmatrix}1 & -1\\-1 & 2\end{bmatrix}=\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}\)。</p></div>
     <h3>解方程組 \(Ax=b\)</h3>
     <div class="prose">
-      <p>形式上 \(x=A^{-1}b\)，但實作時<strong>不要真的算反矩陣</strong>：用 <code>np.linalg.solve(A, b)</code>，比較快也比較準。牛頓法的 \(p=-H^{-1}g\)、正規方程的 \(w=(X^\top X)^{-1}X^\top y\) 都是這樣處理。</p>
+      <p>形式上 \(x=A^{-1}b\)，但實作時<strong>不要真的算反矩陣</strong>：用 <code>np.linalg.solve(A, b)</code>，比較快也比較準。牛頓法的 \(p=-H^{-1}g\)、正規方程的 \(w=(X^\top X)^{-1}X^\top y\) 都是這樣處理。（牛頓法是一種用 Hessian \(H\) 和梯度 \(g\) 決定下一步 \(p\) 的最佳化方法，見第 16 節；正規方程是線性回歸「一步算出最佳權重」的公式，第 14 節會推導出來。）</p>
       <p>其他兩條：\((AB)^{-1}=B^{-1}A^{-1}\)（一樣要倒過來），\((A^\top)^{-1}=(A^{-1})^\top\)。</p>
     </div>
   </section>
@@ -438,6 +566,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <h2>梯度的形狀：和變數一樣</h2>
     <div class="prose">
       <p>函數 \(f\) 是<strong>純量</strong>（例如損失），變數 \(w\) 是向量。<strong>梯度</strong>就是把 \(f\) 對每個 \(w_k\) 的偏導數排成和 \(w\) 一樣形狀的向量：</p>
+      <p><strong>偏導數</strong> \(\dfrac{\partial f}{\partial w_k}\)（\(\partial\) 讀作 partial）的意思是：<strong>其他變數都不動，只把 \(w_k\) 改一點點，\(f\) 會變化多快</strong>。算法就是把其他變數當成常數，照一般微分規則做。例：\(f=w_1^2+3w_1w_2\)，\(\frac{\partial f}{\partial w_1}=2w_1+3w_2\)（\(w_2\) 當常數），\(\frac{\partial f}{\partial w_2}=3w_1\)。微分規則忘了的話，可以看姊妹篇「AI 微積分筆記」第 3–5、10 節。</p>
     </div>
     <div class="formula">\[ w=\begin{bmatrix}w_1\\ \vdots\\ w_n\end{bmatrix}\quad\Longrightarrow\quad \nabla_wf=\frac{\partial f}{\partial w}=\begin{bmatrix}\partial f/\partial w_1\\ \vdots\\ \partial f/\partial w_n\end{bmatrix} \]</div>
     <div class="prose"><p>同樣地，對矩陣 \(W\) 微分，結果 \(\frac{\partial f}{\partial W}\) 是和 \(W\) 同形狀的矩陣，第 \((i,j)\) 格是 \(\partial f/\partial W_{ij}\)。這個約定讓梯度下降 \(w\leftarrow w-\eta\nabla_wf\) 的形狀永遠對得上，PyTorch 的 <code>w.grad</code> 也一定和 <code>w</code> 同形狀。</p></div>
@@ -536,7 +665,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <div class="prose"><p>神經網路的參數是矩陣 \(W\)。三步驟一樣適用，只是下標多一個。</p></div>
     <h3>熱身：\(\dfrac{\partial}{\partial X}(a^\top Xb)=ab^\top\)</h3>
     <div class="formula">\[ a^\top Xb=\sum_i\sum_ja_iX_{ij}b_j,\qquad \frac{\partial}{\partial X_{ij}}=a_ib_j=(ab^\top)_{ij} \]</div>
-    <div class="prose"><p>結果是外積。例：單筆資料 \(z=Wx\)、上游梯度 \(\delta=\partial L/\partial z\)，則 \(L\) 對 \(W\) 的梯度是 \(\delta x^\top\)。softmax + 交叉熵時 \(\delta=p-y\)，所以 \(\nabla_WL=(p-y)x^\top\)。</p></div>
+    <div class="prose"><p>結果是外積。例：單筆資料 \(z=Wx\)、上游梯度 \(\delta=\partial L/\partial z\)，則 \(L\) 對 \(W\) 的梯度是 \(\delta x^\top\)。softmax + 交叉熵時 \(\delta=p-y\)，所以 \(\nabla_WL=(p-y)x^\top\)。（softmax 把一組分數變成加總為 1 的機率 \(p\)；交叉熵是分類常用的損失；\(y\) 是正確答案的 one-hot 向量，例如第 2 類是 \((0,1,0)\)。三者在第 23 節詳細介紹。「上游梯度」指的是從後面的層傳回來、已經算好的梯度。）</p></div>
     <h3>批次版：\(Y=XW\)</h3>
     <div class="prose"><p>\(X\) 是 \(n\times d_{in}\)、\(W\) 是 \(d_{in}\times d_{out}\)、\(Y\) 是 \(n\times d_{out}\)。損失 \(L\) 是純量，已知上游梯度 \(dY=\partial L/\partial Y\)（形狀同 \(Y\)）。</p></div>
     <div class="formula">\[ Y_{ij}=\sum_tX_{it}W_{tj} \]</div>
@@ -638,7 +767,7 @@ print(np.abs(dW - num).max())                 <span class="cm"># 約 1e-9</span>
       <tbody>
         <tr><td>\(\partial(Ax)/\partial x\)</td><td>\(A\)</td></tr>
         <tr><td>\(\partial(x)/\partial x\)</td><td>\(I\)</td></tr>
-        <tr><td>\(\partial f(x)/\partial x\)，\(f\) 逐元素作用</td><td>對角矩陣 \(\operatorname{diag}(f'(x))\)，所以反向就是 \(dy\odot f'(x)\)</td></tr>
+        <tr><td>\(\partial f(x)/\partial x\)，\(f\) 逐元素作用</td><td>對角矩陣 \(\operatorname{diag}(f'(x))\)（\(\operatorname{diag}(v)\) 是把向量 \(v\) 放在對角線、其他位置都是 0 的方陣），所以反向就是 \(dy\odot f'(x)\)</td></tr>
       </tbody>
     </table></div>
   </section>
@@ -736,7 +865,7 @@ print(np.abs(dW - num).max())                 <span class="cm"># 約 1e-9</span>
       <tbody>
         <tr><td>L2 平方</td><td>\(\lVert w\rVert_2^2=\sum_iw_i^2\)</td><td>\(2w\)</td><td>權重衰減、Ridge</td></tr>
         <tr><td>L2</td><td>\(\lVert w\rVert_2=\sqrt{\sum_iw_i^2}\)</td><td>\(w/\lVert w\rVert_2\)</td><td>梯度裁剪（clip by norm）</td></tr>
-        <tr><td>L1</td><td>\(\lVert w\rVert_1=\sum_i\lvert w_i\rvert\)</td><td>\(\operatorname{sign}(w)\)（0 處取次梯度）</td><td>Lasso、讓權重變稀疏</td></tr>
+        <tr><td>L1</td><td>\(\lVert w\rVert_1=\sum_i\lvert w_i\rvert\)</td><td>\(\operatorname{sign}(w)\)：正數 → 1、負數 → −1（0 處不可微，取 0 或任何 −1 到 1 的值，叫次梯度）</td><td>Lasso、讓權重變稀疏</td></tr>
         <tr><td>Frobenius</td><td>\(\lVert X\rVert_F^2=\sum_{ij}X_{ij}^2=\operatorname{tr}(X^\top X)\)</td><td>\(2X\)</td><td>矩陣的權重衰減</td></tr>
       </tbody>
     </table></div>
@@ -831,7 +960,7 @@ print(np.abs(dW - num).max())                 <span class="cm"># 約 1e-9</span>
         <tr><td>② 第二層權重</td><td>\(dW_2=A^\top dZ_2\)</td><td class="num">H×C</td><td>15</td></tr>
         <tr><td>③ 第二層偏差</td><td>\(db_2=\sum_{\text{列}}dZ_2\)</td><td class="num">C</td><td>20（廣播的反向是加總）</td></tr>
         <tr><td>④ 傳回隱藏層</td><td>\(dA=dZ_2W_2^\top\)</td><td class="num">N×H</td><td>15</td></tr>
-        <tr><td>⑤ 穿過 ReLU</td><td>\(dZ_1=dA\odot\mathbb 1[Z_1&gt;0]\)</td><td class="num">N×H</td><td>22</td></tr>
+        <tr><td>⑤ 穿過 ReLU</td><td>\(dZ_1=dA\odot\mathbb 1[Z_1&gt;0]\)（\(\mathbb 1[\cdot]\) 是指示函數：條件成立為 1，否則為 0）</td><td class="num">N×H</td><td>22</td></tr>
         <tr><td>⑥ 第一層權重</td><td>\(dW_1=X^\top dZ_1\)</td><td class="num">D×H</td><td>15</td></tr>
         <tr><td>⑦ 第一層偏差</td><td>\(db_1=\sum_{\text{列}}dZ_1\)</td><td class="num">H</td><td>20</td></tr>
       </tbody>
@@ -923,7 +1052,9 @@ db1 = dZ1.sum(axis=0)     <span class="cm"># (H,)</span></code></pre>
     <h3>奇異值分解（SVD）與低秩</h3>
     <div class="formula">\[ A=U\Sigma V^\top=\sum_{i=1}^{r}\sigma_i\,u_iv_i^\top \]</div>
     <div class="prose">
-      <p>任何矩陣都能拆成「旋轉 × 縮放 × 旋轉」。右邊的寫法是第 3 節「外積相加」：矩陣是 \(r\) 個秩 1 矩陣（外積）的和，\(\sigma_i\) 由大到小。只保留前 \(k\) 項就是最好的秩 \(k\) 近似，用在壓縮、去雜訊、推薦系統。</p>
+      <p>任何矩陣都能拆成「旋轉 × 縮放 × 旋轉」：\(U\)、\(V\) 是正交矩陣（只旋轉或鏡射，見下面），\(\Sigma\) 在這裡<strong>不是加總符號</strong>，而是對角線放著奇異值 \(\sigma_1\ge\sigma_2\ge\cdots\ge0\) 的對角矩陣，代表每個方向拉長幾倍。</p>
+      <p><strong>秩</strong>（rank，\(r\)）是矩陣真正「獨立」的方向有幾個，也就是非零奇異值的個數。例如 \(\begin{bmatrix}1 & 2\\2 & 4\end{bmatrix}\) 的第 2 欄只是第 1 欄的 2 倍，只有一個獨立方向，秩是 1（所以第 4 節說它的 det = 0）。外積 \(ab^\top\) 的秩一定是 1。</p>
+      <p>右邊的寫法是第 3 節「外積相加」：矩陣是 \(r\) 個秩 1 矩陣（外積）的和，\(\sigma_i\) 由大到小。只保留前 \(k\) 項就是最好的秩 \(k\) 近似，用在壓縮、去雜訊、推薦系統。</p>
       <p><strong>LoRA</strong> 就是這個想法：微調大模型時不改 \(W\)（\(d\times d\)），只學一個低秩的修正 \(\Delta W=BA\)，\(B\) 是 \(d\times r\)、\(A\) 是 \(r\times d\)。\(d=4096,\ r=8\) 時，完整 \(\Delta W\) 要 16,777,216 個參數，LoRA 只要 \(2\times4096\times8=65{,}536\) 個，約 0.39%。</p>
     </div>
     <h3>PCA：共變異數矩陣的特徵分解</h3>
