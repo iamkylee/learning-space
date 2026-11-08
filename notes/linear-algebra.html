@@ -482,6 +482,18 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     </div>
     <div class="formula">\[ \begin{bmatrix}a & b\\c & d\end{bmatrix}^{-1}=\frac{1}{ad-bc}\begin{bmatrix}d & -b\\-c & a\end{bmatrix},\qquad \text{例：}\begin{bmatrix}2 & 1\\1 & 1\end{bmatrix}^{-1}=\frac11\begin{bmatrix}1 & -1\\-1 & 2\end{bmatrix} \]</div>
     <div class="prose"><p>2×2 的口訣：<strong>對角互換、副對角變號、除以行列式</strong>。驗算：\(\begin{bmatrix}2 & 1\\1 & 1\end{bmatrix}\begin{bmatrix}1 & -1\\-1 & 2\end{bmatrix}=\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}\)。</p></div>
+    <h3>行列式和反矩陣的關係</h3>
+    <div class="prose"><ul>
+      <li><strong>公式裡就有 det</strong>：上面的反矩陣公式前面乘了 \(\frac{1}{ad-bc}=\frac{1}{\det A}\)。\(\det A=0\) 時要除以 0，所以<strong>沒有反矩陣</strong>。這種矩陣叫<strong>奇異矩陣</strong>（singular matrix），反之叫可逆矩陣（invertible / non-singular）。</li>
+      <li><strong>幾何上的理由</strong>：\(\det A=0\) 代表平面被壓扁成一條線（第 4 節），很多不同的點被壓到同一個位置，事後無法分辨原本是哪一個，所以還原不回來。</li>
+      <li><strong>反矩陣的 det 是倒數</strong>：\(\det(A^{-1})=\dfrac{1}{\det A}\)。A 把面積放大 5 倍，還原時就要縮小成 \(\tfrac15\)。</li>
+    </ul></div>
+    <div class="box warn"><b class="t">注意：det 接近 0，不等於「快要不可逆」</b>
+      <p>判斷矩陣「穩不穩」（解方程式會不會放大誤差、訊號會不會被擠壓），要看的是<strong>條件數</strong>（最大和最小奇異值的比，第 8、28 節），不是 det 的大小。兩個反例：</p>
+      <p>① 100 維的 \(0.1I\)（每個方向都縮小成 0.1 倍）：\(\det=0.1^{100}=10^{-100}\)，幾乎是 0，但它只是等比例縮小，完全可逆、條件數是完美的 1。</p>
+      <p>② \(\begin{bmatrix}1000 & 0\\0 & 0.001\end{bmatrix}\)：\(\det=1\)，看起來很正常，但一個方向拉長 1000 倍、另一個壓扁成 0.001，條件數高達 \(10^6\)，數值上很不穩。</p>
+      <p>所以 det 只能精確回答「是不是剛好不可逆（= 0）」。深度學習裡討論梯度消失、爆炸時，看的也是權重或雅可比矩陣的奇異值（每個方向放大幾倍），而且神經網路的權重大多不是方陣，根本沒有 det。det 在深度學習真正直接出現的地方，主要是多維常態分佈的 \(\lvert\Sigma\rvert\) 和 normalizing flow 的 \(\log\lvert\det J\rvert\)（第 28 節）。</p>
+    </div>
     <h3>解方程組 \(Ax=b\)</h3>
     <div class="prose">
       <p>形式上 \(x=A^{-1}b\)，但實作時<strong>不要真的算反矩陣</strong>：用 <code>np.linalg.solve(A, b)</code>，比較快也比較準。牛頓法的 \(p=-H^{-1}g\)、正規方程的 \(w=(X^\top X)^{-1}X^\top y\) 都是這樣處理。（牛頓法是一種用 Hessian \(H\) 和梯度 \(g\) 決定下一步 \(p\) 的最佳化方法，見第 16 節；正規方程是線性回歸「一步算出最佳權重」的公式，第 14 節會推導出來。）</p>
@@ -502,6 +514,37 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
         <tr><td>逐元素乘 Hadamard</td><td>\(a\odot b\)</td><td class="num">同形狀</td><td>同形狀</td><td>激活函數的反向 \(dy\odot f'(x)\)</td></tr>
       </tbody>
     </table></div>
+    <h3>逐元素乘（Hadamard 積）是什麼</h3>
+    <div class="prose">
+      <p><strong>逐元素乘</strong>（element-wise multiplication），又叫 <strong>Hadamard 積</strong>，符號是 \(\odot\)（圓圈裡一個點）。意思非常直覺：<strong>兩個形狀完全相同的矩陣（或向量），同一個位置的數字互相相乘</strong>，得到一個同樣形狀的新矩陣：</p>
+    </div>
+    <div class="formula">\[ (A\odot B)_{ij}=A_{ij}\,B_{ij} \]</div>
+    <div class="prose"><p>例：</p></div>
+    <div class="formula">\[ A=\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix},\ B=\begin{bmatrix}5 & 6\\7 & 8\end{bmatrix}\qquad A\odot B=\begin{bmatrix}1\times5 & 2\times6\\3\times7 & 4\times8\end{bmatrix}=\begin{bmatrix}5 & 12\\21 & 32\end{bmatrix} \]</div>
+    <div class="prose"><p>向量也一樣：\((1,2,3)\odot(4,5,6)=(4,10,18)\)。對照內積 \(1\cdot4+2\cdot5+3\cdot6=32\)：<strong>逐元素乘「乘完不加」，結果還是向量；內積「乘完全部加起來」，結果是一個數。</strong></p></div>
+    <h3>和矩陣乘法完全不同</h3>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>矩陣乘法 \(AB\)</th><th>逐元素乘 \(A\odot B\)</th></tr></thead>
+      <tbody>
+        <tr><td>怎麼算</td><td>A 的第 i 列和 B 的第 j 欄做內積（第 3 節）</td><td>同位置相乘，不看列和欄</td></tr>
+        <tr><td>形狀條件</td><td>左邊的欄數 = 右邊的列數，例如 (2×3)(3×2)</td><td>兩邊形狀一模一樣（或可以廣播，第 20 節）</td></tr>
+        <tr><td>結果形狀</td><td>左邊的列 × 右邊的欄</td><td>和輸入一樣</td></tr>
+        <tr><td>可以交換嗎</td><td>一般不行，\(AB\ne BA\)</td><td>可以，\(A\odot B=B\odot A\)</td></tr>
+        <tr><td>上面的例子</td><td>\(\begin{bmatrix}19 & 22\\43 & 50\end{bmatrix}\)</td><td>\(\begin{bmatrix}5 & 12\\21 & 32\end{bmatrix}\)</td></tr>
+        <tr><td>NumPy / PyTorch</td><td><code>A @ B</code></td><td><code>A * B</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose" style="margin-top:12px"><p>同樣的 A、B，兩種乘法答案完全不同。程式裡 <code>*</code> 和 <code>@</code> 只差一個符號，寫錯了通常不會報錯（形狀剛好都合法時），是很常見的 bug。</p></div>
+    <h3>在深度學習哪裡用到</h3>
+    <div class="prose"><ul>
+      <li><strong>激活函數的反向傳播</strong>：\(y=f(x)\) 對每個元素各自作用，反向時上游梯度 \(dy\) 和導數 \(f'(x)\) 形狀相同，所以 \(dx=dy\odot f'(x)\)。例如 ReLU 是 \(dy\odot\mathbb 1[x&gt;0]\)：x 是正的位置梯度照傳，負的位置歸零（第 22 節）。</li>
+      <li><strong>遮罩（mask）</strong>：準備一個只有 0 和 1 的矩陣 \(m\)，\(x\odot m\) 就把 \(m=0\) 的位置歸零。dropout（隨機關掉神經元）、計算損失時忽略 padding 的位置、只對有效 token 取平均，都是這樣做的。</li>
+      <li><strong>門控（gating）</strong>：LSTM 的 \(c_t=f_t\odot c_{t-1}+i_t\odot\tilde c_t\)，門 \(f_t\) 的每個元素介於 0 到 1，決定每個位置要保留多少；LLaMA 等模型的 SwiGLU 也是兩個向量逐元素相乘。</li>
+      <li><strong>逐元素的平方、縮放</strong>：Adam 的 \(g_t^2\)（每個參數的梯度各自平方）、LayerNorm 的 \(\gamma\odot\hat x\)（每個特徵各自乘一個係數）。</li>
+    </ul></div>
+    <div class="box warn"><b class="t">注意力的 padding 遮罩通常不是用乘的</b>
+      <p>常見的說法是「把 mask 和注意力分數逐元素相乘，把不要的位置歸零」，但在 softmax <strong>之前</strong>把分數乘成 0 並沒有遮掉：\(e^0=1\)，那個位置仍然會分到權重。Transformer 實際的做法是把要遮掉的位置<strong>加上 \(-\infty\)</strong>（或很大的負數），softmax 後 \(e^{-\infty}=0\)，權重才真正變成 0（第 25 節的因果遮罩也是這樣）。逐元素乘 0/1 遮罩適合用在 dropout、損失和平均這類「直接把數值歸零」的地方。</p>
+    </div>
     <h3>二次型一定要會展開</h3>
     <div class="prose"><p>這是下篇最重要的式子。先用 2×2 展開：</p></div>
     <div class="formula">\[ w^\top Aw=\begin{bmatrix}w_1 & w_2\end{bmatrix}\begin{bmatrix}A_{11} & A_{12}\\A_{21} & A_{22}\end{bmatrix}\begin{bmatrix}w_1\\w_2\end{bmatrix}=A_{11}w_1^2+(A_{12}+A_{21})\,w_1w_2+A_{22}w_2^2 \]</div>
