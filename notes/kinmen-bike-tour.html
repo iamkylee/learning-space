@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>金門單車環島 5 天 4 夜｜Kinmen Bike Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b2631;--muted:#5d6670;--paper:#faf6ee;--card:#fff;--brick:#a93226;--line:#e6dccb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;line-height:1.6}
+body.l-zh .en{display:none!important} body.l-en .zh{display:none!important}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.hero{background:linear-gradient(135deg,#7b241c,#a93226 55%,#c0623a);color:#fff;padding:22px 0 34px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.05) 46px 48px),repeating-linear-gradient(0deg,transparent 0 22px,rgba(255,255,255,.05) 22px 24px);pointer-events:none}
+.topbar{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;margin-bottom:18px;gap:10px;flex-wrap:wrap}
+.toc{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.toc a{color:#fff;opacity:.85;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35)}
+.lang{display:inline-flex;border:1.5px solid rgba(255,255,255,.6);border-radius:999px;overflow:hidden}
+.lang button{background:transparent;border:0;color:#fff;padding:5px 14px;font:inherit;font-size:13px;cursor:pointer}
+.lang button.on{background:#fff;color:var(--brick);font-weight:700}
+.hero h1{font-family:"Noto Serif TC",serif;font-weight:900;font-size:clamp(28px,5vw,46px);margin:6px 0 8px;letter-spacing:.03em;position:relative;z-index:1}
+.hero .eyebrow{letter-spacing:.3em;font-size:13px;opacity:.85}
+.hero p{margin:0;opacity:.92;max-width:680px;position:relative;z-index:1}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:22px;position:relative;z-index:1}
+.stats div b{font-size:28px;font-family:"Noto Serif TC",serif;display:block;line-height:1.15}
+.stats div span{font-size:13px;opacity:.85}
+section{padding:34px 0 6px}
+.part{font-size:12px;letter-spacing:.25em;color:var(--brick);font-weight:700;margin-bottom:2px}
+h2{font-family:"Noto Serif TC",serif;font-size:25px;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+h2:before{content:"";width:6px;height:22px;background:var(--brick);border-radius:2px}
+h3.sub{font-size:17px;margin:24px 0 10px;font-family:"Noto Serif TC",serif}
+.cons{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.con{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--brick);border-radius:10px;padding:12px 14px}
+.con .k{font-size:12px;color:var(--brick);font-weight:700;letter-spacing:.05em}
+.con b{display:block;font-size:16px;margin:2px 0}
+.con p{margin:0;font-size:13px;color:var(--muted)}
+.mapbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(60,40,10,.05)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;display:flex;gap:8px;align-items:center;color:var(--ink)}
+.tab b{color:var(--c,var(--ink))} .tab span{font-size:13px;color:var(--muted)}
+.tab.on{background:var(--c,var(--ink));border-color:var(--c,var(--ink))} .tab.on b,.tab.on span{color:#fff}
+.map{width:100%;height:auto;display:block;border-radius:10px}
+.map .rt{fill:none;stroke-width:4.5;stroke-linejoin:round;stroke-linecap:round;opacity:.9;transition:opacity .25s,stroke-width .25s}
+.map .isl{font-family:"Noto Serif TC",serif;font-size:20px;font-weight:900;fill:#b5a57f;letter-spacing:.2em;text-anchor:middle}
+.map .sea{font-size:13px;fill:#7a9aa3;letter-spacing:.25em;text-anchor:middle}
+.map .lb{font-size:11.5px;fill:var(--ink);paint-order:stroke;stroke:#f3ecdc;stroke-width:3.5px;font-weight:500}
+.map .poi{transition:opacity .25s}
+.map.focus .rt{opacity:.12} .map.focus .rt.sel{opacity:1;stroke-width:6}
+.map.focus .poi{opacity:.15} .map.focus .poi.sel{opacity:1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px;align-items:center}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.legend i.sq{width:14px;height:14px;background:var(--ink);border-radius:3px;color:#fff;font-size:9px;display:inline-grid;place-items:center;margin-right:5px;font-style:normal}
+.legend i.st{width:auto;height:auto;background:none;color:#f4b400;font-style:normal;font-size:16px;margin-right:3px;-webkit-text-stroke:.6px #7a4a00}
+.note{font-size:12.5px;color:var(--muted);margin-top:6px}
+.bars{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.bar{display:grid;grid-template-columns:40px 1fr 64px 150px;align-items:center;gap:12px;padding:6px 0}
+.bl{font-weight:700;color:var(--c)} .bt{background:#f1ebe0;border-radius:6px;height:14px;overflow:hidden}
+.bt i{display:block;height:100%;background:var(--c);border-radius:6px}
+.bv{font-weight:700;text-align:right} .bs{font-size:13px;color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.day{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:14px;padding:18px;scroll-margin-top:16px}
+.day header{display:flex;align-items:center;gap:10px}
+.badge{background:var(--c);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap}
+.day h3{margin:0;font-size:17px;flex:1;font-family:"Noto Serif TC",serif}
+.km{text-align:right;color:var(--c);line-height:1} .km b{font-size:28px;font-family:"Noto Serif TC",serif} .km small{font-size:12px;margin-left:2px}
+.route{font-size:13px;color:var(--muted);background:#faf6ee;border-radius:8px;padding:8px 10px;margin:12px 0}
+.stops{list-style:none;margin:0;padding:0}
+.stops li{display:grid;grid-template-columns:44px 1fr;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.stops li:last-child{border:0}
+.stops .t{font-size:12px;color:var(--c);font-weight:700;padding-top:2px}
+.stops b{font-size:14.5px} .stops p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.stay{display:flex;gap:10px;background:#1b2631;color:#fff;border-radius:10px;padding:10px 12px;margin-top:12px}
+.stay .ico{flex:none;width:26px;height:26px;border-radius:6px;background:#fff;color:var(--ink);display:grid;place-items:center;font-weight:900;font-size:13px}
+.stay p{margin:2px 0 0;font-size:12.5px;opacity:.82}
+.spots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.spot{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.sh{display:flex;align-items:center;gap:6px}
+.sh b{flex:1;font-size:15px}
+.star{color:#f4b400;font-size:18px;-webkit-text-stroke:.6px #7a4a00}
+.dtag{font-size:11px;font-weight:700;color:#fff;background:var(--c);border-radius:5px;padding:1px 7px}
+.spot p{margin:6px 0;font-size:13.5px;color:var(--muted)}
+.when{font-size:12px;color:var(--c);font-weight:700}
+.budget{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.controls{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 14px;font:inherit;cursor:pointer;color:var(--ink)}
+.seg button.on{background:var(--brick);color:#fff}
+.controls label{font-size:13px;color:var(--muted);margin-right:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{color:var(--muted);display:block;font-size:12px}
+tfoot td{font-weight:700;border:0;font-size:15px}
+.totbox{text-align:center;background:linear-gradient(135deg,#7b241c,#a93226);color:#fff;border-radius:12px;padding:20px 14px;margin-bottom:12px}
+.totbox span{font-size:13px;opacity:.85}
+.totbox b{display:block;font-family:"Noto Serif TC",serif;font-size:36px;line-height:1.2}
+.totbox .sub{font-size:14px;opacity:.9}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.tip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.tip b{display:block;margin-bottom:4px} .tip p{margin:0;font-size:13.5px;color:var(--muted)}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.clist{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.clist h4{margin:0 0 8px;font-size:15px}
+.clist label{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:4px 0;cursor:pointer}
+.clist input{margin-top:5px;accent-color:var(--brick)}
+.clist label:has(input:checked) span{text-decoration:line-through;color:var(--muted)}
+.contacts{display:flex;gap:12px;flex-wrap:wrap}
+.contacts div{background:#1b2631;color:#fff;border-radius:10px;padding:10px 16px}
+.contacts b{font-size:22px;font-family:"Noto Serif TC",serif;display:block}
+.contacts span{font-size:12.5px;opacity:.85}
+footer{padding:30px 0 40px;font-size:12.5px;color:var(--muted)}
+footer a{color:var(--brick)}
+@media (max-width:760px){.budget{grid-template-columns:1fr}.bar{grid-template-columns:34px 1fr 56px}.bs{display:none}.map .lb{font-size:13px}}
+</style>
+<meta name="description" content="用 AI 協助規劃的金門單車環島 5 天 4 夜：限制條件、互動路線地圖、每日行程、每人預算試算與行前手冊。">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>.ls-top a,.ls-foot a{color:var(--brick,#a93226)}.ls-foot{max-width:1080px}</style>
+</head>
+<body class="l-zh">
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
+<div class="hero"><div class="wrap">
+  <div class="topbar">
+    <nav class="toc">
+      <a href="#constraints">1 <span class="zh">限制條件</span><span class="en">Constraints</span></a>
+      <a href="#plan">2 <span class="zh">行程規劃</span><span class="en">Trip plan</span></a>
+      <a href="#budget">3 <span class="zh">每人預算</span><span class="en">Budget</span></a>
+      <a href="#booklet">4 <span class="zh">行前手冊</span><span class="en">Pre-trip booklet</span></a>
+    </nav>
+    <div class="lang"><button data-l="zh" class="on">中文</button><button data-l="en">EN</button></div>
+  </div>
+  <div class="eyebrow">KINMEN AROUND-THE-ISLAND BIKE TOUR ・ 5D4N</div>
+  <h1><span class="zh">金門單車環島 5 天 4 夜</span><span class="en">Kinmen by Bike · 5 Days 4 Nights</span></h1>
+  <p><span class="zh">環大金門一圈，再騎上金門大橋到小金門。閩南古厝、洋樓、戰地坑道一路串起來，每天騎 10–40 公里，留足時間停下來看。</span><span class="en">A loop around Kinmen plus a ride over the Kinmen Bridge to Lesser Kinmen — Minnan villages, colonial mansions and Cold War tunnels, 10–40 km a day with plenty of time to stop.</span></p>
+  <div class="stats">
+    <div><b>≈ 120 km</b><span class="zh">總騎乘距離</span><span class="en">Total distance</span></div>
+    <div><b>5D / 4N</b><span class="zh">3 個住宿點</span><span class="en">3 overnight bases</span></div>
+    <div><b>12 ★</b><span class="zh">風景名點</span><span class="en">Scenic highlights</span></div>
+    <div><b id="heroBudget">—</b><span class="zh">每人預算（估）</span><span class="en">Per person (est.)</span></div>
+  </div>
+</div></div>
+
+<main class="wrap">
+<section id="constraints">
+  <div class="part">PART 1</div>
+  <h2><span class="zh">限制條件</span><span class="en">Define the constraints</span></h2>
+  <div class="cons">
+    <div class="con"><div class="k zh">時間</div><div class="k en">TIME</div><b class="zh">5 天 4 夜，11 月出發</b><b class="en">5 days, 4 nights in November</b><p class="zh">首尾兩天扣掉搭機，實際騎乘約 3.5 天。</p><p class="en">Flights eat into day 1 and day 5, so about 3.5 riding days.</p></div>
+    <div class="con"><div class="k zh">體能</div><div class="k en">FITNESS</div><b class="zh">一般休閒車友</b><b class="en">Casual riders</b><p class="zh">每天 ≤ 40 km、騎乘時間 ≤ 4 小時，時速以 12–15 km 估算。</p><p class="en">≤ 40 km and ≤ 4 riding hours a day, at 12–15 km/h.</p></div>
+    <div class="con"><div class="k zh">天氣・日照</div><div class="k en">WEATHER & DAYLIGHT</div><b class="zh">東北季風、17:20 日落</b><b class="en">NE monsoon, sunset ≈ 5:20 pm</b><p class="zh">風大要預留緩衝；每天傍晚前抵達住宿。</p><p class="en">Leave slack for headwinds; reach the lodging before dark.</p></div>
+    <div class="con"><div class="k zh">起訖點</div><div class="k en">START / END</div><b class="zh">金門機場進出</b><b class="en">In and out via Kinmen Airport</b><p class="zh">路線須從機場出發、回到機場還車。</p><p class="en">Route starts and ends at the airport for bike pickup and return.</p></div>
+    <div class="con"><div class="k zh">住宿</div><div class="k en">LODGING</div><b class="zh">最多換 3 個住宿點</b><b class="en">At most 3 bases</b><p class="zh">減少搬行李；第一晚和第二晚住同一地方。</p><p class="en">Less luggage hauling — nights 1 and 2 at the same place.</p></div>
+    <div class="con"><div class="k zh">預算</div><div class="k en">BUDGET</div><b class="zh">每人約 NT$13k–23k</b><b class="en">≈ NT$13k–23k per person</b><p class="zh">含機票、租車、住宿、餐飲、雜支。</p><p class="en">Flights, bike rental, lodging, food and extras included.</p></div>
+    <div class="con"><div class="k zh">安全</div><div class="k en">SAFETY</div><b class="zh">只走既有道路</b><b class="en">Stay on established roads</b><p class="zh">部分區域仍有未清除地雷；強風時大橋可能管制。</p><p class="en">Some areas still have uncleared mines; the bridge may close in high wind.</p></div>
+    <div class="con"><div class="k zh">涵蓋範圍</div><div class="k en">COVERAGE</div><b class="zh">大金門環島＋小金門</b><b class="en">Kinmen loop + Lesser Kinmen</b><p class="zh">五個鄉鎮都要到，並串起主要風景名點。</p><p class="en">Visit all five townships and the main scenic highlights.</p></div>
+  </div>
+</section>
+
+<section id="plan">
+  <div class="part">PART 2</div>
+  <h2><span class="zh">行程規劃</span><span class="en">Trip plan</span></h2>
+  <div class="mapbox">
+    <div class="tabs"><button class="tab on" data-d="0" style="--c:#1b2631"><b class="zh">全部</b><b class="en">All</b><span>120 km</span></button><button class="tab" data-d="1" style="--c:#c0392b"><b>D1</b><span>15 km</span></button><button class="tab" data-d="2" style="--c:#d68910"><b>D2</b><span>40 km</span></button><button class="tab" data-d="3" style="--c:#1e8449"><b>D3</b><span>30 km</span></button><button class="tab" data-d="4" style="--c:#2471a3"><b>D4</b><span>25 km</span></button><button class="tab" data-d="5" style="--c:#7d3c98"><b>D5</b><span>10 km</span></button></div>
+    <svg viewBox="0 0 1000 545" class="map" role="img" aria-label="Kinmen cycling route map">
+<defs><pattern id="wv" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 7 q3.5 -3 7 0 t7 0" fill="none" stroke="#c9dde3" stroke-width="1"/></pattern></defs>
+<rect width="1000" height="545" fill="#dcebee"/><rect width="1000" height="545" fill="url(#wv)"/>
+<path d="M599.4,219.6 L601.3,263.0 L606.5,266.9 L604.9,270.8 L606.0,276.4 L597.4,291.6 L589.8,300.0 L588.8,302.9 L582.2,310.5 L581.4,319.8 L584.7,333.5 L591.3,343.9 L593.0,348.1 L584.7,351.6 L582.1,368.6 L577.7,372.4 L576.4,375.4 L582.2,389.0 L570.9,394.6 L560.3,401.4 L556.6,407.3 L550.6,408.7 L541.9,418.2 L540.0,430.3 L534.8,433.4 L534.6,437.7 L529.7,443.7 L508.5,425.6 L497.2,415.6 L479.3,434.0 L472.9,419.4 L470.7,412.7 L466.5,405.9 L466.9,393.5 L465.9,390.7 L477.4,390.3 L483.2,367.7 L478.9,366.4 L469.7,366.5 L464.0,367.7 L470.5,361.0 L463.7,358.0 L458.8,353.2 L470.2,340.3 L476.3,336.0 L468.3,325.8 L466.1,327.9 L461.1,323.0 L453.0,330.9 L449.3,336.7 L439.4,344.3 L436.0,340.7 L432.9,342.4 L429.6,339.1 L427.0,341.3 L424.5,349.1 L415.6,349.9 L405.6,346.0 L398.4,340.3 L393.4,334.9 L390.7,318.4 L381.8,300.2 L371.9,290.5 L369.0,283.2 L370.2,267.0 L368.3,260.5 L354.6,239.6 L346.6,234.4 L345.7,230.6 L347.8,229.8 L342.7,223.6 L338.4,215.7 L337.7,207.7 L339.6,201.1 L349.8,175.8 L357.4,166.6 L359.8,161.7 L365.6,156.5 L372.2,154.6 L382.9,148.0 L392.8,144.4 L408.1,140.7 L417.9,139.8 L425.8,141.6 L434.7,146.5 L443.1,150.0 L457.6,162.8 L463.2,169.6 L467.5,176.6 L472.1,186.3 L478.4,191.8 L486.4,200.5 L497.0,208.1 L510.4,215.2 L519.3,217.5 L526.7,216.4 L536.0,218.4 L548.9,227.1 L569.3,229.3 L578.8,229.0 L586.3,226.9 L590.6,227.0 L599.4,219.6Z M-74.1,560.9 L-76.4,562.6 L-84.7,563.0 L-85.7,565.8 L-92.0,561.8 L-93.0,558.6 L-98.3,554.9 L-103.7,547.4 L-96.8,542.3 L-94.0,542.4 L-89.5,545.4 L-81.1,548.0 L-64.8,551.1 L-74.1,560.9Z M-66.9,502.2 L-61.6,501.2 L-63.5,506.4 L-58.3,519.5 L-54.1,521.3 L-44.2,519.5 L-39.4,521.2 L-36.4,528.5 L-34.2,526.3 L-31.8,530.0 L-33.4,533.0 L-39.1,537.6 L-46.0,540.6 L-53.6,535.3 L-54.9,532.2 L-59.8,530.4 L-63.0,531.1 L-69.5,529.5 L-69.6,520.0 L-72.2,514.5 L-77.3,511.1 L-77.6,504.7 L-72.0,499.9 L-66.9,502.2Z M215.9,281.9 L220.1,284.1 L229.5,284.8 L237.0,286.2 L246.1,290.3 L252.5,295.0 L259.5,306.4 L271.5,316.3 L282.5,319.2 L282.7,324.5 L280.3,330.9 L281.1,334.9 L279.2,341.7 L284.7,347.0 L284.1,349.2 L276.1,356.0 L273.4,359.7 L276.3,362.5 L274.7,369.6 L272.3,372.9 L271.3,379.0 L273.2,383.1 L268.8,390.8 L269.1,393.1 L262.6,396.3 L262.6,403.2 L258.9,404.3 L253.4,402.7 L252.6,397.1 L247.3,394.1 L239.6,393.2 L234.9,394.9 L226.6,399.9 L219.4,406.6 L215.5,414.5 L219.9,418.6 L215.3,424.7 L204.4,435.1 L198.8,436.2 L191.7,443.7 L190.2,441.0 L192.4,433.5 L184.7,430.6 L179.5,430.7 L171.9,432.7 L161.5,438.4 L151.7,454.3 L145.9,455.9 L140.9,466.0 L137.7,465.8 L133.4,461.0 L132.9,456.0 L124.8,451.2 L117.7,449.7 L100.1,449.1 L98.4,445.0 L93.7,440.8 L94.7,438.2 L100.8,441.6 L107.1,439.4 L109.4,437.2 L103.8,435.3 L103.5,430.8 L106.6,426.5 L109.4,418.8 L109.7,414.5 L112.7,409.6 L112.6,396.4 L110.0,390.0 L110.9,383.4 L119.5,371.6 L124.8,367.7 L134.0,352.8 L135.2,341.6 L142.5,323.5 L142.7,318.0 L145.3,312.4 L155.9,297.4 L165.1,291.6 L171.9,291.3 L181.5,286.0 L191.3,283.0 L198.1,286.8 L206.3,282.5 L215.9,281.9Z M310.5,291.2 L307.4,296.1 L300.5,295.8 L294.9,293.0 L290.9,292.8 L281.3,295.9 L282.3,290.3 L289.3,278.4 L294.2,276.0 L300.9,280.7 L310.5,291.2Z M393.4,334.9 L398.4,340.3 L405.6,346.0 L415.6,349.9 L424.5,349.1 L427.0,341.3 L429.6,339.1 L432.9,342.4 L436.0,340.7 L439.4,344.3 L449.3,336.7 L453.0,330.9 L461.1,323.0 L466.1,327.9 L468.3,325.8 L476.3,336.0 L470.2,340.3 L458.8,353.2 L463.7,358.0 L470.5,361.0 L464.0,367.7 L469.7,366.5 L478.9,366.4 L483.2,367.7 L477.4,390.3 L465.9,390.7 L466.9,393.5 L466.5,405.9 L470.7,412.7 L472.9,419.4 L479.3,434.0 L497.2,415.6 L508.5,425.6 L529.7,443.7 L523.4,448.0 L518.8,452.6 L510.5,467.9 L506.5,477.5 L503.0,494.0 L498.8,505.4 L495.9,516.0 L486.0,521.0 L484.4,525.6 L479.3,527.9 L478.0,525.6 L474.0,530.7 L471.6,528.3 L465.6,527.0 L461.4,531.6 L461.0,534.4 L456.6,535.6 L449.0,535.1 L448.6,530.9 L443.4,525.6 L437.3,526.0 L435.9,521.9 L431.0,521.4 L427.0,518.6 L419.9,520.6 L413.8,519.1 L412.5,513.6 L408.5,512.1 L408.1,509.6 L404.6,508.3 L404.2,503.9 L400.5,502.7 L399.5,499.1 L391.5,497.4 L383.6,497.5 L373.7,499.5 L370.1,498.9 L371.5,491.8 L369.2,487.1 L360.3,479.9 L352.9,476.9 L355.0,472.2 L350.7,466.4 L333.9,456.6 L332.4,453.0 L318.9,444.9 L319.0,442.9 L312.0,437.3 L312.8,431.7 L320.8,429.6 L319.3,425.5 L321.1,423.0 L328.4,421.0 L344.7,419.3 L353.8,416.4 L357.6,407.1 L363.7,400.1 L369.8,389.2 L378.5,377.9 L381.2,371.1 L390.8,354.0 L393.3,346.1 L393.4,334.9Z M937.4,277.1 L926.8,292.3 L920.4,294.8 L916.4,302.9 L907.3,310.3 L898.5,313.1 L892.3,316.9 L863.1,289.9 L849.5,273.5 L826.6,245.1 L819.8,229.7 L797.8,232.3 L788.6,242.8 L784.6,244.3 L781.4,249.7 L773.5,253.5 L769.2,257.8 L763.6,256.8 L749.3,265.7 L742.2,273.2 L739.9,271.4 L730.1,271.3 L728.6,276.6 L721.4,279.7 L722.0,281.3 L698.7,291.6 L693.2,287.9 L686.4,272.7 L676.1,267.6 L667.5,271.2 L657.7,264.3 L654.3,263.7 L644.2,249.2 L641.7,247.1 L635.9,237.1 L627.3,219.6 L619.5,200.4 L630.2,190.2 L642.8,179.1 L646.4,169.8 L648.2,156.9 L661.6,153.3 L664.5,148.4 L662.8,141.5 L661.4,128.2 L658.2,115.8 L659.2,96.4 L660.5,94.1 L668.4,90.3 L674.1,90.1 L685.3,83.9 L691.4,74.6 L692.8,67.3 L701.1,55.4 L709.7,50.3 L713.9,45.8 L712.3,36.9 L710.3,34.2 L705.9,33.0 L700.0,33.2 L700.3,30.5 L704.0,24.7 L709.3,22.8 L718.4,24.8 L723.8,27.9 L729.8,27.0 L733.3,23.8 L736.5,17.7 L735.6,12.8 L730.2,11.6 L730.9,8.6 L735.4,2.8 L741.8,3.7 L748.6,10.2 L747.1,16.0 L758.8,23.9 L774.4,16.4 L782.7,19.2 L790.5,26.3 L796.1,23.8 L807.6,27.3 L806.4,32.4 L808.3,34.8 L815.3,36.6 L821.6,35.9 L821.0,44.1 L814.9,46.8 L818.7,59.3 L823.5,69.0 L828.4,73.5 L841.6,76.8 L861.9,84.2 L870.8,84.4 L875.8,86.0 L877.4,90.0 L875.2,97.7 L873.9,108.8 L875.9,112.8 L877.8,121.8 L881.0,127.7 L890.1,132.1 L894.4,140.4 L892.3,145.8 L892.1,151.3 L894.0,156.6 L900.7,165.7 L903.6,172.0 L906.9,176.1 L914.5,181.9 L923.3,183.7 L927.2,182.9 L937.5,184.0 L936.1,189.3 L937.6,195.6 L933.3,198.8 L929.7,199.2 L926.4,202.1 L922.3,209.9 L919.4,209.5 L919.3,220.3 L921.7,229.1 L921.4,241.3 L926.2,255.4 L926.0,259.1 L928.5,264.8 L934.4,274.1 L937.4,277.1Z M582.2,389.0 L576.4,375.4 L577.7,372.4 L582.1,368.6 L584.7,351.6 L593.0,348.1 L591.3,343.9 L584.7,333.5 L581.4,319.8 L582.2,310.5 L588.8,302.9 L589.8,300.0 L597.4,291.6 L606.0,276.4 L604.9,270.8 L606.5,266.9 L601.3,263.0 L599.4,219.6 L612.1,206.8 L619.5,200.4 L627.3,219.6 L635.9,237.1 L641.7,247.1 L644.2,249.2 L654.3,263.7 L657.7,264.3 L667.5,271.2 L676.1,267.6 L686.4,272.7 L693.2,287.9 L698.7,291.6 L722.0,281.3 L721.4,279.7 L728.6,276.6 L730.1,271.3 L739.9,271.4 L742.2,273.2 L749.3,265.7 L763.6,256.8 L769.2,257.8 L773.5,253.5 L781.4,249.7 L784.6,244.3 L788.6,242.8 L797.8,232.3 L819.8,229.7 L826.6,245.1 L849.5,273.5 L863.1,289.9 L892.3,316.9 L898.5,313.1 L907.3,310.3 L916.4,302.9 L920.4,294.8 L926.8,292.3 L937.4,277.1 L942.1,286.1 L947.7,287.6 L951.3,292.0 L961.2,293.0 L963.0,298.7 L967.7,303.8 L965.4,306.4 L958.6,304.7 L954.8,306.3 L954.6,317.9 L952.8,324.7 L948.5,329.6 L949.6,335.3 L944.1,336.0 L944.3,339.0 L940.2,340.1 L934.8,338.9 L935.8,336.0 L932.9,333.7 L928.5,333.5 L921.1,336.0 L916.1,341.7 L918.6,345.5 L917.2,347.8 L913.0,346.1 L910.3,349.5 L909.9,353.9 L915.1,357.1 L919.5,355.5 L920.7,364.1 L924.9,368.5 L929.6,370.8 L928.1,375.1 L921.4,377.3 L925.7,379.3 L923.4,384.0 L918.2,387.9 L915.8,386.9 L914.4,393.8 L908.0,396.0 L903.6,391.7 L899.3,390.8 L898.4,393.6 L900.8,397.8 L898.5,403.8 L897.5,410.9 L893.5,413.2 L895.1,420.3 L891.6,425.6 L890.9,422.8 L884.7,424.8 L885.4,428.9 L876.6,429.0 L874.3,426.8 L869.9,428.4 L865.8,432.5 L862.2,433.8 L863.1,438.4 L861.5,440.6 L858.6,439.3 L858.1,442.6 L853.6,444.3 L845.9,443.8 L834.1,448.0 L832.3,451.1 L828.6,452.7 L828.9,455.0 L824.3,457.0 L818.0,457.2 L815.3,455.1 L811.5,459.6 L807.7,457.9 L802.1,459.8 L797.4,459.7 L800.6,454.6 L797.3,451.3 L802.5,453.2 L809.9,453.3 L817.4,449.0 L813.1,449.9 L806.8,446.9 L812.6,438.7 L815.3,429.9 L819.8,425.1 L817.2,417.0 L811.6,408.8 L801.5,398.4 L797.9,396.5 L783.2,390.9 L771.1,387.1 L759.2,385.5 L756.4,386.7 L752.9,381.8 L745.9,381.6 L741.1,384.4 L745.9,379.5 L744.7,374.7 L747.4,371.4 L743.8,370.0 L740.9,375.1 L736.8,368.2 L731.9,367.4 L725.5,363.1 L722.0,363.5 L720.1,358.6 L711.0,356.7 L698.4,358.1 L696.2,355.5 L681.9,358.2 L680.6,357.1 L672.0,360.4 L669.3,357.6 L664.9,358.1 L647.0,363.3 L644.4,363.5 L622.4,369.6 L614.2,373.0 L588.1,385.5 L582.2,389.0Z " fill="#f3ecdc" stroke="#9c8f74" stroke-width="1.2" stroke-linejoin="round"/>
+<text class="isl zh" x="148" y="283">小金門・烈嶼</text><text class="isl en" x="148" y="283">LESSER KINMEN</text>
+<text class="isl zh" x="531" y="100">大金門</text><text class="isl en" x="531" y="100">KINMEN</text>
+<text class="sea zh" x="770" y="533">料羅灣・台灣海峽</text><text class="sea en" x="770" y="533">LIAOLUO BAY · TAIWAN STRAIT</text>
+<text class="sea zh" x="200" y="40">廈門灣</text><text class="sea en" x="200" y="40">XIAMEN BAY</text>
+<polyline class="rt d1" data-d="1" points="577.7,384.7 531.1,419.5 478.7,469.7 449.2,453.6 359.0,435.6 398.4,415.9 450.8,395.1 444.3,365.7" stroke="#c0392b"/><polyline class="rt d2" data-d="2" points="444.3,365.7 400.0,333.5 370.5,297.6 259.0,326.3 101.6,324.5 109.8,376.5 124.6,433.8 163.9,419.5 254.1,396.2 190.2,376.5 259.0,326.3 370.5,297.6 383.6,243.8 423.0,297.6 444.3,365.7" stroke="#d68910"/><polyline class="rt d3" data-d="3" points="444.3,365.7 423.0,286.8 413.1,206.2 444.3,193.6 429.5,224.1 531.1,261.7 623.0,294.0 719.7,202.6 744.3,154.2 842.6,68.1" stroke="#1e8449"/><polyline class="rt d4" data-d="4" points="842.6,68.1 819.7,95.0 783.6,52.0 744.3,154.2 727.9,240.2 760.7,333.5 783.6,347.8 772.1,408.8 798.4,417.7 760.7,333.5" stroke="#2471a3"/><polyline class="rt d5" data-d="5" points="760.7,333.5 731.1,294.0 645.9,340.6 577.7,384.7" stroke="#7d3c98"/><g class="poi p1 p5"><circle cx="577.7049180327823" cy="384.726973684203" r="7" fill="#1b2631" stroke="#fff" stroke-width="2"/><text x="577.7049180327823" y="388.226973684203" text-anchor="middle" fill="#fff" font-size="9">✈</text><text class="lb zh" x="585.7049180327823" y="388.726973684203" text-anchor="start">金門機場</text><text class="lb en" x="585.7049180327823" y="388.726973684203" text-anchor="start">Kinmen Airport</text></g><g class="poi p1"><polygon points="478.7,461.7 476.6,466.8 471.1,467.2 475.3,470.8 474.0,476.2 478.7,473.3 483.4,476.2 482.1,470.8 486.3,467.2 480.8,466.8" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="486.6885245901316" y="477.7039473684187" text-anchor="start">翟山坑道</text><text class="lb en" x="486.6885245901316" y="477.7039473684187" text-anchor="start">Zhaishan Tunnel</text></g><g class="poi p1"><circle cx="449.1803278688182" cy="453.5690789473656" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="441.1803278688182" y="457.5690789473656" text-anchor="end">古崗湖</text><text class="lb en" x="441.1803278688182" y="457.5690789473656" text-anchor="end">Gugang Lake</text></g><g class="poi p1"><polygon points="359.0,427.6 356.9,432.7 351.4,433.2 355.6,436.8 354.3,442.1 359.0,439.2 363.7,442.1 362.4,436.8 366.6,433.2 361.1,432.7" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="351.01639344262196" y="448.6414473684219" text-anchor="end">水頭聚落・得月樓</text><text class="lb en" x="351.01639344262196" y="448.6414473684219" text-anchor="end">Shuitou Village</text></g><g class="poi p1"><polygon points="398.4,407.9 396.2,413.0 390.8,413.4 394.9,417.0 393.7,422.4 398.4,419.5 403.1,422.4 401.8,417.0 406.0,413.4 400.5,413.0" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="398.36065573770634" y="405.9210526315749" text-anchor="middle">建功嶼</text><text class="lb en" x="398.36065573770634" y="405.9210526315749" text-anchor="middle">Jiangong Islet</text></g><g class="poi p1"><polygon points="450.8,387.1 448.7,392.2 443.2,392.7 447.4,396.2 446.1,401.6 450.8,398.7 455.5,401.6 454.2,396.2 458.4,392.7 452.9,392.2" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="458.8196721311212" y="399.12499999999363" text-anchor="start">莒光樓</text><text class="lb en" x="458.8196721311212" y="399.12499999999363" text-anchor="start">Juguang Tower</text></g><g class="poi p1 p2 p3"><rect x="436.262295081956" y="357.723684210525" width="16" height="16" rx="3" fill="#1b2631" stroke="#fff" stroke-width="2"/><text x="444.262295081956" y="369.723684210525" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">H</text><text class="lb zh" x="452.262295081956" y="369.723684210525" text-anchor="start">金城模範街</text><text class="lb en" x="452.262295081956" y="369.723684210525" text-anchor="start">Jincheng Old Town</text></g><g class="poi p2"><circle cx="370.491803278696" cy="297.5986842105186" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="378.491803278696" y="301.5986842105186" text-anchor="start">金門大橋（大金端）</text><text class="lb en" x="378.491803278696" y="301.5986842105186" text-anchor="start">Kinmen Bridge (E)</text></g><g class="poi p2"><polygon points="259.0,318.3 256.9,323.4 251.4,323.8 255.6,327.4 254.3,332.8 259.0,329.9 263.7,332.8 262.4,327.4 266.6,323.8 261.1,323.4" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="251.01639344260798" y="319.28289473684373" text-anchor="end">金門大橋（小金端）</text><text class="lb en" x="251.01639344260798" y="319.28289473684373" text-anchor="end">Kinmen Bridge (W)</text></g><g class="poi p2"><circle cx="101.63934426227034" cy="324.4901315789405" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="107.63934426227034" y="342.4901315789405" text-anchor="middle">湖井頭戰史館</text><text class="lb en" x="107.63934426227034" y="342.4901315789405" text-anchor="middle">Hujingtou Museum</text></g><g class="poi p2"><circle cx="109.83606557373848" cy="376.4802631578938" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="101.83606557373848" y="380.4802631578938" text-anchor="end">將軍堡</text><text class="lb en" x="101.83606557373848" y="380.4802631578938" text-anchor="end">General&#x27;s Fort</text></g><g class="poi p2"><circle cx="124.59016393441844" cy="433.8486842105186" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="120.59016393441844" y="450.8486842105186" text-anchor="middle">勇士堡・鐵漢堡</text><text class="lb en" x="120.59016393441844" y="450.8486842105186" text-anchor="middle">Warrior &amp; Iron Man Forts</text></g><g class="poi p2"><circle cx="163.93442622950286" cy="419.5065789473687" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="169.93442622950286" y="432.5065789473687" text-anchor="start">陵水湖</text><text class="lb en" x="169.93442622950286" y="432.5065789473687" text-anchor="start">Lingshui Lake</text></g><g class="poi p2"><circle cx="254.09836065569914" cy="396.20065789474074" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="260.09836065569914" y="408.20065789474074" text-anchor="start">九宮坑道</text><text class="lb en" x="260.09836065569914" y="408.20065789474074" text-anchor="start">Jiugong Tunnel</text></g><g class="poi p2"><circle cx="190.16393442621026" cy="376.4802631578938" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="196.16393442621026" y="371.4802631578938" text-anchor="start">八達樓子</text><text class="lb en" x="196.16393442621026" y="371.4802631578938" text-anchor="start">Badalouzi</text></g><g class="poi p2"><polygon points="383.6,235.8 381.5,240.9 376.0,241.3 380.2,244.9 378.9,250.3 383.6,247.4 388.3,250.3 387.0,244.9 391.2,241.3 385.7,240.9" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="375.60655737702643" y="247.81578947368757" text-anchor="end">慈湖</text><text class="lb en" x="375.60655737702643" y="247.81578947368757" text-anchor="end">Cihu Lake</text></g><g class="poi p3"><polygon points="413.1,198.2 411.0,203.3 405.5,203.7 409.7,207.3 408.4,212.6 413.1,209.8 417.8,212.6 416.5,207.3 420.7,203.7 415.2,203.3" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="405.11475409833974" y="200.1677631578969" text-anchor="end">北山古洋樓・播音牆</text><text class="lb en" x="405.11475409833974" y="200.1677631578969" text-anchor="end">Beishan Mansion &amp; Broadcast Wall</text></g><g class="poi p3"><circle cx="444.262295081956" cy="193.61842105262485" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="450.262295081956" y="187.61842105262485" text-anchor="start">古寧頭戰史館</text><text class="lb en" x="450.262295081956" y="187.61842105262485" text-anchor="start">Guningtou Battle Museum</text></g><g class="poi p3"><circle cx="429.508196721276" cy="224.0953947368406" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="435.508196721276" y="237.0953947368406" text-anchor="start">雙鯉湖</text><text class="lb en" x="435.508196721276" y="237.0953947368406" text-anchor="start">Shuangli Lake</text></g><g class="poi p3"><polygon points="623.0,286.0 620.8,291.1 615.3,291.5 619.5,295.1 618.2,300.5 623.0,297.6 627.7,300.5 626.4,295.1 630.6,291.5 625.1,291.1" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="630.9508196721388" y="298.0131578947375" text-anchor="start">瓊林聚落</text><text class="lb en" x="630.9508196721388" y="298.0131578947375" text-anchor="start">Qionglin Village</text></g><g class="poi p3"><circle cx="719.6721311475469" cy="202.5822368421031" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="727.6721311475469" y="206.5822368421031" text-anchor="start">陽翟老街</text><text class="lb en" x="727.6721311475469" y="206.5822368421031" text-anchor="start">Yangzhai Old Street</text></g><g class="poi p3 p4"><circle cx="744.2622950819513" cy="154.17763157894368" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="752.2622950819513" y="158.17763157894368" text-anchor="start">沙美老街</text><text class="lb en" x="752.2622950819513" y="158.17763157894368" text-anchor="start">Shamei Old Street</text></g><g class="poi p3 p4"><rect x="834.6229508196623" y="60.12500000000637" width="16" height="16" rx="3" fill="#1b2631" stroke="#fff" stroke-width="2"/><text x="842.6229508196623" y="72.12500000000637" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">H</text><text class="lb zh" x="852.6229508196623" y="88.12500000000637" text-anchor="start">山后民俗文化村</text><text class="lb en" x="852.6229508196623" y="88.12500000000637" text-anchor="start">Shanhou Village</text></g><g class="poi p4"><circle cx="819.6721311475609" cy="95.01644736841553" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="811.6721311475609" y="108.01644736841553" text-anchor="end">獅山砲陣地</text><text class="lb en" x="811.6721311475609" y="108.01644736841553" text-anchor="end">Shishan Howitzer Base</text></g><g class="poi p4"><polygon points="783.6,44.0 781.5,49.1 776.0,49.5 780.2,53.1 778.9,58.5 783.6,55.6 788.3,58.5 787.0,53.1 791.2,49.5 785.7,49.1" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="775.6065573770358" y="47.99013157895323" text-anchor="end">馬山觀測所</text><text class="lb en" x="775.6065573770358" y="47.99013157895323" text-anchor="end">Mashan Observation Post</text></g><g class="poi p4 p5"><rect x="752.6557377049343" y="325.4539473684187" width="16" height="16" rx="3" fill="#1b2631" stroke="#fff" stroke-width="2"/><text x="760.6557377049343" y="337.4539473684187" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">H</text><text class="lb zh" x="752.6557377049343" y="327.4539473684187" text-anchor="end">山外</text><text class="lb en" x="752.6557377049343" y="327.4539473684187" text-anchor="end">Shanwai</text></g><g class="poi p4"><circle cx="783.6065573770358" cy="347.7960526315813" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="789.6065573770358" y="353.7960526315813" text-anchor="start">榕園</text><text class="lb en" x="789.6065573770358" y="353.7960526315813" text-anchor="start">Banyan Garden</text></g><g class="poi p4"><polygon points="772.1,400.8 770.0,405.8 764.5,406.3 768.7,409.9 767.4,415.2 772.1,412.4 776.8,415.2 775.6,409.9 779.7,406.3 774.2,405.8" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="764.1311475409617" y="404.75" text-anchor="end">陳景蘭洋樓</text><text class="lb en" x="764.1311475409617" y="404.75" text-anchor="end">Chen Jing-lan Mansion</text></g><g class="poi p4"><circle cx="798.3606557377157" cy="417.71381578946546" r="4.5" fill="#fff" stroke="#1b2631" stroke-width="2"/><text class="lb zh" x="804.3606557377157" y="430.71381578946546" text-anchor="start">成功海灘</text><text class="lb en" x="804.3606557377157" y="430.71381578946546" text-anchor="start">Chenggong Beach</text></g><g class="poi p5"><polygon points="731.1,286.0 729.0,291.1 723.5,291.5 727.7,295.1 726.4,300.5 731.1,297.6 735.8,300.5 734.6,295.1 738.8,291.5 733.3,291.1" fill="#f4b400" stroke="#7a4a00" stroke-width="1.2"/><text class="lb zh" x="739.1475409836208" y="290.0131578947375" text-anchor="start">太武山</text><text class="lb en" x="739.1475409836208" y="290.0131578947375" text-anchor="start">Mt. Taiwu</text></g>
+<g transform="translate(24,521)"><rect width="161.8" height="5" fill="#1b2631"/><rect width="80.9" height="5" fill="#fff" stroke="#1b2631"/><text y="-6" font-size="11" fill="#1b2631">0</text><text x="161.8" y="-6" font-size="11" text-anchor="middle" fill="#1b2631">5 km</text></g>
+<g transform="translate(40,60)"><path d="M0 -22 L7 4 L0 -2 L-7 4Z" fill="#1b2631"/><text y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1b2631">N</text></g>
+</svg>
+    <div class="legend"><span><i style="background:#c0392b"></i>D1</span><span><i style="background:#d68910"></i>D2</span><span><i style="background:#1e8449"></i>D3</span><span><i style="background:#2471a3"></i>D4</span><span><i style="background:#7d3c98"></i>D5</span><span><i class="st">★</i><span class="zh">風景名點</span><span class="en">Scenic highlight</span></span><span><i class="sq">H</i><span class="zh">住宿點</span><span class="en">Overnight base</span></span></div>
+    <div class="note"><span class="zh">地圖為示意，路線依主要道路概略繪製；里程為估計值，實際依選擇的道路會有 ±10–15% 差異。導航請以 Google Maps 為準。</span><span class="en">Schematic map; routes follow main roads approximately. Distances are estimates (±10–15% depending on roads chosen). Use Google Maps for navigation.</span></div>
+  </div>
+
+  <h3 class="sub"><span class="zh">每日里程與住宿</span><span class="en">Daily distance & lodging</span></h3>
+  <div class="bars"><div class="bar" style="--c:#c0392b"><span class="bl">D1</span><div class="bt"><i style="width:38%"></i></div><span class="bv">15 km</span><span class="bs"><span class="zh">金城</span><span class="en">Jincheng</span></span></div><div class="bar" style="--c:#d68910"><span class="bl">D2</span><div class="bt"><i style="width:100%"></i></div><span class="bv">40 km</span><span class="bs"><span class="zh">金城</span><span class="en">Jincheng</span></span></div><div class="bar" style="--c:#1e8449"><span class="bl">D3</span><div class="bt"><i style="width:75%"></i></div><span class="bv">30 km</span><span class="bs"><span class="zh">金沙・山后</span><span class="en">Jinsha · Shanhou</span></span></div><div class="bar" style="--c:#2471a3"><span class="bl">D4</span><div class="bt"><i style="width:62%"></i></div><span class="bv">25 km</span><span class="bs"><span class="zh">金湖・山外</span><span class="en">Jinhu · Shanwai</span></span></div><div class="bar" style="--c:#7d3c98"><span class="bl">D5</span><div class="bt"><i style="width:25%"></i></div><span class="bv">10 km</span><span class="bs"><span class="zh">賦歸</span><span class="en">Fly home</span></span></div></div>
+
+  <h3 class="sub"><span class="zh">★ 風景名點</span><span class="en">★ Scenic highlights</span></h3>
+  <div class="spots"><div class="spot" style="--c:#d68910"><div class="sh"><span class="star">★</span><b><span class="zh">慈湖</span><span class="en">Cihu Lake</span></b><span class="dtag">D2</span></div><p><span class="zh">金門最知名的夕陽點，堤岸上看落日、晚霞染紅湖面，冬季還有成群鸕鶿歸巢。</span><span class="en">Kinmen&#x27;s classic sunset spot: the sky turns the lake red, and in winter flocks of cormorants fly home to roost.</span></p><div class="when"><span class="zh">最佳：傍晚 16:45–17:30</span><span class="en">Best: 4:45–5:30 pm</span></div></div><div class="spot" style="--c:#d68910"><div class="sh"><span class="star">★</span><b><span class="zh">金門大橋</span><span class="en">Kinmen Bridge</span></b><span class="dtag">D2</span></div><p><span class="zh">台灣第一座長距離跨海大橋，騎在海面上 4.7 公里，一邊大海一邊廈門天際線。</span><span class="en">Taiwan&#x27;s first long sea-crossing bridge: 4.7 km above open water, with the Xiamen skyline on the horizon.</span></p><div class="when"><span class="zh">避開強風時段</span><span class="en">Avoid strong-wind hours</span></div></div><div class="spot" style="--c:#c0392b"><div class="sh"><span class="star">★</span><b><span class="zh">建功嶼</span><span class="en">Jiangong Islet</span></b><span class="dtag">D1</span></div><p><span class="zh">退潮時海中浮現石板步道，走上小島看延平郡王雕像與潮間帶。</span><span class="en">At low tide a stone causeway rises from the sea, leading to the islet and its tidal flats.</span></p><div class="when"><span class="zh">退潮前後 1 小時</span><span class="en">±1 h around low tide</span></div></div><div class="spot" style="--c:#c0392b"><div class="sh"><span class="star">★</span><b><span class="zh">水頭聚落・得月樓</span><span class="en">Shuitou Village &amp; Deyue Tower</span></b><span class="dtag">D1</span></div><p><span class="zh">閩南紅磚古厝與南洋風洋樓並存，得月樓是金門最具代表性的槍樓。</span><span class="en">Red-brick Minnan houses side by side with colonial-style mansions; Deyue Tower is Kinmen&#x27;s iconic gun tower.</span></p><div class="when"><span class="zh">最佳：午後光線</span><span class="en">Best: afternoon light</span></div></div><div class="spot" style="--c:#c0392b"><div class="sh"><span class="star">★</span><b><span class="zh">莒光樓</span><span class="en">Juguang Tower</span></b><span class="dtag">D1</span></div><p><span class="zh">金門地標，三層宮殿式樓閣，夜間打燈倒映在水池中。</span><span class="en">The island&#x27;s landmark: a three-storey palace-style tower reflected in its pond when lit at night.</span></p><div class="when"><span class="zh">最佳：入夜後</span><span class="en">Best: after dark</span></div></div><div class="spot" style="--c:#c0392b"><div class="sh"><span class="star">★</span><b><span class="zh">翟山坑道</span><span class="en">Zhaishan Tunnel</span></b><span class="dtag">D1</span></div><p><span class="zh">花崗岩中挖出的 A 字型水道，光影與水面倒影非常震撼。</span><span class="en">An A-shaped waterway carved out of granite; the light and reflections are stunning.</span></p><div class="when"><span class="zh">全天皆宜</span><span class="en">Any time</span></div></div><div class="spot" style="--c:#1e8449"><div class="sh"><span class="star">★</span><b><span class="zh">北山古洋樓・播音牆</span><span class="en">Beishan Mansion &amp; Broadcast Wall</span></b><span class="dtag">D3</span></div><p><span class="zh">古寧頭戰役留下滿牆彈孔的洋樓，旁邊是對岸心戰廣播用的巨型播音牆。</span><span class="en">A mansion riddled with bullet holes from the 1949 battle, next to the giant wall once used for propaganda broadcasts.</span></p><div class="when"><span class="zh">上午較少人</span><span class="en">Quieter in the morning</span></div></div><div class="spot" style="--c:#1e8449"><div class="sh"><span class="star">★</span><b><span class="zh">瓊林聚落</span><span class="en">Qionglin Village</span></b><span class="dtag">D3</span></div><p><span class="zh">保存完整的蔡氏宗祠群與地下坑道，燕尾屋脊層層疊疊。</span><span class="en">Well-preserved Cai clan ancestral halls with layered swallowtail rooflines and a hidden tunnel.</span></p><div class="when"><span class="zh">全天皆宜</span><span class="en">Any time</span></div></div><div class="spot" style="--c:#1e8449"><div class="sh"><span class="star">★</span><b><span class="zh">山后民俗文化村</span><span class="en">Shanhou Village</span></b><span class="dtag">D3</span></div><p><span class="zh">十八棟二落大厝整齊排列，是金門最經典的閩南聚落景觀。</span><span class="en">Eighteen two-courtyard houses in neat rows — the quintessential Minnan village scene.</span></p><div class="when"><span class="zh">清晨、黃昏最美</span><span class="en">Best at dawn or dusk</span></div></div><div class="spot" style="--c:#2471a3"><div class="sh"><span class="star">★</span><b><span class="zh">馬山觀測所</span><span class="en">Mashan Observation Post</span></b><span class="dtag">D4</span></div><p><span class="zh">大金門最北端的觀測站，望遠鏡裡對岸近在咫尺。</span><span class="en">The northernmost point of Kinmen — through the telescopes the mainland feels close enough to touch.</span></p><div class="when"><span class="zh">晴天能見度佳</span><span class="en">Clear days are best</span></div></div><div class="spot" style="--c:#2471a3"><div class="sh"><span class="star">★</span><b><span class="zh">陳景蘭洋樓・成功海灘</span><span class="en">Chen Jing-lan Mansion &amp; Chenggong Beach</span></b><span class="dtag">D4</span></div><p><span class="zh">金門最大洋樓，正面對著廣闊的成功沙灘。</span><span class="en">Kinmen&#x27;s largest Western-style mansion, facing the wide sands of Chenggong Beach.</span></p><div class="when"><span class="zh">下午順光</span><span class="en">Best in afternoon</span></div></div><div class="spot" style="--c:#7d3c98"><div class="sh"><span class="star">★</span><b><span class="zh">太武山</span><span class="en">Mt. Taiwu</span></b><span class="dtag">D5</span></div><p><span class="zh">金門最高點，「毋忘在莒」勒石與俯瞰全島的視野。</span><span class="en">Kinmen&#x27;s highest point, with the famous inscription and panoramic island views.</span></p><div class="when"><span class="zh">清晨涼爽</span><span class="en">Cool in early morning</span></div></div></div>
+
+  <h3 class="sub"><span class="zh">每日行程</span><span class="en">Day by day</span></h3>
+  <div class="days"><article class="day" id="day1" data-d="1" style="--c:#c0392b">
+<header><div class="badge">Day 1</div><h3><span class="zh">抵達金門・金城水頭古厝散策</span><span class="en">Arrival · Jincheng &amp; Shuitou heritage</span></h3><div class="km"><b>15</b><small>km</small></div></header>
+<p class="route"><span class="zh">金門機場 → 翟山坑道 → 古崗湖 → 水頭聚落・得月樓 → 建功嶼 → 莒光樓 → 金城模範街</span><span class="en">Airport → Zhaishan Tunnel → Gugang Lake → Shuitou Village &amp; Deyue Tower → Jiangong Islet → Juguang Tower → Jincheng Old Town</span></p><ol class="stops"><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">機場取車</span><span class="en">Pick up bike at airport</span></b><p><span class="zh">租車行多可送車到機場，或在金城車站租 K-Bike。</span><span class="en">Many shops deliver to the airport, or rent a K-Bike at Jincheng Station.</span></p></div></li><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">翟山坑道</span><span class="en">Zhaishan Tunnel</span></b><p><span class="zh">花崗岩鑿出的 A 字型戰備水道，涼爽好拍。</span><span class="en">An A-shaped wartime boat tunnel blasted out of granite — cool and photogenic.</span></p></div></li><li><span class="t"><span class="zh">中午</span><span class="en">Noon</span></span><div><b><span class="zh">古崗湖・水頭聚落</span><span class="en">Gugang Lake · Shuitou</span></b><p><span class="zh">水頭吃午餐，逛得月樓與僑鄉洋樓群。</span><span class="en">Lunch in Shuitou, then Deyue Tower and the overseas-Chinese mansions.</span></p></div></li><li><span class="t"><span class="zh">下午</span><span class="en">PM</span></span><div><b><span class="zh">建功嶼</span><span class="en">Jiangong Islet</span></b><p><span class="zh">退潮時可走過石板路上島，出發前查潮汐。</span><span class="en">Walk across the stone causeway at low tide — check the tide table.</span></p></div></li><li><span class="t"><span class="zh">傍晚</span><span class="en">Eve</span></span><div><b><span class="zh">莒光樓・模範街</span><span class="en">Juguang Tower · Old Street</span></b><p><span class="zh">金門地標夜景，後浦老街吃晚餐。</span><span class="en">Kinmen&#x27;s landmark lit up at night; dinner in the Houpu old quarter.</span></p></div></li></ol>
+<div class="stay"><span class="ico">H</span><div><b><span class="zh">金城鎮（後浦老街周邊）</span><span class="en">Jincheng Town (Houpu old quarter)</span></b><p><span class="zh">餐廳、租車行與 K-Bike 金城車站都在這，連住兩晚不用搬行李；想住古厝可改水頭聚落民宿。</span><span class="en">Restaurants, bike shops and the K-Bike Jincheng Station are all here. Stay two nights so you don&#x27;t move luggage; for a heritage house, pick a B&amp;B in Shuitou Village.</span></p></div></div></article><article class="day" id="day2" data-d="2" style="--c:#d68910">
+<header><div class="badge">Day 2</div><h3><span class="zh">騎上金門大橋・烈嶼環島</span><span class="en">Kinmen Bridge &amp; Lesser Kinmen loop</span></h3><div class="km"><b>40</b><small>km</small></div></header>
+<p class="route"><span class="zh">金城 → 金門大橋 → 湖井頭戰史館 → 將軍堡 → 勇士堡・鐵漢堡 → 陵水湖 → 九宮坑道 → 八達樓子 → 金門大橋 → 慈湖 → 金城</span><span class="en">Jincheng → Kinmen Bridge → Hujingtou Museum → General&#x27;s Fort → Warrior &amp; Iron Man Forts → Lingshui Lake → Jiugong Tunnel → Badalouzi → Kinmen Bridge → Cihu Lake → Jincheng</span></p><ol class="stops"><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">金門大橋</span><span class="en">Kinmen Bridge</span></b><p><span class="zh">全長約 5.4 公里，設有人行道與自行車道，橋上看海景。</span><span class="en">About 5.4 km long with a walkway and bike lane — sea views all the way.</span></p></div></li><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">湖井頭戰史館</span><span class="en">Hujingtou Museum</span></b><p><span class="zh">烈嶼西北角，望遠鏡直看廈門。</span><span class="en">On the NW tip of Lesser Kinmen; telescopes look straight at Xiamen.</span></p></div></li><li><span class="t"><span class="zh">中午</span><span class="en">Noon</span></span><div><b><span class="zh">將軍堡・勇士堡</span><span class="en">General&#x27;s &amp; Warrior Forts</span></b><p><span class="zh">西岸據點與坑道，午餐吃芋頭料理。</span><span class="en">West-coast strongpoints and tunnels; try taro dishes for lunch.</span></p></div></li><li><span class="t"><span class="zh">下午</span><span class="en">PM</span></span><div><b><span class="zh">陵水湖・九宮坑道</span><span class="en">Lingshui Lake · Jiugong Tunnel</span></b><p><span class="zh">湖畔生態、戰備地下碼頭。</span><span class="en">Lakeside wildlife, then an underground wartime harbor.</span></p></div></li><li><span class="t"><span class="zh">傍晚</span><span class="en">Eve</span></span><div><b><span class="zh">慈湖</span><span class="en">Cihu Lake</span></b><p><span class="zh">過橋回大金門，慈湖堤岸看夕陽與鸕鶿。</span><span class="en">Back over the bridge for sunset and cormorants on the Cihu dyke.</span></p></div></li></ol>
+<div class="stay"><span class="ico">H</span><div><b><span class="zh">金城鎮（同前一晚）</span><span class="en">Jincheng Town (same as night 1)</span></b><p><span class="zh">連住第二晚，回程晚一點也輕鬆。</span><span class="en">Second night in the same place, so a later return is no stress.</span></p></div></div></article><article class="day" id="day3" data-d="3" style="--c:#1e8449">
+<header><div class="badge">Day 3</div><h3><span class="zh">古寧頭戰地・瓊林到沙美</span><span class="en">Guningtou battlefield to Shamei</span></h3><div class="km"><b>30</b><small>km</small></div></header>
+<p class="route"><span class="zh">金城 → 北山古洋樓・播音牆 → 古寧頭戰史館 → 雙鯉湖 → 瓊林聚落 → 陽翟老街 → 沙美老街 → 山后</span><span class="en">Jincheng → Beishan Mansion &amp; Broadcast Wall → Guningtou Battle Museum → Shuangli Lake → Qionglin Village → Yangzhai Old Street → Shamei Old Street → Shanhou</span></p><ol class="stops"><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">北山・古寧頭</span><span class="en">Beishan · Guningtou</span></b><p><span class="zh">彈痕累累的北山洋樓、播音牆，古寧頭戰史館。</span><span class="en">Bullet-scarred Beishan mansion, the propaganda broadcast wall and the battle museum.</span></p></div></li><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">雙鯉湖</span><span class="en">Shuangli Lake</span></b><p><span class="zh">濕地小歇，賞鳥。</span><span class="en">A wetland break for birdwatching.</span></p></div></li><li><span class="t"><span class="zh">中午</span><span class="en">Noon</span></span><div><b><span class="zh">瓊林聚落</span><span class="en">Qionglin Village</span></b><p><span class="zh">金門最完整的宗祠群之一，地下坑道可參觀。</span><span class="en">One of Kinmen&#x27;s finest clusters of ancestral halls, with a visitable tunnel.</span></p></div></li><li><span class="t"><span class="zh">下午</span><span class="en">PM</span></span><div><b><span class="zh">陽翟・沙美老街</span><span class="en">Yangzhai · Shamei streets</span></b><p><span class="zh">懷舊老街、電影場景，喝杯咖啡。</span><span class="en">Retro streets and old film sets — stop for coffee.</span></p></div></li><li><span class="t"><span class="zh">傍晚</span><span class="en">Eve</span></span><div><b><span class="zh">山后</span><span class="en">Shanhou</span></b><p><span class="zh">入住古厝，晚上看滿天星。</span><span class="en">Check into a heritage house and enjoy the starry sky.</span></p></div></li></ol>
+<div class="stay"><span class="ico">H</span><div><b><span class="zh">金沙鎮（山后、沙美一帶）</span><span class="en">Jinsha Town (Shanhou / Shamei)</span></b><p><span class="zh">山后民俗文化村內的古厝民宿最有氣氛；沙美老街周邊選擇也多。</span><span class="en">Heritage-house B&amp;Bs inside Shanhou Folk Village have the most atmosphere; Shamei has more choices.</span></p></div></div></article><article class="day" id="day4" data-d="4" style="--c:#2471a3">
+<header><div class="badge">Day 4</div><h3><span class="zh">東北海岸前線・山外成功</span><span class="en">Northeast frontline to Shanwai</span></h3><div class="km"><b>25</b><small>km</small></div></header>
+<p class="route"><span class="zh">山后 → 獅山砲陣地 → 馬山觀測所 → 沙美 → 山外 → 榕園 → 陳景蘭洋樓 → 成功海灘 → 山外</span><span class="en">Shanhou → Shishan Howitzer Base → Mashan Observation Post → Shamei → Shanwai → Banyan Garden → Chen Jing-lan Mansion → Chenggong Beach → Shanwai</span></p><ol class="stops"><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">獅山砲陣地</span><span class="en">Shishan Howitzer Base</span></b><p><span class="zh">坑道內的 8 吋榴砲，有定時砲操表演（出發前查時刻）。</span><span class="en">8-inch howitzers inside a tunnel, with scheduled gun drills (check times).</span></p></div></li><li><span class="t"><span class="zh">上午</span><span class="en">AM</span></span><div><b><span class="zh">馬山觀測所</span><span class="en">Mashan Observation Post</span></b><p><span class="zh">距離對岸最近的觀測點之一。</span><span class="en">One of the closest observation points to mainland China.</span></p></div></li><li><span class="t"><span class="zh">中午</span><span class="en">Noon</span></span><div><b><span class="zh">沙美・山外</span><span class="en">Shamei · Shanwai</span></b><p><span class="zh">沿縣道南下，山外吃廣東粥或燒餅。</span><span class="en">Ride south and lunch on Cantonese congee or sesame buns in Shanwai.</span></p></div></li><li><span class="t"><span class="zh">下午</span><span class="en">PM</span></span><div><b><span class="zh">榕園・陳景蘭洋樓</span><span class="en">Banyan Garden · Chen Jing-lan</span></b><p><span class="zh">老榕樹群與金門最大洋樓。</span><span class="en">Ancient banyans and Kinmen&#x27;s largest Western-style mansion.</span></p></div></li><li><span class="t"><span class="zh">傍晚</span><span class="en">Eve</span></span><div><b><span class="zh">成功海灘</span><span class="en">Chenggong Beach</span></b><p><span class="zh">看海後回山外。</span><span class="en">Sea views, then back to Shanwai.</span></p></div></li></ol>
+<div class="stay"><span class="ico">H</span><div><b><span class="zh">金湖鎮（山外市區）</span><span class="en">Jinhu Town (Shanwai)</span></b><p><span class="zh">全島生活機能最好的鎮區之一，小吃多，隔天離太武山、機場都近。</span><span class="en">One of the island&#x27;s liveliest towns with plenty of food; close to Mt. Taiwu and the airport for the last day.</span></p></div></div></article><article class="day" id="day5" data-d="5" style="--c:#7d3c98">
+<header><div class="badge">Day 5</div><h3><span class="zh">太武山晨登・賦歸</span><span class="en">Mt. Taiwu hike &amp; departure</span></h3><div class="km"><b>10</b><small>km</small></div></header>
+<p class="route"><span class="zh">山外 → 太武山（登山口停車，步行上山）→ 金門機場還車</span><span class="en">Shanwai → Mt. Taiwu (park at trailhead, hike up) → return bike at airport</span></p><ol class="stops"><li><span class="t"><span class="zh">清晨</span><span class="en">Early</span></span><div><b><span class="zh">太武山</span><span class="en">Mt. Taiwu</span></b><p><span class="zh">步道來回約 2–2.5 小時，看「毋忘在莒」勒石與全島景色。</span><span class="en">About 2–2.5 h round trip to the famous &#x27;Wu Wang Zai Ju&#x27; inscription and island views.</span></p></div></li><li><span class="t"><span class="zh">中午</span><span class="en">Noon</span></span><div><b><span class="zh">午餐・伴手禮</span><span class="en">Lunch &amp; souvenirs</span></b><p><span class="zh">山外或沿途採買。</span><span class="en">Shop in Shanwai or along the way.</span></p></div></li><li><span class="t"><span class="zh">下午</span><span class="en">PM</span></span><div><b><span class="zh">金門機場</span><span class="en">Kinmen Airport</span></b><p><span class="zh">還車，搭機返台。</span><span class="en">Return the bike and fly home.</span></p></div></li></ol>
+<div class="stay"><span class="ico">H</span><div><b><span class="zh">—（賦歸）</span><span class="en">— (fly home)</span></b><p><span class="zh">騎乘短，上午留給太武山與買伴手禮（貢糖、高粱、一條根）。</span><span class="en">A short ride: mornings are for Mt. Taiwu and souvenirs (peanut candy, kaoliang liquor, Yitiaogen balm).</span></p></div></div></article></div>
+</section>
+
+<section id="budget">
+  <div class="part">PART 3</div>
+  <h2><span class="zh">每人預算估算</span><span class="en">Budget per person</span></h2>
+  <div class="budget">
+    <div class="bcard">
+      <div class="controls">
+        <div><label><span class="zh">人數</span><span class="en">Group size</span></label><span class="seg" id="ppl"><button data-v="1">1</button><button data-v="2" class="on">2</button><button data-v="3">3</button><button data-v="4">4</button></span></div>
+        <div><label><span class="zh">等級</span><span class="en">Level</span></label><span class="seg" id="lvl"><button data-v="0" class="on"><span class="zh">省錢</span><span class="en">Budget</span></button><button data-v="1"><span class="zh">舒適</span><span class="en">Comfort</span></button></span></div>
+      </div>
+      <table>
+        <thead><tr><th><span class="zh">項目</span><span class="en">Item</span></th><th class="n"><span class="zh">每人</span><span class="en">Per person</span></th></tr></thead>
+        <tbody id="btbody"></tbody>
+        <tfoot><tr><td><span class="zh">每人合計</span><span class="en">Total per person</span></td><td class="n" id="bper"></td></tr></tfoot>
+      </table>
+    </div>
+    <div>
+      <div class="totbox"><span class="zh">全團總預算（估）</span><span class="en">Group total (est.)</span><b id="btot"></b><div class="sub" id="bsub"></div></div>
+      <div class="tip"><b class="zh">怎麼算的</b><b class="en">Assumptions</b>
+        <p class="zh">機票以台北松山來回、單程約 NT$2,000–3,000 計；民宿以雙人房一晚 NT$2,000（省錢）／3,500（舒適）計，兩人一間、單數多開一間。單車租金為估計，各店差異大，電輔車較貴，訂車前請先問價。大部分戰地景點免門票。</p>
+        <p class="en">Return flight Taipei Songshan ⇄ Kinmen at NT$2,000–3,000 each way. Lodging at NT$2,000 (budget) / 3,500 (comfort) per double room per night, two per room. Bike rental is an estimate — prices vary by shop and e-bikes cost more, so ask first. Most battlefield sites are free.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="booklet">
+  <div class="part">PART 4</div>
+  <h2><span class="zh">行前手冊</span><span class="en">Pre-trip booklet</span></h2>
+  <div class="checks">
+    <div class="clist"><h4><span class="zh">📅 出發前 2–4 週</span><span class="en">📅 2–4 weeks before</span></h4>
+      <label><input type="checkbox"><span><span class="zh">訂來回機票（假日早訂）</span><span class="en">Book return flights (early for weekends)</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">訂 4 晚住宿：金城 ×2、山后 ×1、山外 ×1</span><span class="en">Book 4 nights: Jincheng ×2, Shanhou ×1, Shanwai ×1</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">預約單車：確認機場送車、甲租乙還、附鎖與燈</span><span class="en">Reserve bikes: airport delivery, one-way return, lock & lights included</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">投保旅遊平安險</span><span class="en">Buy travel insurance</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">查獅山砲陣地砲操時刻</span><span class="en">Check Shishan gun-drill times</span></span></label></div>
+    <div class="clist"><h4><span class="zh">🎒 打包清單</span><span class="en">🎒 Packing list</span></h4>
+      <label><input type="checkbox"><span><span class="zh">防風外套、薄手套、頭巾（11 月風大）</span><span class="en">Windbreaker, light gloves, neck buff (windy November)</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">安全帽、前後燈、反光背心</span><span class="en">Helmet, front & rear lights, reflective vest</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">騎車褲／坐墊套、太陽眼鏡、防曬</span><span class="en">Padded shorts or seat cover, sunglasses, sunscreen</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">水壺、行動電源、手機架</span><span class="en">Water bottle, power bank, phone mount</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">悠遊卡／一卡通（K-Bike、公車）、身分證</span><span class="en">EasyCard / iPASS (K-Bike, bus), ID</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">小急救包、雨衣</span><span class="en">Small first-aid kit, rain jacket</span></span></label></div>
+    <div class="clist"><h4><span class="zh">🌤 出發前 1–3 天</span><span class="en">🌤 1–3 days before</span></h4>
+      <label><input type="checkbox"><span><span class="zh">看風力預報，D2 大橋日若風大就和 D3 對調</span><span class="en">Check wind forecast; swap D2 (bridge) with D3 if too windy</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">查 D1 建功嶼退潮時間</span><span class="en">Check low tide for Jiangong Islet on D1</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">下載離線地圖，存好住宿與租車行電話</span><span class="en">Download offline maps; save lodging & bike-shop numbers</span></span></label>
+      <label><input type="checkbox"><span><span class="zh">確認航班時間</span><span class="en">Confirm flight times</span></span></label></div>
+  </div>
+
+  <h3 class="sub"><span class="zh">騎乘須知</span><span class="en">Riding tips</span></h3>
+  <div class="tips">
+    <div class="tip"><b class="zh">🚲 租車</b><b class="en">🚲 Bike rental</b><p class="zh">金城、機場周邊有多家租車行。也可用 K-Bike 公共自行車（悠遊卡、一卡通可用），但長途建議租變速車或電輔車。</p><p class="en">Several shops around Jincheng and the airport. K-Bike public bikes take EasyCard/iPASS, but for long days rent a geared bike or e-bike.</p></div>
+    <div class="tip"><b class="zh">🌉 金門大橋</b><b class="en">🌉 Kinmen Bridge</b><p class="zh">全長約 5.4 公里，設有人行道與自行車道；橋面最高約 47 公尺，有段長緩坡，慢慢騎。</p><p class="en">About 5.4 km with a walkway and bike lane; the deck rises to ~47 m, so expect a long gentle climb.</p></div>
+    <div class="tip"><b class="zh">⚠️ 只走既有道路</b><b class="en">⚠️ Stay on the road</b><p class="zh">部分區域仍有未清除地雷，不要進入標示禁止進入的區域。</p><p class="en">Some areas still have uncleared mines — never enter signed no-entry zones.</p></div>
+    <div class="tip"><b class="zh">🌇 天黑得早</b><b class="en">🌇 Early sunset</b><p class="zh">11 月約 17:20 日落，前後燈一定要帶。</p><p class="en">Sunset is around 5:20 pm in November — always carry lights.</p></div>
+  </div>
+
+  <h3 class="sub"><span class="zh">緊急聯絡</span><span class="en">Emergency</span></h3>
+  <div class="contacts">
+    <div><b>110</b><span class="zh">警察</span><span class="en">Police</span></div>
+    <div><b>119</b><span class="zh">消防・救護車</span><span class="en">Fire / Ambulance</span></div>
+    <div><b>112</b><span class="zh">手機緊急撥號</span><span class="en">Mobile emergency</span></div>
+  </div>
+</section>
+</main>
+<footer class="wrap">
+  <span class="zh">資料參考：</span><span class="en">Sources: </span><a href="https://cars.tvbs.com.tw/car-news/82932">TVBS</a> · <a href="https://smiletaiwan.cw.com.tw/article/3954">Smile Taiwan (K-Bike)</a> · <a href="https://ctyeh.com/articles/77">ctyeh.com</a> · <a href="https://ctyeh.com/articles/4905">ctyeh.com (safety)</a> · <a href="https://roo.cash/blog/?p=113408">roo.cash</a>.
+  <span class="zh">價格、營業與砲操時間請以官方最新公告為準。</span><span class="en">Check official sources for latest prices, hours and drill times.</span>
+</footer>
+<script>
+(function(){
+  var lang='zh';
+  try{var s=localStorage.getItem('kmlang');if(s)lang=s}catch(e){}
+  if(location.hash=='#en')lang='en';
+  function setLang(l){lang=l;document.body.className='l-'+l;document.documentElement.lang=l=='zh'?'zh-Hant':'en';
+    document.querySelectorAll('.lang button').forEach(function(b){b.classList.toggle('on',b.dataset.l==l)});
+    try{localStorage.setItem('kmlang',l)}catch(e){} calc();}
+  document.querySelectorAll('.lang button').forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.l)})});
+
+  var map=document.querySelector('.map');
+  function sel(d){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.d==d)});
+    map.classList.toggle('focus',d!='0');
+    map.querySelectorAll('.rt').forEach(function(r){r.classList.toggle('sel',r.dataset.d==d)});
+    map.querySelectorAll('.poi').forEach(function(p){p.classList.toggle('sel',p.classList.contains('p'+d))});
+  }
+  document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){sel(t.dataset.d)})});
+
+  var ppl=2,lvl=0;
+  var items=[
+    [['來回機票','Return flights'],['台北松山⇄金門','Taipei Songshan ⇄ Kinmen'],[4000,6000],'pp'],
+    [['單車租金 5 天','Bike rental, 5 days'],['一般變速車／電輔車（估）','Geared bike / e-bike (est.)'],[1500,3000],'pp'],
+    [['住宿 4 晚','Lodging, 4 nights'],['民宿雙人房，每晚 2,000／3,500','Double room, 2,000 / 3,500 per night'],[2000,3500],'room'],
+    [['餐飲 5 天','Food, 5 days'],['每天 500／800','500 / 800 per day'],[2500,4000],'pp'],
+    [['門票・雜支・伴手禮','Tickets, extras, souvenirs'],['多數景點免費','Most sites are free'],[1000,2500],'pp']
+  ];
+  function fmt(n){return 'NT$'+Math.round(n).toLocaleString('en-US')}
+  function perFor(l,p){var r=Math.ceil(p/2),s=0;items.forEach(function(it){s+=it[3]=='room'?it[2][l]*4*r/p:it[2][l]});return s}
+  function calc(){
+    var z=lang=='zh'?0:1,rooms=Math.ceil(ppl/2),per=0,rows='';
+    items.forEach(function(it){
+      var v=it[3]=='room'? it[2][lvl]*4*rooms/ppl : it[2][lvl]; per+=v;
+      var extra=it[3]=='room'?(z?' ('+rooms+' room'+(rooms>1?'s':'')+', shared by '+ppl+')':'（'+rooms+' 間，'+ppl+' 人分攤）'):'';
+      rows+='<tr><td>'+it[0][z]+'<small>'+it[1][z]+extra+'</small></td><td class="n">'+fmt(v)+'</td></tr>';
+    });
+    document.getElementById('btbody').innerHTML=rows;
+    document.getElementById('bper').textContent=fmt(per);
+    document.getElementById('btot').textContent=fmt(per*ppl);
+    document.getElementById('bsub').textContent=z? (ppl+(ppl>1?' people':' person')+' · '+(lvl?'Comfort':'Budget')+' · '+fmt(per)+' each') : (ppl+' 人・'+(lvl?'舒適':'省錢')+'版・每人 '+fmt(per));
+    document.getElementById('heroBudget').textContent='NT$'+(perFor(0,2)/1000).toFixed(1)+'k–'+(perFor(1,2)/1000).toFixed(1)+'k';
+  }
+  function seg(id,cb){var el=document.getElementById(id);el.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){el.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');cb(+b.dataset.v);calc()})})}
+  seg('ppl',function(v){ppl=v});seg('lvl',function(v){lvl=v});
+  setLang(lang);
+})();
+</script>
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>本頁行程、價格與營業時間為規劃參考，資料來源見頁尾「資料參考」，版權屬原作者，不在上述授權範圍內；實際請以官方最新公告為準。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p>需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body>
+</html>
