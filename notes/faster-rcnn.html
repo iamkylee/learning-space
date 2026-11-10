@@ -1,0 +1,1681 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Faster R-CNN 互動教學</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 與線代、機率筆記同一套方格筆記本版型；藍色＝函數值／前向，琥珀色＝導數／梯度（反向） */
+:root{
+  --paper:#F5F7F4; --sheet:#FFFFFF; --sunk:#ECF0EC; --ink:#1B2430; --muted:#5A6672; --rule:#D8E0DA; --grid:#E3EAE5;
+  --row:#2560B5; --row-soft:#DCE8F8; --col:#B8620E; --col-soft:#F8E6D0;
+  --pen:#B2382E; --pen-soft:#F6DFDC; --good:#2E7A4F; --good-soft:#DCEFE3; --violet:#6750A4; --violet-soft:#E9E4F5;
+  --f-display:"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+    --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+    --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161B; --sheet:#182028; --sunk:#1F2932; --ink:#E3E9EE; --muted:#97A5B1; --rule:#2B3742; --grid:#1C252D;
+  --row:#79A8F0; --row-soft:#1D3354; --col:#EAA35C; --col-soft:#3D2C1A;
+  --pen:#EF877C; --pen-soft:#40221F; --good:#6CCB95; --good-soft:#173527; --violet:#B3A3F0; --violet-soft:#2A2545;
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+a{color:var(--row)}
+:focus-visible{outline:2px solid var(--row);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.r{color:var(--row);font-weight:600}.c{color:var(--col);font-weight:600}.pen{color:var(--pen)}
+
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.side{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;box-sizing:border-box;max-height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;overscroll-behavior:contain;padding-block:28px 40px}
+.side .brand{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.3}
+.side .sub{font-size:12.5px;color:var(--muted);margin:4px 0 16px}
+.toc{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc .part{font-size:12px;letter-spacing:.08em;color:var(--muted);padding:14px 8px 4px;font-weight:500}
+.toc a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:5px 8px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.45}
+.toc a:hover{background:var(--sunk)}
+.toc a.on{background:var(--row-soft)}
+.toc .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+main{min-width:0;padding-block:12px 80px}
+.mbar{display:none}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .side{display:none}
+  .mbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);padding-block:8px;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .mbar select{width:100%;font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--sheet);color:var(--ink)}
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+
+.hero{padding-block:36px 20px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero h1{font-size:clamp(32px,5vw,48px)}
+.hero .lead{margin-top:14px;color:var(--muted);max-width:36em}
+.hero .lead b{color:var(--ink)}
+.hero-fig{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:16px;overflow-x:auto}
+@media (max-width:720px){.hero{grid-template-columns:minmax(0,1fr)}}
+
+.part-head{margin-top:56px;padding:22px 22px;border-radius:14px;background:var(--row-soft);display:grid;gap:6px}
+.part-head.b{background:var(--col-soft)}
+.part-head .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.part-head h2{font-size:clamp(26px,3.6vw,34px)}
+.part-head p{max-width:62ch}
+
+section.sec{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:28px clamp(16px,3vw,32px);margin-top:28px;scroll-margin-top:16px}
+@media (max-width:900px){section.sec{scroll-margin-top:60px}}
+.sec .label{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.sec h2{font-size:clamp(23px,3vw,29px);margin-bottom:16px}
+.sec h3{font-size:19px;margin:30px 0 10px}
+.prose{max-width:68ch;display:grid;gap:12px}
+.prose>*,.box>*,.steps>div>div,.prose li{min-width:0;overflow-wrap:break-word}
+.prose ul,.prose ol{margin:0;padding-left:1.4em;display:grid;gap:6px}
+.formula{overflow-x:auto;padding:8px 0;max-width:100%}
+.formula mjx-container{margin:0!important}
+.box{border-radius:10px;padding:14px 16px;display:grid;gap:6px;max-width:68ch;font-size:15px;margin-top:14px}
+.box b.t{font-size:13px;letter-spacing:.04em}
+.box.key{background:var(--row-soft)} .box.warn{background:var(--pen-soft)} .box.tip{background:var(--good-soft)} .box.amber{background:var(--col-soft)}
+.tbl{overflow-x:auto;max-width:100%;margin-top:10px}
+table{border-collapse:collapse;font-size:14.5px;min-width:100%}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:700}
+td.num{font-family:var(--f-mono);white-space:nowrap}
+code{font-family:var(--f-mono);font-size:.9em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+pre{margin:0;overflow-x:auto;background:var(--sunk);border-radius:10px;padding:14px 16px;font-family:var(--f-mono);font-size:13px;line-height:1.65}
+pre code{background:none;padding:0}
+.cm{color:var(--muted)}
+.steps{counter-reset:s;display:grid;gap:10px;margin-top:10px;max-width:72ch}
+.steps>div{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px}
+.steps>div::before{counter-increment:s;content:counter(s);font-family:var(--f-mono);font-size:13px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--sheet);display:flex;align-items:center;justify-content:center;margin-top:4px}
+
+/* demo */
+.demo{border:1.5px dashed var(--rule);border-radius:12px;padding:16px;margin-top:22px;display:grid;gap:12px;background:var(--paper)}
+.demo>*{min-width:0}
+.demo h4{font-size:17px}
+.demo .hint{font-size:14px;color:var(--muted);max-width:70ch}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.ctrl{display:flex;align-items:center;gap:8px;font-size:13.5px;min-width:0}
+.ctrl label{color:var(--muted);white-space:nowrap}
+.ctrl input[type=range]{width:130px;accent-color:var(--row)}
+.ctrl output{font-family:var(--f-mono);font-size:13px;min-width:3.6em}
+.btn{font:inherit;font-size:13.5px;padding:6px 12px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1.3}
+.btn:hover{border-color:var(--row)}
+.btn[aria-pressed="true"]{background:var(--row-soft);border-color:var(--row)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.out{font-family:var(--f-mono);font-size:13.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;overflow-x:auto;line-height:1.7}
+.cv{width:100%;min-width:0}
+.cv canvas{display:block;width:100%;border-radius:8px;background:var(--sheet);border:1px solid var(--rule)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}}
+.chip{display:inline-block;font-size:12.5px;font-weight:500;padding:1px 9px;border-radius:999px;font-family:var(--f-body)}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.bad{background:var(--pen-soft);color:var(--pen)} .chip.info{background:var(--row-soft);color:var(--row)}
+
+/* matrix widgets */
+.mx{display:inline-grid;gap:3px;padding:4px 7px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:6px;vertical-align:middle}
+.mx input,.mx .cell{width:44px;height:34px;box-sizing:border-box;text-align:center;font-family:var(--f-mono);font-size:14px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);color:var(--ink);padding:0}
+.mx .cell{display:flex;align-items:center;justify-content:center}
+.mx button.cell{cursor:pointer}
+.mx .hr{background:var(--row-soft);border-color:var(--row);color:var(--row);font-weight:700}
+.mx .hc{background:var(--col-soft);border-color:var(--col);color:var(--col);font-weight:700}
+.mx .ho{background:var(--violet-soft);border-color:var(--violet);color:var(--violet);font-weight:700}
+.mxrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--f-mono)}
+.mxlab{display:grid;gap:4px;justify-items:center;font-size:12.5px;color:var(--muted)}
+
+/* quiz */
+.quiz{display:grid;gap:16px;margin-top:20px}
+.q{display:grid;gap:8px;border-top:1px dashed var(--rule);padding-top:14px}
+.q .qt{font-weight:500}
+.q .opts{display:grid;gap:6px}
+.q .opt{text-align:left;font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);color:var(--ink);cursor:pointer}
+.q .opt:hover:not(:disabled){border-color:var(--row)}
+.q .opt.right{background:var(--good-soft);border-color:var(--good)} .q .opt.wrong{background:var(--pen-soft);border-color:var(--pen)}
+.q .ex{font-size:14.5px;background:var(--sunk);border-radius:8px;padding:9px 12px}
+.score{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+.tl{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:10px}
+@media (max-width:720px){.tl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tl>div{display:flex;flex-direction:column;gap:4px;padding:8px;border-top:3px solid var(--ink);background:var(--sheet);border-radius:0 0 8px 8px;min-width:0}
+.tl b{font-family:var(--f-mono);font-size:13px}
+.tl .k{font-size:12.5px;padding:2px 7px;border-radius:6px;border-left:3px solid;background:var(--sunk);overflow-wrap:anywhere}
+.tl .o{border-color:var(--muted)}.tl .t{border-color:var(--row)}.tl .n{border-color:var(--pen)}.tl .a{border-color:var(--col)}.tl .f{border-color:var(--good)}.tl .b{border-color:var(--rule)}
+.strip{display:flex;flex-wrap:wrap;gap:3px}
+.strip span{width:30px;height:26px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11.5px;border:1px solid var(--rule);border-radius:4px;background:var(--sheet);color:var(--muted)}
+.strip span.on{background:var(--col-soft);border-color:var(--col);color:var(--col);font-weight:700}
+.strip span.on2{background:var(--row-soft);border-color:var(--row);color:var(--row);font-weight:700}
+.stage{display:flex;flex-wrap:wrap;gap:6px}
+.stage button{font:inherit;font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer}
+.stage button[aria-pressed="true"]{background:var(--col-soft);border-color:var(--col);color:var(--col);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:5px}
+.flow{display:grid;gap:6px;font-size:14.5px;max-width:68ch}
+.flow>div{display:grid;grid-template-columns:minmax(0,1fr);background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:8px 12px}
+.flow>div b{font-family:var(--f-display);font-size:16px}
+.flow .sh{font-family:var(--f-mono);font-size:13px;color:var(--col)}
+.flow .ar{text-align:center;color:var(--muted);background:none;border:none;padding:0;line-height:1}
+</style>
+<meta name="description" content="從「到處猜框」到「擺好模板再微調」：IoU、Anchor、RPN、NMS、RoI Pooling、四個 loss，並通往 SSD 與 YOLO；每一步都有可操作的示範。">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>:root{--line:var(--rule);--accent:var(--row);--bg:var(--paper);--surface2:var(--sunk)}.ls-foot{max-width:960px}</style>
+</head><body>
+<div class="ls-top"><a href="../index.html">← 學習空間</a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
+<div class="shell">
+<aside class="side" aria-label="目錄">
+  <div class="brand">Faster R-CNN<br>互動教學</div>
+  <div class="sub">Anchor、RPN、Proposals、RoI Pooling，一路走到 SSD 與 YOLO</div>
+  <ol class="toc" id="toc"></ol>
+</aside>
+
+<main>
+  <div class="mbar"><select id="jump" aria-label="跳到章節"></select></div>
+
+  <header class="hero">
+    <div>
+      <h1>從 Anchor 到 YOLO：Faster R-CNN 互動教學</h1>
+      <p class="lead">寫給「看了 RPN、proposals 卻怎麼都兜不起來」的人。我們用投影片上的 <b>7×7 特徵圖、每格 9 個 anchor</b> 當主線，每一步都有可以操作的示範：自己擺 anchor、拉 dx dy dw dh、一步一步做 NMS、看 RoI Pooling 怎麼取最大值。</p>
+      <p class="lead">最後一篇說明 <b>SSD 怎麼把 RPN 直接變成偵測頭、SSD 和 YOLOv1 差在哪、YOLO 又怎麼改造 anchor</b>，所以這一頁也是看懂單階段偵測器的起點。顏色約定：<span class="r">藍色＝anchor（預先擺好的模板框）</span>、<span class="c">琥珀色＝網路預測出來的框</span>、<span style="color:var(--good);font-weight:600">綠色＝標註框（正確答案）</span>、<span class="pen">紅色＝常見錯誤</span>。</p>
+    </div>
+    <div class="hero-fig" aria-label="Faster R-CNN 五個步驟">
+      <div class="steps" style="margin:0">
+        <div><div><b>卷積</b>：整張圖跑一次，得到特徵圖 7×7×512</div></div>
+        <div><div><b>RPN</b>：每格對 9 個 <span class="r">anchor</span> 各給 2 個分數 + 4 個修正量（18 和 36 個通道）</div></div>
+        <div><div><b>Proposal layer</b>：修正、篩選、NMS，留下幾百個<span class="c">候選框</span></div></div>
+        <div><div><b>RoI Pooling</b>：每個候選框在特徵圖上挖出一塊，統一成 7×7×512</div></div>
+        <div><div><b>偵測頭</b>：判斷類別（20 類 + 背景）、再把框修準一次</div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= A ================= -->
+  <div class="part-head" id="partA">
+    <div class="eyebrow">第一篇</div>
+    <h2>起源與基礎</h2>
+    <p>先弄清楚：要解決什麼問題、框怎麼表示、怎麼量兩個框有多像，以及特徵圖上的「一格」到底對應原圖哪裡。</p>
+  </div>
+
+  <section class="sec" id="s1">
+    <div class="label">第 1 節</div>
+    <h2>這一頁在講什麼：從「到處猜框」到「擺好模板再微調」</h2>
+    <div class="prose">
+      <p>物件偵測要回答兩件事：<strong>東西在哪裡</strong>（一個框）、<strong>是什麼</strong>（一個類別）。最早的方法很直接：先用別的演算法在圖上猜出約 2,000 個「可能有東西」的框，這些框就叫 <strong>proposals（候選框、區域提案）</strong>，再一個一個拿去分類。</p>
+      <p>Faster R-CNN（2015）的關鍵貢獻是：<strong>不再用外部演算法猜框，而是讓網路自己在特徵圖的每一格上擺好幾個固定形狀的模板框（anchor），再學著判斷「這個模板裡有沒有東西」以及「模板要怎麼移動、縮放才會剛好框住」</strong>。負責這件事的小網路叫 RPN（Region Proposal Network）。投影片標題「use anchor instead of proposals」說的就是這件事。</p>
+      <p>這個「擺好模板 + 預測修正量」的想法後來被 SSD（default boxes）和 YOLOv2、v3（anchor boxes）直接拿去用，只是把「有沒有東西」換成「是哪一類」，並且拿掉第二階段。所以理解 RPN，就等於理解了單階段偵測器的一半。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>年份</th><th>模型</th><th>框從哪裡來</th><th>重點</th></tr></thead>
+      <tbody>
+        <tr><td class="num">2014</td><td>R-CNN</td><td>Selective Search 約 2,000 個</td><td>每個框各跑一次 CNN，非常慢</td></tr>
+        <tr><td class="num">2015</td><td>Fast R-CNN</td><td>Selective Search</td><td>整張圖只跑一次 CNN，用 RoI Pooling 挖特徵</td></tr>
+        <tr><td class="num">2015</td><td><b>Faster R-CNN</b></td><td><b>RPN + anchor</b></td><td>候選框也交給網路，幾乎整條流程都在 GPU 上</td></tr>
+        <tr><td class="num">2016</td><td>YOLOv1</td><td>沒有 anchor，每格直接猜 2 個框</td><td>單階段，快，但定位較粗</td></tr>
+        <tr><td class="num">2016</td><td>SSD</td><td>default boxes（就是 anchor）放在多個尺度</td><td>單階段，直接預測類別</td></tr>
+        <tr><td class="num">2017</td><td>YOLOv2</td><td>anchor（用 k-means 挑形狀）</td><td>改用 anchor 後召回率明顯上升</td></tr>
+        <tr><td class="num">2018</td><td>YOLOv3</td><td>3 個尺度 × 每格 3 個 anchor</td><td>沿用到 v4、v5、v7</td></tr>
+        <tr><td class="num">2021 起</td><td>YOLOX、v8 等</td><td>anchor-free</td><td>每個位置直接預測到四邊的距離</td></tr>
+      </tbody>
+    </table></div>
+    <h3>符號小辭典</h3>
+    <div class="prose"><p>本頁會出現的符號。每個符號在正文第一次出現時也會再解釋一次。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>符號</th><th>意思</th><th>詳見</th></tr></thead>
+      <tbody>
+        <tr><td>\((x_1,y_1,x_2,y_2)\)</td><td>框的左上角、右下角座標（單位：原圖像素）</td><td class="num">2</td></tr>
+        <tr><td>\((x,y,w,h)\)</td><td>框的中心座標 x、y，寬 w、高 h</td><td class="num">2</td></tr>
+        <tr><td>IoU</td><td>Intersection over Union，兩框交集面積 ÷ 聯集面積，0 到 1</td><td class="num">2</td></tr>
+        <tr><td>\(\cap,\ \cup\)</td><td>交集（重疊的部分）、聯集（合起來的部分）</td><td class="num">2</td></tr>
+        <tr><td>stride \(s\)</td><td>步長：特徵圖上一格對應原圖幾個像素（本頁 32）</td><td class="num">4</td></tr>
+        <tr><td>\(k\)</td><td>每一格的 anchor 數，投影片上 \(k=3\times3=9\)</td><td class="num">5</td></tr>
+        <tr><td>\(r\)</td><td>長寬比 aspect ratio，本頁定義 \(r=h/w\)</td><td class="num">5</td></tr>
+        <tr><td>\(A_x,A_y,A_w,A_h\)</td><td>anchor 的中心、寬、高（A 代表 anchor）</td><td class="num">8</td></tr>
+        <tr><td>\(d_x,d_y,d_w,d_h\)</td><td>網路預測的修正量（投影片上的 dx dy dw dh）</td><td class="num">8</td></tr>
+        <tr><td>\(G\)、\(t\)</td><td>G：標註框（ground truth）；t：讓 anchor 變成 G 的「正確修正量」</td><td class="num">8、13</td></tr>
+        <tr><td>\(e^{x}\)、\(\ln\)</td><td>e ≈ 2.718 的 x 次方；自然對數（e 次方的反運算）</td><td class="num">8</td></tr>
+        <tr><td>\(\sigma(x)\)</td><td>sigmoid：\(1/(1+e^{-x})\)，把任何數壓到 0 到 1</td><td class="num">7、18</td></tr>
+        <tr><td>softmax</td><td>把一組分數變成加總為 1 的機率</td><td class="num">7</td></tr>
+        <tr><td>NMS</td><td>Non-Maximum Suppression，非極大值抑制：刪掉重複的框</td><td class="num">10</td></tr>
+        <tr><td>\(\lfloor\cdot\rfloor,\ \lceil\cdot\rceil\)</td><td>無條件捨去、無條件進位</td><td class="num">11</td></tr>
+        <tr><td>\(p,\ p^*\)</td><td>預測的「是物體」機率；標籤（正樣本 1、負樣本 0）</td><td class="num">14</td></tr>
+        <tr><td>\(\lambda\)</td><td>lambda：兩種 loss 之間的權重</td><td class="num">14</td></tr>
+        <tr><td>\(C\)</td><td>類別數（PASCAL VOC 20 類、COCO 80 類）</td><td class="num">12、15</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="s2">
+    <div class="label">第 2 節</div>
+    <h2>框的兩種寫法與 IoU</h2>
+    <div class="prose">
+      <p>一個框有兩種常見寫法，之後會一直互相換算：</p>
+      <ul>
+        <li><strong>角點式</strong> \((x_1,y_1,x_2,y_2)\)：左上角和右下角。影像座標的 y 軸<strong>向下</strong>，所以 \(y_1\) 是上緣、\(y_2\) 是下緣。</li>
+        <li><strong>中心式</strong> \((x,y,w,h)\)：中心點、寬、高。預測修正量時用這種比較方便。</li>
+      </ul>
+    </div>
+    <div class="formula">\[ x=\frac{x_1+x_2}{2},\quad y=\frac{y_1+y_2}{2},\quad w=x_2-x_1,\quad h=y_2-y_1 \qquad\Longleftrightarrow\qquad x_1=x-\tfrac{w}{2},\ \ x_2=x+\tfrac{w}{2} \]</div>
+    <div class="prose">
+      <p>要知道兩個框「有多像」，用 <strong>IoU</strong>（Intersection over Union，交並比）：重疊面積除以兩框合起來的面積。完全重合是 1，完全不重疊是 0。</p>
+    </div>
+    <div class="formula">\[ \text{IoU}(A,B)=\frac{\text{面積}(A\cap B)}{\text{面積}(A\cup B)}=\frac{\text{交集}}{\text{面積}(A)+\text{面積}(B)-\text{交集}} \]</div>
+    <div class="prose"><p>（\(\cap\) 是交集，\(\cup\) 是聯集。分母要減掉一次交集，因為兩個面積相加時重疊的部分被算了兩次。）交集的寬 = \(\min(x_2^A,x_2^B)-\max(x_1^A,x_1^B)\)，若小於 0 就是 0；高同理。</p></div>
+    <div class="demo">
+      <h4>示範：拉動琥珀色框，看 IoU 怎麼算</h4>
+      <div class="ctrls">
+        <div class="ctrl"><label for="iou-x">x₁</label><input type="range" id="iou-x" min="0" max="180" value="90"><output id="iou-xv"></output></div>
+        <div class="ctrl"><label for="iou-y">y₁</label><input type="range" id="iou-y" min="0" max="180" value="80"><output id="iou-yv"></output></div>
+        <div class="ctrl"><label for="iou-w">w</label><input type="range" id="iou-w" min="20" max="160" value="100"><output id="iou-wv"></output></div>
+        <div class="ctrl"><label for="iou-h">h</label><input type="range" id="iou-h" min="20" max="160" value="100"><output id="iou-hv"></output></div>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-iou"></canvas></div><div class="out" id="iou-out"></div></div>
+      <p class="hint">注意：兩框只錯開一點點，IoU 就掉得很快。兩個 100×100 的框只要錯開 1/3（約 33 像素），IoU 就只剩 0.5。這就是為什麼 0.7 是很嚴格的門檻。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3">
+    <div class="label">第 3 節</div>
+    <h2>R-CNN 三代：proposals 從哪裡來</h2>
+    <div class="prose">
+      <p>先釐清投影片上的一個小筆誤：「region proposal network of <em>fast</em> RCNN」應該是 <strong>Faster</strong> R-CNN。三代名字很像，差別其實只有兩件事：<strong>候選框從哪裡來</strong>，以及 <strong>CNN 跑幾次</strong>。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>R-CNN（2014）</th><th>Fast R-CNN（2015）</th><th>Faster R-CNN（2015）</th></tr></thead>
+      <tbody>
+        <tr><td>候選框</td><td>Selective Search</td><td>Selective Search</td><td><b>RPN</b></td></tr>
+        <tr><td>產生候選框的時間</td><td>約 2 秒／張（CPU）</td><td>約 2 秒／張（CPU）</td><td>約 10 毫秒（GPU）</td></tr>
+        <tr><td>CNN 跑幾次</td><td>每個候選框一次（約 2,000 次）</td><td>整張圖一次</td><td>整張圖一次</td></tr>
+        <tr><td>怎麼取每個框的特徵</td><td>在原圖上裁切、縮放成固定大小</td><td>RoI Pooling</td><td>RoI Pooling</td></tr>
+        <tr><td>分類器</td><td>SVM</td><td>softmax（網路內）</td><td>softmax（網路內）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose">
+      <p><strong>Selective Search</strong> 是一個傳統（非深度學習）演算法：先把影像切成很多顏色、紋理相近的小區塊，再反覆把最像的鄰居合併，合併過程中出現過的每一塊都當成一個候選框。它不用學習，但很慢，而且跟後面的網路沒有任何關係，網路學得再好也幫不了它。</p>
+      <p>Fast R-CNN 已經解決了「CNN 跑 2,000 次」的問題，於是整個系統的瓶頸變成 Selective Search 本身。Faster R-CNN 的想法是：<strong>卷積特徵圖本來就已經算出來了，裡面應該已經有「哪裡有東西」的資訊，那就在上面再加幾層，直接預測候選框</strong>。這幾層就是 RPN，它和後面的偵測網路<strong>共用同一張特徵圖</strong>，所以幾乎不增加計算量。</p>
+    </div>
+    <div class="box key"><b class="t">一句話記住</b><p>如果把 Faster R-CNN 的 RPN 換回 Selective Search，剩下的部分就是 Fast R-CNN。所以「RPN + RoI Pooling」就是「Faster 的新東西 + Fast 的舊東西」。</p></div>
+  </section>
+
+  <section class="sec" id="s4">
+    <div class="label">第 4 節</div>
+    <h2>特徵圖、步長，以及「一格」對應原圖哪裡</h2>
+    <div class="prose">
+      <p>卷積網路每經過一次 stride 2 的池化，寬高就減半。VGG-16 經過 5 次池化，寬高變成原圖的 \(1/32\)。這個縮小倍率叫 <strong>stride（步長）\(s\)</strong>：特徵圖上走一格，等於原圖走 \(s\) 個像素。</p>
+      <p>投影片以 224×224 的輸入為例：\(224\div32=7\)，所以特徵圖是 7×7，每一格有一個 512 維的向量（512 是最後一層卷積的通道數）。第 \(i\) 列、第 \(j\) 欄那一格（從 0 開始數），在原圖上的中心是：</p>
+    </div>
+    <div class="formula">\[ \big(\,(j+0.5)\,s,\ \ (i+0.5)\,s\,\big) \qquad\text{例如 } s=32,\ (i,j)=(3,3)\ \Rightarrow\ (112,\,112) \]</div>
+    <div class="box warn"><b class="t">投影片的 7×7 是示意</b><p>真實的 Faster R-CNN 用的是 VGG-16 的 <code>conv5_3</code>，它在第 5 次池化<strong>之前</strong>，步長是 16：224 的輸入會得到 14×14，不是 7×7。原論文把影像短邊縮放到 600，所以特徵圖大約 60×40（38×63 左右）。本頁照投影片用 7×7、步長 32 來講，道理完全一樣，只是數字比較小、畫得出來。</p></div>
+    <div class="demo">
+      <h4>示範：點一格，看它對應原圖哪一塊</h4>
+      <div class="btns" id="grid-pick"></div>
+      <div class="two"><div class="cv"><canvas id="cv-grid"></canvas></div><div class="out" id="grid-out"></div></div>
+      <p class="hint">這一格的向量「看得到」的範圍其實比這一小塊大很多。論文提到，RPN 在 VGG 特徵圖上用的 3×3 視窗，對應到原圖的有效感受野約 228 像素。所以一格的向量足以判斷附近有沒有一個大物體。</p>
+    </div>
+  </section>
+
+  <!-- ================= B ================= -->
+  <div class="part-head b" id="partB">
+    <div class="eyebrow">第二篇</div>
+    <h2>Anchor 與 RPN</h2>
+    <div><p>對應課程投影片：「use anchor instead of proposals」（9 個 anchor 和 dx dy dw dh）以及論文的「2k scores / 4k coordinates」圖。</p></div>
+  </div>
+
+  <section class="sec" id="s5">
+    <div class="label">第 5 節</div>
+    <h2>Anchor：3 種大小 × 3 種長寬比 = 9 個模板</h2>
+    <div class="prose">
+      <p><strong>Anchor（錨框）</strong>是事先擺好、<strong>固定不動、不需要學習</strong>的參考框。在特徵圖的<strong>每一格</strong>中心，都擺上同一組 \(k\) 個不同形狀的框。投影片上是 3 種大小（sizes，也叫 scales）× 3 種長寬比（aspect ratios），所以 \(k=3\times3=9\)。這就是 7×7×9×2 和 7×7×9×4 裡那個「9」的由來。</p>
+      <p>為什麼要多種形狀？因為物體有高有扁：人是直立的長方形，車是橫的長方形，球接近正方形。如果每格只有一個正方形模板，網路就得從很遠的形狀硬拉過去，很難學。多擺幾種，總有一個比較接近，只要再「微調」一點點就好。</p>
+      <p>給定大小 \(s\)（代表面積 \(s^2\)）和長寬比 \(r=h/w\)，要求面積不變：\(w\cdot h=s^2\) 且 \(h=r\,w\)，解出來：</p>
+    </div>
+    <div class="formula">\[ w=\frac{s}{\sqrt r},\qquad h=s\sqrt r \qquad\text{例如 } s=64,\ r=2:\ \ w=\frac{64}{1.414}=45.3,\ \ h=90.5 \]</div>
+    <div class="prose">
+      <p>論文的設定是面積 \(128^2,\ 256^2,\ 512^2\)、長寬比 1:1、1:2、2:1（影像短邊 600 像素）。本頁的 224 像素小圖改用 32、64、128，比例一樣。</p>
+    </div>
+    <div class="demo">
+      <h4>示範：點特徵圖上的任一格，看那一格的 anchor（顏色和投影片一樣：藍小、紅中、綠大）</h4>
+      <div class="ctrls">
+        <div class="btns" id="anc-sizes"></div>
+        <div class="btns" id="anc-ratios"></div>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-anc"></canvas></div><div class="out" id="anc-out"></div></div>
+      <p class="hint">試試看：關掉一些大小或比例，k 就會變少；全部打開是 9。邊緣格子的大 anchor 會超出影像，這是正常的（訓練時這些會被忽略，見第 13 節）。</p>
+    </div>
+    <div class="box key"><b class="t">anchor 不是 proposal</b><p>投影片寫「9 proposals for each grid」，嚴格說是 9 個 <strong>anchor</strong>。anchor 是固定模板；網路對它打分數、修正位置，再經過篩選之後留下來的，才叫 proposals。7×7×9 = <b>441 個 anchor</b>，最後可能只留幾十到幾百個 proposals。</p></div>
+  </section>
+
+  <section class="sec" id="s6">
+    <div class="label">第 6 節</div>
+    <h2>RPN 長什麼樣：滑動視窗、2k 個分數、4k 個座標</h2>
+    <div class="prose">
+      <p>對照論文那張圖（sliding window → 256-d → cls layer / reg layer）：</p>
+    </div>
+    <div class="steps">
+      <div><div><strong>sliding window（滑動視窗）</strong>：一個 3×3 的視窗在特徵圖上逐格滑過。實作上就是一層 <strong>3×3 卷積</strong>（padding 1，所以輸出仍是 7×7），後面接 ReLU。這和投影片的「3×3×512」是同一件事。</div></div>
+      <div><div><strong>intermediate layer（中間層）</strong>：每個位置得到一個向量。論文用 ZF 網路時是 <strong>256 維</strong>（圖上的 256-d），用 VGG-16 時是 <strong>512 維</strong>。</div></div>
+      <div><div><strong>cls layer（分類層）</strong>：輸出 <strong>2k 個分數</strong>，每個 anchor 2 個：「是物體」和「是背景」。k = 9 時就是 18。</div></div>
+      <div><div><strong>reg layer（迴歸層）</strong>：輸出 <strong>4k 個座標修正量</strong>，每個 anchor 4 個：\(d_x,d_y,d_w,d_h\)。k = 9 時就是 36。</div></div>
+    </div>
+    <div class="prose">
+      <p>論文說 cls、reg 是兩個「全連接層」，但因為同一組權重要用在<strong>每一個位置</strong>，實作上就是兩個 <strong>1×1 卷積</strong>（1×1 卷積就等於對每一格各自做一次全連接）。所以整張特徵圖一次就得到：</p>
+    </div>
+    <div class="formula">\[ \underbrace{7\times7\times512}_{\text{特徵圖}}\ \xrightarrow{\ 3\times3\ \text{conv}\ }\ 7\times7\times512\ \begin{cases}\xrightarrow{\ 1\times1\ \text{conv}\ } 7\times7\times\underbrace{18}_{2k} & \text{分數}\\[4pt] \xrightarrow{\ 1\times1\ \text{conv}\ } 7\times7\times\underbrace{36}_{4k} & \text{修正量}\end{cases} \]</div>
+    <div class="prose">
+      <p>RPN 很小：3×3 卷積的參數是 \(3\times3\times512\times512\approx236\) 萬，兩個輸出層只有 \(512\times(18+36)=27{,}648\) 個（加上偏置共約 2.4 百萬）。和 VGG-16 的一億多個參數相比幾乎可以忽略。</p>
+    </div>
+    <div class="demo">
+      <h4>示範：選一個格子和一個 anchor，看它的 6 個數字放在輸出張量的哪裡</h4>
+      <div class="ctrls">
+        <div class="ctrl"><label for="ch-i">列 i</label><input type="range" id="ch-i" min="0" max="6" value="3"><output id="ch-iv"></output></div>
+        <div class="ctrl"><label for="ch-j">欄 j</label><input type="range" id="ch-j" min="0" max="6" value="3"><output id="ch-jv"></output></div>
+        <div class="ctrl"><label for="ch-a">anchor a</label><input type="range" id="ch-a" min="0" max="8" value="4"><output id="ch-av"></output></div>
+      </div>
+      <div class="two">
+        <div class="cv"><canvas id="cv-ch"></canvas></div>
+        <div style="display:grid;gap:10px;min-width:0">
+          <div><div class="hint" style="margin-bottom:4px">cls 輸出 7×7×<b>18</b>，第 (i, j) 格的 18 個通道</div><div class="strip" id="ch-cls"></div></div>
+          <div><div class="hint" style="margin-bottom:4px">reg 輸出 7×7×<b>36</b>，第 (i, j) 格的 36 個通道</div><div class="strip" id="ch-reg"></div></div>
+          <div class="out" id="ch-out"></div>
+        </div>
+      </div>
+      <p class="hint">這裡用「同一個 anchor 的數字放在一起」的排法（通道 2a、2a+1 與 4a 到 4a+3）。不同程式碼的排法不一樣：例如原始 Caffe 版把 18 個通道排成「前 9 個是背景、後 9 個是物體」。但意思都相同：每個 anchor 有 2 個分數、4 個修正量。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s7">
+    <div class="label">第 7 節</div>
+    <h2>為什麼是 18 和 36，而不是 54？Reshape 與 softmax</h2>
+    <div class="prose">
+      <p>18 和 36 是<strong>兩個分開的輸出</strong>，描述的是<strong>同一批</strong> 441 個 anchor。可以想成兩張表，都是 441 列（每個 anchor 一列）：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>anchor 編號</th><th>位置 (i, j)</th><th>形狀</th><th>分數表（2 欄）</th><th>修正量表（4 欄）</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td class="num">(0, 0)</td><td>小、扁</td><td class="num">背景 1.3、物體 −0.8</td><td class="num">0.02, −0.11, 0.05, 0.10</td></tr>
+        <tr><td class="num">1</td><td class="num">(0, 0)</td><td>小、方</td><td class="num">背景 1.1、物體 −0.5</td><td class="num">…</td></tr>
+        <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td class="num">440</td><td class="num">(6, 6)</td><td>大、高</td><td class="num">背景 0.4、物體 0.9</td><td class="num">…</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose">
+      <p>投影片上的 X Y W H 欄就是修正量表，T F 欄就是分數表。把 18 和 36 疊成 54 個通道在數學上不是不行，但兩組數字的意義、損失函數都不同，分開最清楚。總共是 441 × (2 + 4) = 2,646 個數字。</p>
+      <p><strong>兩個 Reshape 在做什麼？</strong>softmax 要在「同一個 anchor 的 2 個分數」之間做，才能得到加總為 1 的兩個機率。所以先把 7×7×18 變形成 7×7×9×2，對最後一維做 softmax，再變回 7×7×18。Reshape 只是換個排列方式，<strong>不會改變任何數字</strong>。</p>
+    </div>
+    <div class="formula">\[ P(\text{物體})=\frac{e^{z_\text{物}}}{e^{z_\text{物}}+e^{z_\text{背}}}\qquad\text{例如 } z_\text{物}=1.2,\ z_\text{背}=-0.3:\ \ \frac{e^{1.2}}{e^{1.2}+e^{-0.3}}=\frac{3.320}{3.320+0.741}=0.818 \]</div>
+    <div class="prose">
+      <p>（\(z\) 是網路輸出、還沒變成機率的原始分數，常叫 logit。）兩類的 softmax 其實等於對「分數差」做 sigmoid：\(P(\text{物體})=\sigma(z_\text{物}-z_\text{背})\)，其中 \(\sigma(x)=1/(1+e^{-x})\)。所以很多新的實作（例如 PyTorch 的 torchvision）每個 anchor 只輸出 <strong>1 個</strong>分數再做 sigmoid，cls 層就變成 k = 9 個通道而不是 18 個。兩種做法等價。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s8">
+    <div class="label">第 8 節</div>
+    <h2>dx、dy、dw、dh：網路預測的是「修正量」，不是座標</h2>
+    <div class="prose">
+      <p>投影片右邊那張圖：灰色是 anchor，橘色是真正的物體。網路不直接猜「框在 (93, 106)、寬 156」，而是猜<strong>相對於 anchor 要怎麼改</strong>。設 anchor 的中心、寬、高是 \(A_x,A_y,A_w,A_h\)，網路輸出 \(d_x,d_y,d_w,d_h\)，修正後的框是：</p>
+    </div>
+    <div class="formula">\[ x=A_x+A_w\,d_x,\qquad y=A_y+A_h\,d_y,\qquad w=A_w\,e^{d_w},\qquad h=A_h\,e^{d_h} \]</div>
+    <div class="prose">
+      <ul>
+        <li><strong>中心位移要乘上 \(A_w\)、\(A_h\)</strong>：\(d_x=0.1\) 代表「往右移 anchor 寬度的 10%」。這樣大框和小框可以用同一套比例來學，網路不必管物體實際有幾個像素。</li>
+        <li><strong>寬高用 \(e^{d}\)</strong>（e ≈ 2.718 的 d 次方）：\(e^{d}\) 永遠是正數，寬高不會變成負的；\(d_w=0\) 就是不變，\(d_w=\ln2\approx0.69\) 是變兩倍，\(d_w=-0.69\) 是變一半。放大和縮小是對稱的。</li>
+        <li>所以 \(d_w\) 不是「拉長了幾像素」，而是<strong>縮放倍率取對數</strong>。</li>
+      </ul>
+      <p>反過來，訓練時要告訴網路「正確答案」：給定標註框 \(G=(G_x,G_y,G_w,G_h)\)，讓 anchor 剛好變成 G 的修正量 \(t\) 就是把上面的公式倒過來解（\(\ln\) 是自然對數，\(e^{x}\) 的反運算）：</p>
+    </div>
+    <div class="formula">\[ t_x=\frac{G_x-A_x}{A_w},\qquad t_y=\frac{G_y-A_y}{A_h},\qquad t_w=\ln\frac{G_w}{A_w},\qquad t_h=\ln\frac{G_h}{A_h} \]</div>
+    <div class="demo">
+      <h4>示範：自己調 dx dy dw dh，把藍色 anchor 修成綠色標註框</h4>
+      <div class="ctrls"><div class="btns" id="dec-gt"></div></div>
+      <div class="ctrls"><div class="btns" id="dec-anc"></div></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="dec-dx">dx</label><input type="range" id="dec-dx" min="-0.8" max="0.8" step="0.01" value="0"><output id="dec-dxv"></output></div>
+        <div class="ctrl"><label for="dec-dy">dy</label><input type="range" id="dec-dy" min="-0.8" max="0.8" step="0.01" value="0"><output id="dec-dyv"></output></div>
+        <div class="ctrl"><label for="dec-dw">dw</label><input type="range" id="dec-dw" min="-1.5" max="1.5" step="0.01" value="0"><output id="dec-dwv"></output></div>
+        <div class="ctrl"><label for="dec-dh">dh</label><input type="range" id="dec-dh" min="-1.5" max="1.5" step="0.01" value="0"><output id="dec-dhv"></output></div>
+        <button class="btn" id="dec-ans">填入正確答案 t</button>
+        <button class="btn" id="dec-zero">歸零</button>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-dec"></canvas></div><div class="out" id="dec-out"></div></div>
+      <p class="hint">先選標註框，anchor 會自動放在最靠近它中心的格子。換不同形狀的 anchor 按「填入正確答案」，比較 t 的大小：形狀越接近，t 越接近 0，網路就越好學。這就是擺 9 種形狀的理由。</p>
+    </div>
+  </section>
+
+  <!-- ================= C ================= -->
+  <div class="part-head" id="partC">
+    <div class="eyebrow">第三篇</div>
+    <h2>Proposals 與 RoI Pooling</h2>
+    <p>RPN 吐出 441 組分數和修正量之後，怎麼變成幾百個候選框？候選框大小都不一樣，又怎麼送進固定大小的全連接層？</p>
+  </div>
+
+  <section class="sec" id="s9">
+    <div class="label">第 9 節</div>
+    <h2>Proposal layer：從 441 個 anchor 到幾十、幾百個候選框</h2>
+    <div class="prose">
+      <p>這一層<strong>沒有任何要學的參數</strong>，只是一串固定的處理步驟：</p>
+    </div>
+    <div class="steps">
+      <div><div><strong>解碼</strong>：用第 8 節的公式，把每個 anchor 的 4 個修正量套上去，得到 441 個框。</div></div>
+      <div><div><strong>裁切（clip）</strong>：超出影像的部分切掉，座標限制在 0 到影像寬高之間。</div></div>
+      <div><div><strong>去掉太小的框</strong>：寬或高小於門檻的丟掉（原版實作是縮放後 16 像素；本示範用 12）。</div></div>
+      <div><div><strong>依「是物體」的分數排序，留前 N 個</strong>（pre-NMS top-N）。原版實作訓練時 12000、測試時 6000。</div></div>
+      <div><div><strong>NMS</strong>：IoU 門檻 0.7，刪掉跟高分框重疊太多的框（下一節詳細示範）。</div></div>
+      <div><div><strong>再留前 K 個</strong>（post-NMS top-N）：訓練時 2000、測試時 300。這些就是 <strong>proposals</strong>。</div></div>
+    </div>
+    <div class="prose">
+      <p>每個 proposal 就是一列 [分數, \(x_1,y_1,x_2,y_2\)]。<strong>它只有位置，還沒有類別</strong>：只知道「這裡很可能有東西」，不知道是人還是車。</p>
+    </div>
+    <div class="demo">
+      <h4>示範：一步一步走完 Proposal layer（RPN 的輸出是模擬的）</h4>
+      <div class="stage" id="pp-stage"></div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="pp-pre">pre-NMS N</label><input type="range" id="pp-pre" min="20" max="441" value="441"><output id="pp-prev"></output></div>
+        <div class="ctrl"><label for="pp-thr">NMS 門檻</label><input type="range" id="pp-thr" min="0.3" max="0.9" step="0.05" value="0.7"><output id="pp-thrv"></output></div>
+        <div class="ctrl"><label for="pp-post">post-NMS K</label><input type="range" id="pp-post" min="3" max="100" value="30"><output id="pp-postv"></output></div>
+        <button class="btn" id="pp-prev-btn">上一步</button><button class="btn" id="pp-next-btn">下一步</button><button class="btn" id="pp-seed">換一組模擬預測</button>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-pp"></canvas></div><div class="out" id="pp-out"></div></div>
+      <div class="legend"><span><i style="border-color:var(--good)"></i>標註框</span><span><i style="border-color:var(--col)"></i>候選框（越不透明分數越高）</span><span><i style="border-color:var(--row)"></i>anchor</span></div>
+      <p class="hint">在 441 個 anchor 的小例子裡，「留前 12000 個」等於全部保留，所以預設 N = 441。把 NMS 門檻拉低到 0.3，重複框會被刪得更兇；拉高到 0.9，同一個物體會留下很多幾乎一樣的框。</p>
+    </div>
+    <div class="box amber"><b class="t">真實尺度</b><p>原論文影像約 1000×600，步長 16，特徵圖約 60×40，共 60 × 40 × 9 ≈ <b>2 萬個 anchor</b>。所以才需要先留 6000 到 12000 個再做 NMS（NMS 的計算量和框數的平方成正比），最後留下 300 到 2000 個。</p></div>
+  </section>
+
+  <section class="sec" id="s10">
+    <div class="label">第 10 節</div>
+    <h2>NMS 一步一步做</h2>
+    <div class="prose">
+      <p>同一個物體附近有很多 anchor，修正後都會擠到差不多的位置，變成一堆重複的框。<strong>NMS（Non-Maximum Suppression，非極大值抑制）</strong>的規則很簡單：</p>
+    </div>
+    <div class="steps">
+      <div><div>從還沒處理的框裡，挑出<strong>分數最高</strong>的，確定保留。</div></div>
+      <div><div>把剩下的框裡，和它 <strong>IoU 超過門檻</strong>的全部刪掉（它們被認為是在框同一個東西）。</div></div>
+      <div><div>重複，直到沒有框可以處理。</div></div>
+    </div>
+    <div class="demo">
+      <h4>示範：按「下一步」，看每一輪保留誰、刪掉誰</h4>
+      <div class="ctrls">
+        <div class="ctrl"><label for="nms-thr">IoU 門檻</label><input type="range" id="nms-thr" min="0.1" max="0.9" step="0.05" value="0.5"><output id="nms-thrv"></output></div>
+        <button class="btn" id="nms-step">下一步</button><button class="btn" id="nms-reset">重來</button>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-nms"></canvas></div><div class="out" id="nms-out"></div></div>
+      <p class="hint">框 G 跟人和車都只有部分重疊。門檻 0.5 時它會留下來（變成一個多餘的框）；門檻降到 0.3 就會被刪掉。門檻太低的風險是：兩個真的靠很近的物體（例如並肩的兩個人），其中一個會被誤刪。</p>
+    </div>
+    <div class="box key"><b class="t">Faster R-CNN 做了兩次 NMS</b><p>第一次在 Proposal layer，<strong>不分類別</strong>（RPN 只知道有沒有東西），門檻 0.7。第二次在最後輸出，<strong>每個類別各做一次</strong>，門檻常用 0.3 到 0.5。分類別做的好處是：一個人騎在馬上，人框和馬框重疊很多，也不會互相刪掉。</p></div>
+  </section>
+
+  <section class="sec" id="s11">
+    <div class="label">第 11 節</div>
+    <h2>RoI Pooling：把大小不一的框變成同樣大小的特徵</h2>
+    <div class="prose">
+      <p>問題：proposals 大小、長寬比都不同，可是後面的全連接層只接受固定長度的輸入。<strong>RoI Pooling</strong>（RoI = Region of Interest，感興趣區域）的做法是：<strong>不管框多大，都在特徵圖上切成固定的 \(P\times P\) 格（論文 7×7），每一格取最大值</strong>。</p>
+    </div>
+    <div class="steps">
+      <div><div><strong>投影</strong>：proposal 的座標是原圖像素，除以步長 \(s\)，換成特徵圖上的位置。例如 \(171\div32=5.34\)。</div></div>
+      <div><div><strong>取整（量化）</strong>：四捨五入成整數格子。5.34 變成 5。</div></div>
+      <div><div><strong>切成 \(P\times P\) 格</strong>：區域高 \(h\)、寬 \(w\) 格，每一小格大約 \(h/P\times w/P\)。第 \(p\) 格的範圍用 \(\lfloor p\cdot h/P\rfloor\) 到 \(\lceil (p+1)\cdot h/P\rceil\)（\(\lfloor\ \rfloor\) 是無條件捨去，\(\lceil\ \rceil\) 是無條件進位），所以格子之間可能重疊一點。</div></div>
+      <div><div><strong>每一小格、每個通道各自取最大值</strong>。512 個通道分開做，所以每個 proposal 都得到 \(P\times P\times512\)。</div></div>
+    </div>
+    <div class="prose"><p>N 個 proposals 就是 \(N\times7\times7\times512\)，可以整批送進全連接層。關鍵在於<strong>卷積只跑了一次</strong>：每個 proposal 只是在同一張特徵圖上「挖一塊」，這就是 Fast R-CNN 比 R-CNN 快很多的原因。</p></div>
+    <div class="demo">
+      <h4>示範：8×8 特徵圖（只畫 1 個通道，影像 256×256、步長 32）</h4>
+      <div class="ctrls">
+        <div class="btns" id="roi-mode"></div>
+        <div class="btns" id="roi-p"></div>
+      </div>
+      <div class="ctrls">
+        <div class="ctrl"><label for="roi-x1">x₁</label><input type="range" id="roi-x1" min="0" max="240" value="15"><output id="roi-x1v"></output></div>
+        <div class="ctrl"><label for="roi-y1">y₁</label><input type="range" id="roi-y1" min="0" max="240" value="42"><output id="roi-y1v"></output></div>
+        <div class="ctrl"><label for="roi-x2">x₂</label><input type="range" id="roi-x2" min="16" max="256" value="171"><output id="roi-x2v"></output></div>
+        <div class="ctrl"><label for="roi-y2">y₂</label><input type="range" id="roi-y2" min="16" max="256" value="170"><output id="roi-y2v"></output></div>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-roi"></canvas></div><div style="display:grid;gap:10px;min-width:0"><div class="cv"><canvas id="cv-roi2"></canvas></div><div class="out" id="roi-out"></div></div></div>
+      <div class="legend"><span><i style="border-color:var(--col)"></i>proposal 投影到特徵圖的真實位置</span><span><i style="border-color:var(--row)"></i>取整後實際使用的區域</span><span><i style="border-color:var(--violet)"></i>每一小格；圓圈＝被取到的最大值</span></div>
+      <p class="hint">比較兩種模式：RoI Pooling 會把琥珀色的框「吸」到整數格線上（藍色），最多偏掉半格，也就是原圖 16 像素；RoI Align 不取整，在每一小格裡取 4 個點，用雙線性內插估計數值再平均。小物體或需要畫出精確輪廓（分割）時，這個差別很重要。</p>
+    </div>
+    <div class="box tip"><b class="t">RoI Align（Mask R-CNN，2017）</b><p>現在的實作（例如 torchvision、Detectron2）幾乎都用 RoI Align 取代 RoI Pooling。想法不變：把任意大小的框變成固定 \(P\times P\)；差別只在不取整。</p></div>
+  </section>
+
+  <section class="sec" id="s12">
+    <div class="label">第 12 節</div>
+    <h2>偵測頭與最後的輸出</h2>
+    <div class="prose">
+      <p>每個 proposal 的 7×7×512 攤平成 25,088 維，經過兩層全連接（各 4096 維，就是 VGG-16 原本的 fc6、fc7），再分成兩個輸出：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>輸出</th><th>形狀（VOC，C = 20）</th><th>意思</th></tr></thead>
+      <tbody>
+        <tr><td>類別分數</td><td class="num">N × 21</td><td>\(C+1\)：20 類 + 背景，softmax 後變機率</td></tr>
+        <tr><td>框的修正量</td><td class="num">N × 84</td><td>\((C+1)\times4\)：<strong>每個類別各一組</strong> \(d_x,d_y,d_w,d_h\)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose">
+      <p>和 RPN 比較：RPN 只問「有沒有東西」（2 類），偵測頭問「是哪一類」（21 類）；RPN 修正的是 anchor，偵測頭修正的是 proposal（解碼公式一模一樣，只是「A」換成 proposal）。所以<strong>一個框總共被修正兩次</strong>。每個類別各學一組修正量，因為人框和車框該怎麼修很不一樣。</p>
+      <p>後處理：</p>
+    </div>
+    <div class="steps">
+      <div><div>對每個 proposal、每個類別（不含背景），取該類的機率和該類那 4 個修正量，算出一個框。</div></div>
+      <div><div>機率太低的丟掉（例如小於 0.05）。</div></div>
+      <div><div><strong>每個類別各自做 NMS</strong>（門檻 0.3 到 0.5）。</div></div>
+      <div><div>每張圖最多保留一定數量（例如 100 個），依分數排序輸出。</div></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>proposal</th><th>背景</th><th>人</th><th>車</th><th>…</th><th>結果</th></tr></thead>
+      <tbody>
+        <tr><td class="num">#1</td><td class="num">0.02</td><td class="num"><b>0.95</b></td><td class="num">0.01</td><td>…</td><td>人 0.95，用「人」那組修正量修框</td></tr>
+        <tr><td class="num">#2</td><td class="num">0.05</td><td class="num"><b>0.88</b></td><td class="num">0.03</td><td>…</td><td>人 0.88，和 #1 重疊太多，人類別 NMS 刪掉</td></tr>
+        <tr><td class="num">#3</td><td class="num">0.07</td><td class="num">0.02</td><td class="num"><b>0.90</b></td><td>…</td><td>車 0.90</td></tr>
+        <tr><td class="num">#4</td><td class="num"><b>0.93</b></td><td class="num">0.03</td><td class="num">0.02</td><td>…</td><td>各類機率都低於門檻，不輸出</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose"><p>最後輸出是一份清單：每列「類別、分數、\(x_1,y_1,x_2,y_2\)」。</p></div>
+    <h3>整條流程的形狀一覽</h3>
+    <div class="flow">
+      <div><b>輸入影像</b><span class="sh">224×224×3</span></div><div class="ar">↓ VGG-16 卷積層（整張圖一次）</div>
+      <div><b>特徵圖</b><span class="sh">7×7×512</span></div><div class="ar">↓ RPN：3×3 conv，再分兩路 1×1 conv</div>
+      <div><b>分數 + 修正量</b><span class="sh">7×7×18 與 7×7×36（441 個 anchor × (2 + 4)）</span></div><div class="ar">↓ Proposal layer（解碼、裁切、排序、NMS）</div>
+      <div><b>proposals</b><span class="sh">N×4（N = 300 測試／2000 訓練）</span></div><div class="ar">↓ RoI Pooling（加上同一張特徵圖）</div>
+      <div><b>每個框的特徵</b><span class="sh">N×7×7×512</span></div><div class="ar">↓ 攤平 → FC 4096 → FC 4096</div>
+      <div><b>類別 + 第二次修正</b><span class="sh">N×21 與 N×84</span></div><div class="ar">↓ 每類 NMS + 分數門檻</div>
+      <div><b>偵測結果</b><span class="sh">類別、分數、框</span></div>
+    </div>
+  </section>
+
+  <!-- ================= D ================= -->
+  <div class="part-head b" id="partD">
+    <div class="eyebrow">第四篇</div>
+    <h2>訓練</h2>
+    <div><p>網路一開始是亂猜的。它怎麼知道哪個 anchor「應該」說有東西、應該怎麼修？答案是：拿標註框來比 IoU，自動產生每個 anchor 的標籤。</p></div>
+  </div>
+
+  <section class="sec" id="s13">
+    <div class="label">第 13 節</div>
+    <h2>標籤怎麼給：正樣本、負樣本、忽略</h2>
+    <div class="prose"><p>對每個 anchor，計算它和每個標註框的 IoU，取最大的那個：</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>條件</th><th>標籤</th><th>要學什麼</th></tr></thead>
+      <tbody>
+        <tr><td>IoU &gt; 0.7</td><td><span class="chip good">正樣本</span></td><td>分數學「物體」，修正量學 \(t\)（第 8 節公式）</td></tr>
+        <tr><td>某個標註框的「IoU 最高的 anchor」</td><td><span class="chip good">也算正樣本</span></td><td>同上。避免某個物體沒有任何 anchor 超過 0.7、因此沒人負責</td></tr>
+        <tr><td>IoU &lt; 0.3</td><td><span class="chip bad">負樣本</span></td><td>分數學「背景」，修正量不用學</td></tr>
+        <tr><td>介於 0.3 到 0.7</td><td><span class="chip info">忽略</span></td><td>模稜兩可，不算進 loss</td></tr>
+        <tr><td>超出影像邊界的 anchor</td><td><span class="chip info">忽略（訓練時）</span></td><td>論文的作法；約 2 萬個 anchor 會剩約 6000 個</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose"><p>正樣本很少、負樣本極多（圖上大部分都是背景）。如果全部拿來算 loss，網路學到「全部說背景」就有很高的正確率。所以<strong>每張圖只抽 256 個 anchor</strong>，正負各一半；正樣本不到 128 個時，用負樣本補滿。</p></div>
+    <div class="demo">
+      <h4>示範：441 個 anchor 會被標成什麼？</h4>
+      <div class="ctrls">
+        <div class="ctrl"><label for="lb-pos">正樣本門檻</label><input type="range" id="lb-pos" min="0.5" max="0.9" step="0.05" value="0.7"><output id="lb-posv"></output></div>
+        <div class="ctrl"><label for="lb-neg">負樣本門檻</label><input type="range" id="lb-neg" min="0.1" max="0.5" step="0.05" value="0.3"><output id="lb-negv"></output></div>
+        <button class="btn" id="lb-cross" aria-pressed="true">忽略超出邊界的 anchor</button>
+        <button class="btn" id="lb-force" aria-pressed="true">每個標註框的最佳 anchor 算正樣本</button>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-lb"></canvas></div><div class="out" id="lb-out"></div></div>
+      <div class="legend"><span><i style="border-color:var(--good)"></i>標註框</span><span><i style="border-color:var(--row)"></i>正樣本（IoU 超過門檻）</span><span><i style="border-color:var(--violet);border-top-style:dashed"></i>正樣本（各標註框的最佳 anchor）</span><span><i style="border-color:var(--col)"></i>忽略（只畫中心點）</span></div>
+      <p class="hint">觀察：<strong>車沒有任何 anchor 的 IoU 超過 0.7</strong>（最高約 0.63，因為它的中心剛好落在兩格之間），人和球則有。如果關掉「最佳 anchor 算正樣本」，車就完全沒有正樣本，RPN 永遠學不會找它。這就是那條補充規則存在的原因。</p>
+    </div>
+    <h3>偵測頭的標籤</h3>
+    <div class="prose">
+      <p>偵測頭的對象是 proposals，規則類似但門檻不同：和某個標註框 IoU ≥ 0.5 的是前景，標籤是那個標註框的類別；IoU 在 [0.1, 0.5) 之間的是背景（類別 0）。Fast R-CNN 原論文每批 2 張圖共抽 128 個（每張 64 個），其中 25% 是前景；常見的 py-faster-rcnn 實作則是每張圖 128 個。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s14">
+    <div class="label">第 14 節</div>
+    <h2>四個 loss 與 Smooth L1</h2>
+    <div class="prose"><p>RPN 的 loss（偵測頭的形式完全一樣，只是 2 類換成 21 類）：</p></div>
+    <div class="formula">\[ L=\frac{1}{N_\text{cls}}\sum_i L_\text{cls}(p_i,p_i^*)+\lambda\,\frac{1}{N_\text{reg}}\sum_i p_i^*\,L_\text{reg}(d_i,t_i) \]</div>
+    <div class="prose">
+      <ul>
+        <li>\(i\)：第 i 個被抽到的 anchor；\(p_i\)：預測「是物體」的機率；\(p_i^*\)：標籤，正樣本 1、負樣本 0。</li>
+        <li>\(L_\text{cls}\)：交叉熵（cross-entropy）。\(L_\text{reg}\)：Smooth L1，對 4 個修正量各算一次再相加。</li>
+        <li>\(p_i^*L_\text{reg}\)：乘上 \(p_i^*\) 代表<strong>只有正樣本才算框的 loss</strong>。背景沒有「正確的框」可以學。</li>
+        <li>\(N_\text{cls}=256\)（抽樣數），\(N_\text{reg}\approx2400\)（anchor 位置數），\(\lambda=10\) 讓兩項大小差不多。</li>
+      </ul>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>loss</th><th>對象</th><th>型式</th></tr></thead>
+      <tbody>
+        <tr><td>RPN 分類</td><td>256 個 anchor</td><td>二元交叉熵（物體／背景）</td></tr>
+        <tr><td>RPN 迴歸</td><td>其中的正樣本</td><td>Smooth L1</td></tr>
+        <tr><td>偵測頭分類</td><td>128 個 proposal</td><td>21 類交叉熵</td></tr>
+        <tr><td>偵測頭迴歸</td><td>其中的前景，只算正確類別那 4 個數</td><td>Smooth L1</td></tr>
+      </tbody>
+    </table></div>
+    <div class="formula">\[ \text{smooth}_{L_1}(x)=\begin{cases}0.5\,x^2/\beta & |x|<\beta\\ |x|-0.5\,\beta & \text{其他}\end{cases}\qquad(\text{論文 }\beta=1) \]</div>
+    <div class="demo">
+      <h4>示範：Smooth L1、L1、L2 的比較</h4>
+      <div class="ctrls">
+        <div class="ctrl"><label for="sl-b">β</label><input type="range" id="sl-b" min="0.2" max="2" step="0.1" value="1"><output id="sl-bv"></output></div>
+        <div class="ctrl"><label for="sl-x">誤差 x</label><input type="range" id="sl-x" min="-3" max="3" step="0.05" value="2.5"><output id="sl-xv"></output></div>
+      </div>
+      <div class="two"><div class="cv"><canvas id="cv-sl"></canvas></div><div class="out" id="sl-out"></div></div>
+      <p class="hint">誤差小時，Smooth L1 像平方誤差（L2），在 0 附近很平滑，梯度會跟著誤差變小；誤差大時像絕對值（L1），梯度固定是 ±1，不會因為一個離得很遠的框而梯度爆炸。</p>
+    </div>
+    <div class="prose">
+      <p><strong>怎麼一起訓練？</strong>原論文用「四步交替訓練」：先訓練 RPN，再用它的 proposals 訓練 Fast R-CNN，然後固定共用的卷積層微調 RPN，最後微調偵測頭。後來的實作多半直接把四個 loss 加起來一起訓練（近似聯合訓練）。之所以說「近似」，是因為 proposal 的座標經過排序、NMS 這些不可微分的步驟，偵測頭的梯度不會沿著框座標傳回 RPN。</p>
+    </div>
+  </section>
+
+  <!-- ================= E ================= -->
+  <div class="part-head" id="partE">
+    <div class="eyebrow">第五篇</div>
+    <h2>通往 SSD 與 YOLO</h2>
+    <p>如果 RPN 不只說「有沒有東西」，而是直接說「是哪一類」，還需要第二階段嗎？這個問題就是單階段偵測器的起點。</p>
+  </div>
+
+  <section class="sec" id="s15">
+    <div class="label">第 15 節</div>
+    <h2>把 RPN 的「物體／背景」換成「是哪一類」</h2>
+    <div class="prose">
+      <p>回頭看 RPN：每一格、每個 anchor 輸出 2 個分數 + 4 個修正量。如果把 2 個分數換成 \(C+1\) 個（C 類 + 背景），一次就能得到類別和框，<strong>根本不需要 proposals、RoI Pooling 和第二個偵測頭</strong>。這就是單階段（one-stage）偵測器的核心想法：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>模型</th><th>每個位置輸出幾個通道</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>Faster R-CNN 的 RPN</td><td class="num">k × (2 + 4)</td><td>只分物體／背景，還要第二階段</td></tr>
+        <tr><td>SSD</td><td class="num">k × (C + 1 + 4)</td><td>default boxes = anchor，放在 6 個不同解析度的特徵圖上</td></tr>
+        <tr><td>YOLOv1</td><td class="num">B × 5 + C</td><td><strong>沒有 anchor</strong>；每格 2 個框直接猜座標，類別每格只有一組</td></tr>
+        <tr><td>YOLOv2</td><td class="num">k × (5 + C)</td><td>5 = 4 個修正量 + 1 個 objectness（有沒有物體）；k = 5</td></tr>
+        <tr><td>YOLOv3</td><td class="num">3 × (5 + C)</td><td>3 個尺度、每格 3 個 anchor；COCO 時 3 × 85 = 255</td></tr>
+        <tr><td>anchor-free（YOLOX、v8）</td><td class="num">4 + C</td><td>每個位置直接預測到框四邊的距離</td></tr>
+      </tbody>
+    </table></div>
+    <div class="demo">
+      <h4>示範：算算看每個模型的輸出形狀和總共預測幾個框</h4>
+      <div class="btns" id="hd-model"></div>
+      <div class="btns" id="hd-c"></div>
+      <div class="out" id="hd-out"></div>
+    </div>
+    <div class="box key"><b class="t">那為什麼還要兩階段？</b><p>單階段要在幾千到幾萬個 anchor 上直接分 C 類，其中絕大多數是背景，類別極度不平衡；兩階段先用 RPN 把背景大量刷掉，偵測頭只看幾百個比較像樣的框，再精修一次，所以早期準確率較高、但比較慢。後來 RetinaNet 用 Focal Loss 解決了不平衡問題，單階段的準確率才追上來。</p></div>
+  </section>
+
+  <section class="sec" id="s16">
+    <div class="label">第 16 節</div>
+    <h2>SSD：把 RPN 直接當成偵測頭</h2>
+    <div class="box amber" style="margin-top:0;margin-bottom:14px"><b class="t">論文</b><p><b>SSD: Single Shot MultiBox Detector</b>，Wei Liu 等人，arXiv 2015 年 12 月、ECCV 2016。SSD = <b>S</b>ingle <b>S</b>hot（一次前向）MultiBox <b>D</b>etector。詳見第 20 節。</p></div>
+    <div class="prose">
+      <p>投影片「Use RPN as detection head」說的就是上一節的想法真的做出來的樣子。SSD（Single Shot MultiBox Detector，2016）在 VGG-16 的 <code>Conv4_3</code> 特徵圖（38×38×512）上，直接接一個 3×3 卷積，輸出：</p>
+    </div>
+    <div class="formula">\[ 38\times38\times\big(\underbrace{4}_{\text{每格 default box 數}}\times(\underbrace{\text{classes}}_{C+1}+\underbrace{4}_{\text{修正量}})\big)\qquad\text{VOC：}\ 38\times38\times\big(4\times(21+4)\big)=38\times38\times100 \]</div>
+    <div class="prose">
+      <p>對照 RPN 一項一項看：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Faster R-CNN 的 RPN</th><th>SSD 的偵測頭</th></tr></thead>
+      <tbody>
+        <tr><td>每格的模板框</td><td>9 個 anchor</td><td>4 或 6 個 default box（就是 anchor）</td></tr>
+        <tr><td>每個框的分數</td><td>2 個：物體／背景</td><td><b>C + 1 個</b>：每一類 + 背景，直接 softmax</td></tr>
+        <tr><td>每個框的修正量</td><td>4 個（dx, dy, dw, dh）</td><td>4 個，編碼方式相同（投影片寫 cx, cy, dh, dw）</td></tr>
+        <tr><td>預測層</td><td>3×3 conv，再接兩個 1×1 conv</td><td>直接一個 3×3 conv（實作上分類、框各一個）</td></tr>
+        <tr><td>用幾張特徵圖</td><td>1 張</td><td><b>6 張，解析度由大到小</b></td></tr>
+        <tr><td>之後</td><td>Proposal layer → RoI Pooling → 偵測頭</td><td><b>直接</b>每類 NMS → 結果</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box key"><b class="t">「classes + 4」裡的 classes 包含背景</b><p>PASCAL VOC 有 20 類，classes 要算 21：多出來的那一類是背景，代表「這個 default box 什麼都沒框到」。所以 Conv4_3 這一層每格輸出 4 × (21 + 4) = 100 個數。</p></div>
+
+    <h3>為什麼要 6 張特徵圖：多尺度分工</h3>
+    <div class="prose">
+      <p>Faster R-CNN 只在一張特徵圖上，用 9 個大小不同的 anchor 去抓所有大小的物體。SSD 的做法是<strong>讓不同解析度的特徵圖各管一段大小</strong>：</p>
+      <ul>
+        <li><strong>解析度高的淺層</strong>（38×38，一格 8 像素）：格子密，適合小物體；default box 約 30 到 60 像素。</li>
+        <li><strong>解析度低的深層</strong>（19×19 → 10×10 → 5×5 → 3×3 → 1×1）：每格的感受野越來越大，負責越來越大的物體，最後一層的框幾乎和整張 300×300 一樣大。</li>
+      </ul>
+      <p>因為大小已經交給「哪一層」來分工，每一層只需要少數幾種形狀，不必像 Faster R-CNN 那樣在一層裡塞 3 種大小 × 3 種比例。這是 SSD 每格只有 4 或 6 個框的主要原因。</p>
+    </div>
+    <h3>4 個和 6 個 default box 長什麼樣</h3>
+    <div class="prose">
+      <p>第 \(k\) 層有一個基本大小 \(s_k\)（以影像邊長的比例表示）。論文從 0.2 到 0.9 平均分配給各層（實作上 Conv4_3 另外設成 0.1）：</p>
+    </div>
+    <div class="formula">\[ s_k=s_\text{min}+\frac{s_\text{max}-s_\text{min}}{m-1}(k-1),\qquad w=s_k\sqrt{a},\quad h=\frac{s_k}{\sqrt{a}} \]</div>
+    <div class="prose">
+      <p>（\(m\)：用來預測的特徵圖數；\(a\)：長寬比 \(w/h\)，注意這裡的定義和第 5 節的 \(r=h/w\) 相反。）每格的框是：</p>
+      <ul>
+        <li>1:1、大小 \(s_k\) 的正方形；</li>
+        <li>1:1、稍大一點的正方形，大小 \(\sqrt{s_k\,s_{k+1}}\)（介於這一層和下一層之間）；</li>
+        <li>2:1 和 1:2 各一個（寬扁、瘦高）：到這裡是 <strong>4 個</strong>；</li>
+        <li>再加 3:1 和 1:3：共 <strong>6 個</strong>。</li>
+      </ul>
+      <p>SSD300 的設定：Conv4_3、Conv10_2、Conv11_2 用 4 個，Conv7（FC7）、Conv8_2、Conv9_2 用 6 個。全部加起來：</p>
+    </div>
+    <div class="formula">\[ 38^2\!\times4+19^2\!\times6+10^2\!\times6+5^2\!\times6+3^2\!\times4+1^2\!\times4=5776+2166+600+150+36+4=8732 \]</div>
+    <h3>8732 是怎麼算出來的</h3>
+    <div class="prose">
+      <p>規則只有一條：<strong>每一層的框數 = 特徵圖的格數 × 每格的 default box 數</strong>，6 層再加起來。格數就是「寬 × 高」，例如 38×38 的特徵圖有 1,444 格。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>層</th><th>特徵圖</th><th>一格約</th><th>每格框數</th><th>該層框數</th><th>累計</th><th>負責的框大小</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Conv4_3</td><td class="num">38×38</td><td class="num">8 px</td><td class="num">4</td><td class="num">38×38×4 = 5,776</td><td class="num">5,776</td><td class="num">30–60 px</td></tr>
+        <tr><td class="num">2</td><td>Conv7（FC7）</td><td class="num">19×19</td><td class="num">16 px</td><td class="num">6</td><td class="num">19×19×6 = 2,166</td><td class="num">7,942</td><td class="num">60–111 px</td></tr>
+        <tr><td class="num">3</td><td>Conv8_2</td><td class="num">10×10</td><td class="num">32 px</td><td class="num">6</td><td class="num">10×10×6 = 600</td><td class="num">8,542</td><td class="num">111–162 px</td></tr>
+        <tr><td class="num">4</td><td>Conv9_2</td><td class="num">5×5</td><td class="num">64 px</td><td class="num">6</td><td class="num">5×5×6 = 150</td><td class="num">8,692</td><td class="num">162–213 px</td></tr>
+        <tr><td class="num">5</td><td>Conv10_2</td><td class="num">3×3</td><td class="num">100 px</td><td class="num">4</td><td class="num">3×3×4 = 36</td><td class="num">8,728</td><td class="num">213–264 px</td></tr>
+        <tr><td class="num">6</td><td>Conv11_2</td><td class="num">1×1</td><td class="num">300 px</td><td class="num">4</td><td class="num">1×1×4 = 4</td><td class="num"><b>8,732</b></td><td class="num">264–315 px</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose">
+      <p>（「一格約」是原圖上相鄰兩格中心的距離；「負責的框大小」是該層 default box 的邊長範圍，以 300×300 的影像為準。）幾個讀這張表時值得注意的地方：</p>
+    </div>
+    <div class="steps">
+      <div><div><strong>特徵圖尺寸怎麼來</strong>：300 的輸入經過 VGG 前 3 次池化（每次減半、無條件進位）：300 → 150 → 75 → <b>38</b>，這是 Conv4_3。再一次池化變 <b>19</b>，這是 Conv7（SSD 把 pool5 改成不縮小，所以 FC7 仍是 19）。之後兩組 stride 2 的卷積得到 <b>10</b>、<b>5</b>；最後兩組 3×3 卷積不補邊（padding 0），5 → <b>3</b>、3 → <b>1</b>。</div></div>
+      <div><div><strong>4 個或 6 個怎麼決定</strong>：每格固定有 2 個正方形（大小 \(s_k\) 和 \(\sqrt{s_k s_{k+1}}\)），加上 2:1、1:2 就是 4 個；再加 3:1、1:3 就是 6 個。第 1 層和最後兩層只用 4 個：第 1 層格子太多（1,444 格），多放 2 個就多 2,888 個框；最後兩層的框已經大到接近整張圖，很扁或很高的形狀用處不大。</div></div>
+      <div><div><strong>框大多來自第 1 層</strong>：5,776 ÷ 8,732 ≈ <b>66%</b> 的框都在 38×38 這層，而且都是邊長 30 到 60 像素的小框。小物體靠「格子密」來覆蓋，大物體只需要少數幾個大框。</div></div>
+      <div><div><strong>每個框輸出 25 個數</strong>：21 類分數 + 4 個修正量，所以 SSD300 一次前向總共輸出 8,732 × 25 = <b>218,300</b> 個數字。</div></div>
+    </div>
+    <div class="box key"><b class="t">「Detections: 8732 per class」不是 8732 個偵測結果</b><p>它的意思是：8,732 個 default box 每一個都有 21 類分數，所以<strong>每個類別</strong>都有 8,732 個候選。接著每個類別各自去掉低分的框（例如分數 &lt; 0.01）、做 NMS（IoU 門檻 0.45），每張圖最後通常只保留分數最高的 200 個以內。YOLOv1 的「98 per class」也是同樣的意思：7 × 7 × 2 = 98 個候選。</p></div>
+    <div class="box amber"><b class="t">換成 SSD512 會怎樣？</b><p>輸入改成 512×512，特徵圖變成 64、32、16、8、4、2、1 共 7 層，每格框數是 4、6、6、6、6、4、4：64²×4 + 32²×6 + 16²×6 + 8²×6 + 4²×6 + 2²×4 + 1²×4 = 16,384 + 6,144 + 1,536 + 384 + 96 + 16 + 4 = <b>24,564</b> 個框。規則完全一樣，只是格子變多。</p></div>
+    <div class="demo">
+      <h4>示範：選一層、點一格，看 SSD300 在那裡擺的 default box</h4>
+      <div class="btns" id="ssd-layer"></div>
+      <div class="two"><div class="cv"><canvas id="cv-ssd"></canvas></div><div class="out" id="ssd-out"></div></div>
+      <p class="hint">從 38×38 切到 1×1：格子越來越粗，框越來越大。小鳥最接近的框在 38×38 那層；大狗要到 10×10 那層才有接近大小的框。框的像素大小採用常見的 SSD300 實作設定（min／max size 30–315）。</p>
+    </div>
+
+    <h3>SSD 怎麼訓練</h3>
+    <div class="prose">
+      <ul>
+        <li><strong>配對（matching）</strong>：每個標註框先配給 IoU 最高的 default box，再把所有 IoU &gt; 0.5 的 default box 也配給它。門檻比 RPN 的 0.7 寬鬆，一個物體通常會有好幾個正樣本。</li>
+        <li><strong>困難負樣本挖掘（hard negative mining）</strong>：8732 個框裡絕大多數是背景。SSD 不隨機抽，而是挑「背景分數最低、也就是最容易被誤認成物體」的負樣本，並讓負:正 ≤ 3:1。</li>
+        <li><strong>loss</strong>：\(L=\frac{1}{N}\big(L_\text{conf}+\alpha L_\text{loc}\big)\)，\(N\) 是正樣本數。\(L_\text{conf}\) 是 C + 1 類的 softmax 交叉熵，\(L_\text{loc}\) 是 Smooth L1，\(\alpha=1\)。</li>
+        <li><strong>資料增強</strong>：隨機裁切、縮放、翻轉、顏色變化。論文的消融實驗顯示，資料增強讓 mAP 從 65.5 提升到 74.3，是影響最大的一項。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="s17">
+    <div class="label">第 17 節</div>
+    <h2>SSD 與 YOLOv1 的技術差異</h2>
+    <div class="box amber" style="margin-top:0;margin-bottom:14px"><b class="t">論文</b><p><b>You Only Look Once: Unified, Real-Time Object Detection</b>，Joseph Redmon 等人，arXiv 2015 年 6 月、CVPR 2016。YOLO = <b>Y</b>ou <b>O</b>nly <b>L</b>ook <b>O</b>nce（整張圖只看一次）。它和 Faster R-CNN 同一個月上 arXiv，比 SSD 早半年；SSD 論文的比較圖（就是本節的投影片）把 YOLO 當成主要對手。詳見第 20 節。</p></div>
+    <div class="prose">
+      <p>兩者都是單階段（一次前向就輸出結果），正式發表都在 2016 年（YOLOv1 在 CVPR 2016 年 6 月，SSD 在 ECCV 2016 年 10 月），但設計差很多。投影片用三張圖點出三個重點：<strong>骨幹不同</strong>、<strong>SSD 用多種解析度、YOLOv1 只用一張特徵圖</strong>、<strong>SSD 的預測數量多很多（8732 對 98）</strong>。下面完整比較：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>SSD300</th><th>YOLOv1</th></tr></thead>
+      <tbody>
+        <tr><td>骨幹網路</td><td>VGG-16（ImageNet 預訓練），到 Conv5_3；FC6、FC7 改成卷積層，再加 4 組額外卷積層</td><td>自己設計的 24 層卷積（參考 GoogLeNet，用 1×1 卷積降維）+ <b>2 層全連接</b></td></tr>
+        <tr><td>輸入</td><td class="num">300×300</td><td class="num">448×448</td></tr>
+        <tr><td>預測用的特徵圖</td><td><b>6 張</b>：38、19、10、5、3、1</td><td><b>1 張</b>：7×7</td></tr>
+        <tr><td>預測層</td><td>3×3 卷積（每個位置只看附近）</td><td>全連接層輸出 7×7×30（每個預測都看得到整張圖）</td></tr>
+        <tr><td>模板框</td><td>default box（anchor），每格 4 或 6 個</td><td><b>沒有</b>；每格 2 個框直接猜座標</td></tr>
+        <tr><td>框的參數</td><td>相對 default box 的修正量（同 Faster R-CNN）</td><td>中心：相對所在格子的位置（0 到 1）；寬高：相對整張圖，預測 \(\sqrt{w},\sqrt{h}\)</td></tr>
+        <tr><td>類別</td><td><b>每個框</b>各有 C + 1 類分數</td><td><b>每一格</b>只有一組 C 類機率，2 個框共用</td></tr>
+        <tr><td>「有沒有東西」</td><td>背景就是第 C + 1 類</td><td>每個框一個 confidence = P(物體) × IoU</td></tr>
+        <tr><td>每類預測數</td><td class="num">8732</td><td class="num">7 × 7 × 2 = 98</td></tr>
+        <tr><td>正樣本怎麼選</td><td>IoU 最佳，以及 IoU &gt; 0.5 的 default box</td><td>物體中心所在的格子裡，2 個框中 IoU 較高的那一個</td></tr>
+        <tr><td>loss</td><td>softmax 交叉熵 + Smooth L1；困難負樣本挖掘 3:1</td><td>全部用平方誤差；座標權重 \(\lambda_\text{coord}=5\)，無物體格的權重 \(\lambda_\text{noobj}=0.5\)</td></tr>
+        <tr><td>VOC 2007 test mAP</td><td class="num">74.3</td><td class="num">63.4</td></tr>
+        <tr><td>速度（Titan X）</td><td class="num">59 FPS（batch 8；batch 1 為 46）</td><td class="num">45 FPS</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose"><p>（作為參考，同一張比較表中 Faster R-CNN（VGG-16）是 73.2 mAP、7 FPS。SSD 等於用單階段的速度，達到兩階段的準確率。）</p></div>
+
+    <h3>YOLOv1 的輸出 7×7×30 怎麼來</h3>
+    <div class="formula">\[ 30=\underbrace{2\times(x,y,w,h,\text{conf})}_{2\ \text{個框}\ \times\ 5}+\underbrace{20}_{C\ \text{類機率}} \]</div>
+    <div class="prose"><p>每一格只有一組 20 類機率，所以<strong>一格最多只能認出一種類別</strong>；每格只有 2 個框，所以一格最多兩個物體。最後的類別分數是「該格的類別機率 × 該框的 confidence」，每類 98 個。</p></div>
+    <h3>從 448×448 到 7×7×30：一層一層算</h3>
+    <div class="prose"><p>YOLOv1 的骨幹裡有 6 個會讓寬高減半的步驟（4 個池化、2 個 stride 2 的卷積），所以總步長是 \(2^6=64\)，\(448\div64=7\)。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>步驟</th><th>做什麼</th><th>輸出</th></tr></thead>
+      <tbody>
+        <tr><td>輸入</td><td></td><td class="num">448×448×3</td></tr>
+        <tr><td>1</td><td>7×7 卷積，stride 2</td><td class="num">224×224×64</td></tr>
+        <tr><td>2</td><td>2×2 最大池化</td><td class="num">112×112×64</td></tr>
+        <tr><td>3</td><td>3×3 卷積 → 2×2 池化</td><td class="num">56×56×192</td></tr>
+        <tr><td>4</td><td>4 層卷積（1×1、3×3 交替）→ 池化</td><td class="num">28×28×512</td></tr>
+        <tr><td>5</td><td>10 層卷積 → 池化</td><td class="num">14×14×1024</td></tr>
+        <tr><td>6</td><td>6 層卷積（最後一層 stride 2）</td><td class="num">7×7×1024</td></tr>
+        <tr><td>7</td><td>2 層 3×3 卷積（到這裡共 1+1+4+10+6+2 = 24 層卷積）</td><td class="num">7×7×1024</td></tr>
+        <tr><td>8</td><td>攤平 → 全連接</td><td class="num">50,176 → 4,096</td></tr>
+        <tr><td>9</td><td>全連接</td><td class="num">4,096 → <b>1,470</b></td></tr>
+        <tr><td>10</td><td>重新排成格子</td><td class="num">1,470 = <b>7×7×30</b></td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose">
+      <p>幾個重點：</p>
+      <ul>
+        <li><strong>7×7×30 是全連接層「排」出來的</strong>：最後一層全連接輸出 1,470 個數，再被重新排成 7×7×30。所以每一格的 30 個數，都是看過整張圖之後算出來的，不像 SSD 的卷積預測只看附近。</li>
+        <li><strong>參數幾乎都在第一層全連接</strong>：\(7\times7\times1024=50{,}176\) 接到 4,096，就有約 \(50{,}176\times4{,}096\approx2.06\) 億個權重。這也是後來 YOLOv2 拿掉全連接、改成全卷積的原因之一。</li>
+        <li><strong>每格 30 個數的排法</strong>：</li>
+      </ul>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>位置</th><th>內容</th><th>意思</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1–5</td><td>框 1：x, y, w, h, conf</td><td>x、y 是中心在這一格裡的相對位置（0 到 1）；w、h 是相對整張圖的寬高；conf = P(物體) × IoU</td></tr>
+        <tr><td class="num">6–10</td><td>框 2：x, y, w, h, conf</td><td>同上</td></tr>
+        <tr><td class="num">11–30</td><td>20 類機率</td><td>P(類別 | 這格有物體)，<b>2 個框共用</b></td></tr>
+      </tbody>
+    </table></div>
+    <div class="formula">\[ \text{某框對某類的分數}=P(\text{類別}\mid\text{物體})\times\text{conf}\qquad\Rightarrow\qquad 98\ \text{個框}\times20\ \text{類}=1{,}960\ \text{個分數} \]</div>
+    <div class="prose"><p>接著和 SSD 一樣：每類去掉低分的、做 NMS。所以「98 per class」是每類 98 個候選。</p></div>
+
+    <div class="demo">
+      <h4>示範：同一張圖，YOLOv1 和 SSD 各會漏掉什麼？</h4>
+      <div class="btns" id="vs-mode"></div>
+      <div class="two"><div class="cv"><canvas id="cv-vs"></canvas></div><div class="out" id="vs-out"></div></div>
+      <p class="hint">切到 YOLOv1：人和瓶子的中心落在同一格，但一格只有一組類別機率，其中一個一定認錯或漏掉；成群的三隻小鳥擠在同一格，2 個框也不夠用。切到 SSD：同一格的人和瓶子、三隻鳥各自有自己的 default box，不會互相排擠；人和狗在深層找到很合身的框。但小鳥最好的框（38×38 那層）IoU 也只有 0.48，是靠「每個標註框配給 IoU 最高的 default box」那條規則才成為正樣本。這也是 SSD 對很小的物體仍然偏弱的原因。</p>
+    </div>
+
+    <h3>三個差異各自造成什麼結果</h3>
+    <div class="steps">
+      <div><div><strong>多尺度特徵圖 vs 單一 7×7</strong>：YOLOv1 的 7×7 每格涵蓋 64×64 像素（448 ÷ 7），小物體和擠在一起的物體很容易漏。SSD 的 38×38 每格只有 8 像素，小物體有專門的層負責。</div></div>
+      <div><div><strong>anchor vs 直接猜座標</strong>：YOLOv1 從零開始猜框的位置和大小，定位誤差是它最主要的錯誤來源。SSD 從 default box 出發只要預測修正量，好學很多。YOLOv2 就是看到這點才改用 anchor（第 18 節）。</div></div>
+      <div><div><strong>卷積預測 vs 全連接</strong>：SSD 用卷積預測，參數少，而且可以接受不同大小的輸入（例如 SSD512）。YOLOv1 的全連接層讓每個預測都看得到整張圖，背景誤判比 Fast R-CNN 少，這是它的優點；但輸入大小被固定住，參數也多。</div></div>
+    </div>
+    <div class="box tip"><b class="t">SSD 贏的不只是多尺度</b><p>多尺度很重要，但論文的消融實驗顯示，資料增強（+8.8 mAP）、更多種長寬比的 default box、把 FC6/FC7 改成空洞卷積（atrous convolution），各自都有明顯貢獻。後來的 YOLOv2、v3 把這些點一一補上：anchor、多尺度預測、全卷積。</p></div>
+  </section>
+
+  <section class="sec" id="s18">
+    <div class="label">第 18 節</div>
+    <h2>YOLO 怎麼改造 anchor</h2>
+    <div class="prose">
+      <p><strong>YOLOv1 沒有 anchor</strong>。它和 Faster R-CNN 幾乎同時（2015 年）提出，每格直接猜 2 個框的座標，結果定位較粗、小物體和擠在一起的物體容易漏掉。YOLOv2 借用 Faster R-CNN 的 anchor 想法，召回率（recall）從 81% 提高到 88%，並做了兩個改良：</p>
+    </div>
+    <h3>改良一：用 k-means 挑 anchor 的形狀</h3>
+    <div class="prose"><p>Faster R-CNN 的 9 種形狀是人手挑的。YOLOv2 把訓練資料所有標註框的寬高拿來做 k-means 分群，距離用 \(d=1-\text{IoU}\)（只比形狀，不比位置），每一群的中心就是一個 anchor。這樣 5 個 anchor 的平均 IoU 就和人手挑的 9 個差不多。YOLOv3 用同樣方法挑了 9 個，分給 3 個尺度。</p></div>
+    <h3>改良二：中心偏移用 sigmoid 鎖在格子內</h3>
+    <div class="prose"><p>Faster R-CNN 的 \(x=A_x+A_w\,d_x\) 沒有限制，\(d_x\) 很大時框可以跑到圖的任何地方，訓練初期很不穩定。YOLOv2 改成：</p></div>
+    <div class="formula">\[ b_x=\sigma(t_x)+c_x,\qquad b_y=\sigma(t_y)+c_y,\qquad b_w=p_w\,e^{t_w},\qquad b_h=p_h\,e^{t_h} \]</div>
+    <div class="prose">
+      <p>（\(c_x,c_y\)：格子左上角座標，以格為單位；\(p_w,p_h\)：anchor 的寬高（p 是 prior，先驗框的意思）；\(\sigma\)：sigmoid，輸出在 0 到 1 之間；\(b\)：最後的框。）因為 \(\sigma(t_x)\) 介於 0 和 1，框的中心一定落在這一格裡面。寬高仍然是 anchor × \(e^{t}\)，和 Faster R-CNN 一模一樣。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Faster R-CNN RPN</th><th>SSD</th><th>YOLOv2 / v3</th></tr></thead>
+      <tbody>
+        <tr><td>anchor 名稱</td><td>anchor</td><td>default box</td><td>anchor / prior</td></tr>
+        <tr><td>形狀怎麼來</td><td>人手挑 3 × 3</td><td>人手挑，每層不同大小</td><td>k-means</td></tr>
+        <tr><td>中心修正</td><td>\(A_x+A_w d_x\)（無上限）</td><td>同 Faster R-CNN</td><td>\(\sigma(t_x)+c_x\)（鎖在格內）</td></tr>
+        <tr><td>寬高修正</td><td>\(A_w e^{d_w}\)</td><td>同左</td><td>\(p_w e^{t_w}\)</td></tr>
+        <tr><td>分數</td><td>物體／背景</td><td>C + 1 類 softmax</td><td>objectness + C 類</td></tr>
+        <tr><td>正樣本</td><td>IoU &gt; 0.7 或最佳</td><td>IoU &gt; 0.5 或最佳</td><td>中心所在格、IoU 最佳的 anchor</td></tr>
+      </tbody>
+    </table></div>
+    <h3>YOLOv2、v3 的輸出層怎麼算</h3>
+    <div class="prose"><p>規則和 SSD 的 8732 一樣：<strong>格數 × 每格 anchor 數</strong>，每個 anchor 輸出 \(5+C\) 個數（4 個修正量 + 1 個 objectness + C 類）。和 SSD 不同的是：YOLO 沒有「背景類」，背景由 objectness 表示，所以是 \(5+C\) 而不是 \(4+(C+1)\)。</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>模型</th><th>輸入</th><th>步長 → 格數</th><th>每格 anchor</th><th>輸出（每個尺度）</th><th>框數</th></tr></thead>
+      <tbody>
+        <tr><td>YOLOv1</td><td class="num">448</td><td class="num">64 → 7×7</td><td class="num">2 個框（非 anchor）</td><td class="num">7×7×30</td><td class="num">98</td></tr>
+        <tr><td>YOLOv2（VOC）</td><td class="num">416</td><td class="num">32 → 13×13</td><td class="num">5</td><td class="num">13×13×(5×(5+20)) = 13×13×125</td><td class="num">845</td></tr>
+        <tr><td rowspan="3">YOLOv3（COCO）</td><td rowspan="3" class="num">416</td><td class="num">32 → 13×13</td><td class="num">3</td><td class="num">13×13×(3×(5+80)) = 13×13×255</td><td class="num">507</td></tr>
+        <tr><td class="num">16 → 26×26</td><td class="num">3</td><td class="num">26×26×255</td><td class="num">2,028</td></tr>
+        <tr><td class="num">8 → 52×52</td><td class="num">3</td><td class="num">52×52×255</td><td class="num">8,112</td></tr>
+        <tr><td colspan="5">YOLOv3 合計 = (13² + 26² + 52²) × 3</td><td class="num"><b>10,647</b></td></tr>
+      </tbody>
+    </table></div>
+    <div class="steps">
+      <div><div><strong>YOLOv2 為什麼用 416 而不是 448</strong>：\(448\div32=14\) 是偶數格，\(416\div32=13\) 是奇數格。奇數格才有<b>正中央那一格</b>；大物體常常在畫面中央，用一格負責比用四格搶著負責好。</div></div>
+      <div><div><strong>YOLOv3 的 255</strong>：\(3\times(4+1+80)=255\)。看到 255 就知道是「每格 3 個 anchor、COCO 80 類」。換成 VOC 20 類就是 \(3\times25=75\)。</div></div>
+      <div><div><strong>三個尺度怎麼分工</strong>：和 SSD 的想法一樣。52×52（一格 8 像素）配最小的 3 個 anchor，例如 10×13、16×30、33×23；13×13（一格 32 像素）配最大的 3 個，例如 116×90、156×198、373×326。這 9 個 anchor 是用 k-means 從 COCO 的標註框挑出來的。</div></div>
+      <div><div><strong>預測數一路變多</strong>：98（v1）→ 845（v2）→ 10,647（v3），和 SSD300 的 8,732 同一個量級。框變多，小物體和擠在一起的物體就比較不會漏。</div></div>
+    </div>
+    <div class="box tip"><b class="t">你在 YOLO 會再看到的東西</b><p>IoU、anchor、\(e^{t}\) 縮放、正負樣本分配、NMS，全部是這一頁講過的。差別只是把兩階段壓成一階段，以及在多個尺度的特徵圖上各放一組 anchor。</p></div>
+  </section>
+
+  <!-- ================= F ================= -->
+  <div class="part-head b" id="partF">
+    <div class="eyebrow">第六篇</div>
+    <h2>複習</h2>
+    <div><p>常見誤解整理、自我測驗、術語表。</p></div>
+  </div>
+
+    <section class="sec" id="s19">
+    <div class="label">第 19 節</div>
+    <h2>常見誤解與注意事項</h2>
+    <div class="prose"><p>學這一段時最容易混淆的地方，整理成「容易誤解的說法」和「正確理解」。</p></div>
+    <h3>Anchor 與 RPN</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>容易誤解的說法</th><th>正確理解</th></tr></thead>
+      <tbody>
+        <tr><td>RPN 在 7×7 每格吐出 9 個 proposals</td><td>每格是 9 個 <b>anchor</b>。proposals 是 anchor 經過修正、篩選、NMS 之後留下的（第 5、9 節）</td></tr>
+        <tr><td>RPN 是 Fast R-CNN 的一部分</td><td>RPN 是 <b>Faster</b> R-CNN（2015）提出的；Fast R-CNN 還在用 Selective Search（第 3 節）</td></tr>
+        <tr><td>anchor 的 3 種大小是隨便選的</td><td>論文是面積 128²、256²、512²，比例 1:1、1:2、2:1，配合短邊 600 像素的影像</td></tr>
+        <tr><td>18 + 36 = 54 個通道</td><td>是兩個分開的輸出：同一批 anchor 的 2 個分數和 4 個修正量（第 7 節）</td></tr>
+        <tr><td>dw、dh 是寬高要拉長的量</td><td>是縮放倍率的<b>對數</b>：\(w=A_w e^{d_w}\)。dw = 0 是不變，0.69 是兩倍（第 8 節）</td></tr>
+        <tr><td>RPN 中間層是 256 維</td><td>論文圖上的 256-d 是用 <b>ZF 網路</b>時的數字；用 VGG-16 時是 <b>512 維</b></td></tr>
+        <tr><td>cls、reg 是兩個全連接層</td><td>論文這樣稱呼，但因為每個位置共用權重，實作上就是兩個 <b>1×1 卷積</b>（第 6 節）</td></tr>
+        <tr><td>每個 anchor 一定是 2 個分數</td><td>原版是 2 個 + softmax；很多實作改成 1 個 + sigmoid，cls 層變成 k 個通道，兩者等價（第 7 節）</td></tr>
+        <tr><td>conv5_3 是 7×7</td><td>投影片的示意。conv5_3 步長 16，224 輸入是 14×14；7×7 是 pool5 之後的大小（第 4 節）</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Proposal layer 與訓練</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>容易誤解的說法</th><th>正確理解</th></tr></thead>
+      <tbody>
+        <tr><td>441 個 anchor 先留前 12000／6000 個再做 NMS</td><td>12000／6000 是為真實影像約 2 萬個 anchor 設計的；441 個的例子裡這一步等於全部保留</td></tr>
+        <tr><td>proposals 最後留 50～100 個</td><td>proposals 是測試 300、訓練 2000 個；「最多 100 個」通常是最後偵測結果的上限</td></tr>
+        <tr><td>Proposal layer 只有解碼、排序、NMS</td><td>還有兩步：裁切到影像邊界、去掉太小的框（第 9 節）</td></tr>
+        <tr><td>proposal 存成中心、寬、高</td><td>實作上通常存 \(x_1,y_1,x_2,y_2\)；有時多一欄分數或 batch 編號</td></tr>
+        <tr><td>Faster R-CNN 整條流程完全可微分</td><td>Proposal layer 的排序、NMS、取前 N 個不可微分，梯度不會沿著框座標傳回 RPN；原論文因此用交替訓練（第 14 節）</td></tr>
+      </tbody>
+    </table></div>
+    <h3>SSD 與 YOLO</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>容易誤解的說法</th><th>正確理解</th></tr></thead>
+      <tbody>
+        <tr><td>RPN 為 YOLO 和 SSD 的 anchor 打下基礎</td><td>對 SSD 和 <b>YOLOv2 之後</b>成立；<b>YOLOv1 沒有 anchor</b>（第 17、18 節）</td></tr>
+        <tr><td>SSD 把 9 個 anchor 精簡成 4 個，主要是為了省計算</td><td>主因是<b>多尺度分工</b>：大小交給「哪一層」負責，每層只需要少數形狀。總框數 8732 也不算少（第 16 節）</td></tr>
+        <tr><td>SSD 淺層用 4 個框、深層用 6 個框</td><td>是 Conv4_3（38×38）和最後兩層（3×3、1×1）用 4 個，中間三層（19、10、5）用 6 個</td></tr>
+        <tr><td>「classes + 4」的 classes 是 20（VOC）</td><td>要算背景：<b>21</b>。Conv4_3 每格輸出 4 × (21 + 4) = 100 個數</td></tr>
+        <tr><td>SSD 和 RPN 一樣用 1×1 卷積預測</td><td>SSD 直接用 <b>3×3</b> 卷積預測</td></tr>
+        <tr><td>SSD 的 1:2 一定是瘦高</td><td>看比例怎麼定義。SSD 論文的 \(a=w/h\)，本頁第 5 節的 \(r=h/w\)，讀論文時先確認定義</td></tr>
+        <tr><td>SSD 贏 YOLOv1 全靠多尺度</td><td>多尺度很重要，但資料增強（+8.8 mAP）、anchor、卷積預測也都有貢獻（第 17 節）</td></tr>
+        <tr><td>SSD 59 FPS、YOLOv1 45 FPS，所以 SSD 比較快</td><td>SSD 的 59 FPS 是 batch 8；batch 1 時是 46 FPS，和 YOLOv1 差不多。比較速度要看相同條件</td></tr>
+        <tr><td>Detections: 8732 per class 代表輸出 8732 個偵測結果</td><td>是每個類別有 8,732 個<b>候選框</b>；經過分數門檻和每類 NMS 後，最後通常只剩幾個到幾十個（第 16 節）</td></tr>
+        <tr><td>8732 個框讓 SSD 不會漏抓小物體</td><td>三分之二的框集中在 38×38 層，對小物體確實有幫助；但最小的框仍有 30 像素，比這更小的物體 IoU 偏低，SSD 對很小的物體仍然偏弱（第 17 節示範）</td></tr>
+        <tr><td>YOLO 每個 anchor 輸出 4 + (C + 1) 個數</td><td>YOLO 沒有背景類，是 4 個修正量 + 1 個 objectness + C 類 = \(5+C\)；SSD 才是 \(4+(C+1)\)（第 18 節）</td></tr>
+        <tr><td>YOLOv1 的 7×7×30 是卷積直接輸出的</td><td>是第二層全連接輸出 1,470 個數，再重新排成 7×7×30（第 17 節）</td></tr>
+        <tr><td>YOLOv1 的 98 個框各自有類別</td><td>類別機率是<b>每格一組</b>，同格的 2 個框共用，所以一格只能認出一種類別（第 17 節）</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+    <section class="sec" id="s20">
+    <div class="label">第 20 節</div>
+    <h2>論文時間軸、名稱由來與英文縮寫</h2>
+    <div class="prose">
+      <p>讀偵測論文時，同一個模型常有兩個年份：<strong>arXiv 年份</strong>（作者先把論文公開在 arXiv 預印本網站的時間）和<strong>會議年份</strong>（正式發表在 CVPR、ICCV、ECCV 等研討會的時間）。例如 YOLOv1 在 2015 年 6 月就上了 arXiv，但正式發表是 CVPR 2016，所以不同資料會寫 2015 或 2016，兩種都對。</p>
+    </div>
+    <h3>論文時間軸</h3>
+    <div class="tl">
+      <div><b>2013</b><span class="k o">OverFeat</span><span class="k o">MultiBox</span><span class="k t">R-CNN</span></div>
+      <div><b>2014</b><span class="k b">VGG</span></div>
+      <div><b>2015</b><span class="k t">Fast R-CNN</span><span class="k t">Faster R-CNN</span><span class="k n">YOLOv1</span><span class="k a">SSD</span></div>
+      <div><b>2016</b><span class="k a">YOLOv2</span></div>
+      <div><b>2017</b><span class="k t">Mask R-CNN</span><span class="k a">RetinaNet</span></div>
+      <div><b>2018</b><span class="k a">YOLOv3</span><span class="k f">CornerNet</span></div>
+      <div><b>2019</b><span class="k f">FCOS</span><span class="k f">CenterNet</span></div>
+    </div>
+    <div class="legend" style="margin-top:8px"><span><i style="border-color:var(--muted)"></i>早期深度學習偵測</span><span><i style="border-color:var(--row)"></i>兩階段（R-CNN 系列）</span><span><i style="border-color:var(--pen)"></i>單階段、無 anchor（YOLOv1）</span><span><i style="border-color:var(--col)"></i>單階段 + anchor</span><span><i style="border-color:var(--good)"></i>anchor-free</span></div>
+    <div class="prose" style="margin-top:8px"><p>（上圖以 arXiv 時間排列。）</p></div>
+    <div class="tbl"><table>
+      <thead><tr><th>模型</th><th>arXiv</th><th>正式發表</th><th>論文標題</th><th>作者（第一作者在前）</th></tr></thead>
+      <tbody>
+        <tr><td>VGG-16</td><td class="num">2014.09</td><td>ICLR 2015</td><td><a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition</a></td><td>Simonyan、Zisserman</td></tr>
+        <tr><td>OverFeat</td><td class="num">2013.12</td><td>ICLR 2014</td><td><a href="https://arxiv.org/abs/1312.6229">OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks</a></td><td>Sermanet、Eigen、Zhang、Mathieu、Fergus、LeCun</td></tr>
+        <tr><td>MultiBox</td><td class="num">2013.12</td><td>CVPR 2014</td><td><a href="https://arxiv.org/abs/1312.2249">Scalable Object Detection using Deep Neural Networks</a></td><td>Erhan、Szegedy、Toshev、Anguelov（Google）</td></tr>
+        <tr><td>R-CNN</td><td class="num">2013.11</td><td>CVPR 2014</td><td><a href="https://arxiv.org/abs/1311.2524">Rich feature hierarchies for accurate object detection and semantic segmentation</a></td><td>Girshick、Donahue、Darrell、Malik</td></tr>
+        <tr><td>Fast R-CNN</td><td class="num">2015.04</td><td>ICCV 2015</td><td><a href="https://arxiv.org/abs/1504.08083">Fast R-CNN</a></td><td>Girshick</td></tr>
+        <tr><td>Faster R-CNN</td><td class="num">2015.06</td><td>NIPS 2015</td><td><a href="https://arxiv.org/abs/1506.01497">Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</a></td><td>Ren、He、Girshick、Sun</td></tr>
+        <tr><td><b>YOLOv1</b></td><td class="num">2015.06</td><td>CVPR 2016</td><td><a href="https://arxiv.org/abs/1506.02640">You Only Look Once: Unified, Real-Time Object Detection</a></td><td>Redmon、Divvala、Girshick、Farhadi</td></tr>
+        <tr><td><b>SSD</b></td><td class="num">2015.12</td><td>ECCV 2016</td><td><a href="https://arxiv.org/abs/1512.02325">SSD: Single Shot MultiBox Detector</a></td><td>Wei Liu、Anguelov、Erhan、Szegedy、Reed、Cheng-Yang Fu、Berg</td></tr>
+        <tr><td>YOLOv2</td><td class="num">2016.12</td><td>CVPR 2017</td><td><a href="https://arxiv.org/abs/1612.08242">YOLO9000: Better, Faster, Stronger</a></td><td>Redmon、Farhadi</td></tr>
+        <tr><td>Mask R-CNN</td><td class="num">2017.03</td><td>ICCV 2017</td><td><a href="https://arxiv.org/abs/1703.06870">Mask R-CNN</a>（提出 RoI Align）</td><td>He、Gkioxari、Dollár、Girshick</td></tr>
+        <tr><td>RetinaNet</td><td class="num">2017.08</td><td>ICCV 2017</td><td><a href="https://arxiv.org/abs/1708.02002">Focal Loss for Dense Object Detection</a></td><td>Lin、Goyal、Girshick、He、Dollár</td></tr>
+        <tr><td>YOLOv3</td><td class="num">2018.04</td><td>技術報告（未投會議）</td><td><a href="https://arxiv.org/abs/1804.02767">YOLOv3: An Incremental Improvement</a></td><td>Redmon、Farhadi</td></tr>
+        <tr><td>CornerNet</td><td class="num">2018.08</td><td>ECCV 2018</td><td><a href="https://arxiv.org/abs/1808.01244">CornerNet: Detecting Objects as Paired Keypoints</a></td><td>Law、Deng</td></tr>
+        <tr><td>FCOS</td><td class="num">2019.04</td><td>ICCV 2019</td><td><a href="https://arxiv.org/abs/1904.01355">FCOS: Fully Convolutional One-Stage Object Detection</a></td><td>Tian、Shen、Chen、He</td></tr>
+        <tr><td>CenterNet</td><td class="num">2019.04</td><td>arXiv</td><td><a href="https://arxiv.org/abs/1904.07850">Objects as Points</a></td><td>Zhou、Wang、Krähenbühl</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box key"><b class="t">從時間軸看出的三件事</b>
+      <p>1. <strong>Faster R-CNN 和 YOLOv1 同一個月上 arXiv</strong>（2015 年 6 月），兩者是平行發展的：一個走兩階段 + anchor，一個走單階段、不用 anchor。所以 YOLOv1 沒有 anchor 並不奇怪。</p>
+      <p>2. <strong>SSD 晚了半年</strong>，它結合了兩邊：單階段（像 YOLO）+ anchor（像 Faster R-CNN 的 RPN），再加上多尺度。SSD 論文裡直接拿 YOLO 和 Faster R-CNN 做比較，投影片上的「SSD vs YOLO v1」圖就是 SSD 論文的 Figure 2。</p>
+      <p>3. <strong>YOLOv2 再晚一年</strong>，回頭借用 anchor、全卷積、多尺度訓練。Ross Girshick 同時是 R-CNN 三代和 YOLOv1 的作者，兩條路線其實出自同一群人。</p>
+    </div>
+
+    <div class="box amber"><b class="t">投影片時間軸和本表的年份對照</b>
+      <p>投影片多數用<strong>正式發表年份</strong>，本表另外列出 arXiv 時間，所以會有一兩年的差距，兩者都不算錯：</p>
+      <p>・<b>Faster R-CNN 寫 2016</b>：arXiv 和 NIPS 都是 2015；期刊版（TPAMI）是 2017。<br>・<b>YOLOv1、SSD 寫 2016</b>：會議是 2016，arXiv 是 2015 年 6 月和 12 月。<br>・<b>YOLOv2 寫 2016</b>：arXiv 2016 年 12 月，會議是 CVPR 2017。<br>・<b>CenterNet 寫 2018</b>：較常見的說法是 <b>2019</b>（arXiv 2019 年 4 月）。而且 2019 年有兩篇都叫 CenterNet：一篇是 Zhou 等人的「Objects as Points」（本表列的、最常被提到的那篇），另一篇是 Duan 等人的「Keypoint Triplets」。<br>・投影片的「ConerNet」是筆誤，應為 <b>CornerNet</b>。</p>
+    </div>
+    <h3>時間軸上的其他模型</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>模型</th><th>一句話</th><th>和本頁的關係</th></tr></thead>
+      <tbody>
+        <tr><td>OverFeat</td><td>用 CNN 在多個尺度上做滑動視窗，同時完成分類、定位、偵測</td><td>證明「卷積特徵圖上滑動」比在原圖上一塊一塊裁切有效率；RPN 的滑動視窗也是這個思路</td></tr>
+        <tr><td>MultiBox</td><td>用一個網路直接迴歸出約 100 個框，每個框配一個「有沒有物體」分數，框的起點是用分群得到的 prior</td><td>SSD 名字裡的「MultiBox」就是它；SSD 沿用了它的配對與 loss 想法（作者群也有重疊）</td></tr>
+        <tr><td>CornerNet</td><td>不用 anchor，改成預測每個物體的<b>左上角和右下角</b>兩個關鍵點，再把屬於同一物體的兩個角配成一對</td><td>anchor-free 的代表之一：把偵測變成「找關鍵點」</td></tr>
+        <tr><td>CenterNet</td><td>每個物體只用<b>中心點</b>表示：在熱力圖（heatmap）上找峰值，再在那一點預測寬高</td><td>不需要 anchor，連 NMS 都可以省略（直接取熱力圖的局部最大值）</td></tr>
+        <tr><td>FCOS</td><td>特徵圖上每個落在物體內的位置，直接預測到框<b>上下左右四邊的距離</b>，加一個 center-ness 分數壓低邊緣的低品質框</td><td>YOLOX、YOLOv8 等 anchor-free YOLO 的「4 + C」輸出就是這個想法（第 15 節）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><b class="t">把整條時間軸串起來</b><p>2013–2014：用 CNN 做偵測的各種嘗試（滑動視窗、直接迴歸框、候選框 + CNN）。2015–2016：兩條主線成形，<b>兩階段</b>（Faster R-CNN）和<b>單階段</b>（YOLO、SSD），anchor 成為標準做法。2017–2018：補強單階段的弱點（RetinaNet 的 Focal Loss、YOLOv3 的多尺度）。2018–2019：開始問「anchor 真的必要嗎？」，出現 CornerNet、CenterNet、FCOS 等 anchor-free 方法，後來的 YOLO 也跟著走向 anchor-free。</p></div>
+    <h3>名稱由來</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>名稱</th><th>全名</th><th>意思</th></tr></thead>
+      <tbody>
+        <tr><td><b>SSD</b></td><td>Single Shot MultiBox Detector</td><td><b>Single Shot</b>：一次前向就輸出所有框和類別，沒有 proposal 那一步。<b>MultiBox</b>：沿用 Google 先前的 MultiBox 方法（Erhan、Szegedy 等人，CVPR 2014）的框迴歸與配對想法，一次預測很多個框。<b>Detector</b>：偵測器。</td></tr>
+        <tr><td><b>YOLO</b></td><td>You Only Look Once</td><td>「你只要看一次」：整張圖只看一次就同時得到所有框和類別。對比滑動視窗或 proposals 那種要「看」幾千次的做法。名字也套用了英文俚語 YOLO（You Only Live Once）。</td></tr>
+        <tr><td>YOLO9000</td><td></td><td>YOLOv2 論文的名字：把偵測資料和 ImageNet 分類資料一起訓練，能辨識超過 9,000 種類別。</td></tr>
+        <tr><td>R-CNN</td><td>Regions with CNN features</td><td>對每個候選區域（Region）取 CNN 特徵再分類。</td></tr>
+        <tr><td>RPN</td><td>Region Proposal Network</td><td>產生候選框的網路（第 6 節）。</td></tr>
+        <tr><td>VGG</td><td>Visual Geometry Group</td><td>牛津大學的研究團隊名稱；VGG-16 是他們 16 層（13 卷積 + 3 全連接）的網路。</td></tr>
+        <tr><td>ZF</td><td>Zeiler &amp; Fergus</td><td>兩位作者的姓，Faster R-CNN 論文中另一個比較小的骨幹網路。</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>常見英文縮寫</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>縮寫</th><th>全名</th><th>中文</th></tr></thead>
+      <tbody>
+        <tr><td>CNN</td><td>Convolutional Neural Network</td><td>卷積神經網路</td></tr>
+        <tr><td>Conv</td><td>Convolution</td><td>卷積（層）</td></tr>
+        <tr><td>FC</td><td>Fully Connected</td><td>全連接（層）。FC6、FC7 是 VGG 的第 6、7 層全連接</td></tr>
+        <tr><td>RoI</td><td>Region of Interest</td><td>感興趣區域，也就是一個候選框</td></tr>
+        <tr><td>IoU</td><td>Intersection over Union</td><td>交並比（第 2 節）</td></tr>
+        <tr><td>NMS</td><td>Non-Maximum Suppression</td><td>非極大值抑制（第 10 節）</td></tr>
+        <tr><td>GT</td><td>Ground Truth</td><td>標註框、正確答案</td></tr>
+        <tr><td>mAP</td><td>mean Average Precision</td><td>各類別 AP（Average Precision，精確率－召回率曲線下面積）的平均，偵測最常用的準確率指標</td></tr>
+        <tr><td>FPS</td><td>Frames Per Second</td><td>每秒能處理幾張影像</td></tr>
+        <tr><td>VOC</td><td>PASCAL Visual Object Classes</td><td>20 類的偵測資料集；PASCAL 是 Pattern Analysis, Statistical Modelling and Computational Learning 的縮寫。「VOC 2007 test」是最常見的比較基準</td></tr>
+        <tr><td>COCO</td><td>Common Objects in Context</td><td>微軟的 80 類偵測資料集，比 VOC 大、難</td></tr>
+        <tr><td>s1、s2</td><td>stride 1、stride 2</td><td>投影片上的「Conv: 3x3x512-s2」：3×3 卷積、512 個輸出通道、步長 2（寬高減半）</td></tr>
+        <tr><td>Conv4_3</td><td></td><td>第 4 組卷積的第 3 層。VGG 把卷積分成 5 組，所以有 Conv1_1 到 Conv5_3；SSD 加的層延續編號，叫 Conv8_2、Conv9_2 等</td></tr>
+        <tr><td>atrous</td><td>à trous（法文「有洞的」）</td><td>空洞卷積：卷積核中間跳著取樣，不增加參數就能看得更廣</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>看懂投影片上的卷積標示</h3>
+    <div class="prose">
+      <p>投影片（SSD 論文 Figure 2）在每個方塊下面寫了像 <code>Conv: 1x1x256</code>、<code>Conv: 3x3x512-s2</code> 這樣的標示，讀法是「卷積核大小 × 輸出通道數，步長」：</p>
+      <ul>
+        <li><code>Conv: 3x3x1024</code>：3×3 卷積，輸出 1024 通道（FC6 改成的卷積層）。</li>
+        <li><code>Conv: 1x1x1024</code>：1×1 卷積，輸出 1024 通道（FC7 改成的卷積層）。</li>
+        <li><code>Conv: 1x1x256</code> 接 <code>Conv: 3x3x512-s2</code>：先用 1×1 把通道壓到 256（省計算），再用 stride 2 的 3×3 卷積把寬高減半：19 → 10，得到 Conv8_2。</li>
+        <li><code>3x3x256-s1</code>：步長 1、不補邊，寬高減 2：5 → 3、3 → 1。</li>
+        <li><code>Classifier : Conv: 3x3x(4x(Classes+4))</code>：預測層，3×3 卷積，輸出通道數 = 每格框數 × (類別數 + 4)。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="s21">
+    <div class="label">第 21 節</div>
+    <h2>自我測驗</h2>
+    <div class="prose"><p>點選答案會立刻顯示解說。</p></div>
+    <div class="quiz" id="quiz"></div>
+    <div class="score" id="quiz-score"></div>
+  </section>
+
+  <section class="sec" id="s22">
+    <div class="label">第 22 節</div>
+    <h2>中英術語表</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>中文</th><th>英文</th><th>一句話</th><th>節</th></tr></thead>
+      <tbody id="gloss"></tbody>
+    </table></div>
+  </section>
+
+  <footer>本頁的數字例子都已用 Python 實際計算驗證；示範中 RPN 的分數與修正量是模擬出來的，不是真的網路輸出。姊妹篇：DL 學習網站（單元九、十）、<a href="linear-algebra.html">線代</a>、<a href="probability-statistics.html">機率</a>、<a href="ai-calculus.html">微積分</a>筆記；前一步可先看 <a href="cnn-convolution.html">CNN 卷積筆記</a>。</footer>
+</main>
+</div>
+
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code','canvas','select','option']}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fx = (v, d = 2) => { const r = Math.round(v*10**d)/10**d; return (Object.is(r, -0) ? 0 : r).toFixed(d); };
+
+/* ---------- 目錄 ---------- */
+(function(){
+  const secs = [...document.querySelectorAll('section.sec')];
+  const title = s => s.querySelector('h2').textContent.replace(/\s+/g,' ').trim();
+  const parts = {s1:'一　起源與基礎', s5:'二　Anchor 與 RPN', s9:'三　Proposals 與 RoI Pooling', s13:'四　訓練', s15:'五　通往 SSD 與 YOLO', s19:'六　複習'};
+  let h = '';
+  secs.forEach((s, i) => { if (parts[s.id]) h += `<li class="part">${parts[s.id]}</li>`; h += `<li><a href="#${s.id}" data-id="${s.id}"><span class="n">${i+1}</span><span>${title(s)}</span></a></li>`; });
+  $('#toc').innerHTML = h;
+  $('#jump').innerHTML = '<option value="top">回到開頭</option>' + secs.map((s, i) => `<option value="${s.id}">${i+1}. ${title(s)}</option>`).join('');
+  $('#jump').addEventListener('change', e => { const el = document.getElementById(e.target.value); (el || document.body).scrollIntoView(); });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) document.querySelectorAll('.toc a').forEach(a => a.classList.toggle('on', a.dataset.id === e.target.id)); }), {rootMargin:'-30% 0px -60% 0px'});
+  secs.forEach(s => io.observe(s));
+})();
+
+/* ---------- 工具 ---------- */
+function sizeCanvas(cv, aspect, maxH){
+  const w = Math.max(220, cv.parentElement.clientWidth); let h = Math.round(w*aspect); if (maxH) h = Math.min(h, maxH);
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(w*d); cv.height = Math.round(h*d); cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); ctx.clearRect(0,0,w,h);
+  return {ctx, w, h};
+}
+const renders = []; const onR = f => { renders.push(f); f(); };
+let rq; window.addEventListener('resize', () => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => renders.forEach(f => f())); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renders.forEach(f => f()));
+new MutationObserver(() => renders.forEach(f => f())).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; }; }
+function gaussFrom(r){ return () => { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r()); }; }
+function txt(ctx, s, x, y, color, align = 'left', size = 12, bold){ ctx.fillStyle = color || tok('--muted'); ctx.font = (bold ? '700 ' : '') + size + 'px ' + tok('--f-mono'); ctx.textAlign = align; ctx.fillText(s, x, y); ctx.textAlign = 'left'; }
+function setOut(id, v){ const o = $('#'+id+'v'); if (o) o.textContent = v; }
+function bindRange(ids, fn){ ids.forEach(id => $('#'+id).addEventListener('input', fn)); }
+function picker(boxId, items, cur, onPick){ const box = $('#'+boxId); box.innerHTML = Object.keys(items).map(k => `<button class="btn" data-k="${k}" aria-pressed="${k === cur}">${items[k].n}</button>`).join(''); box.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; box.querySelectorAll('[data-k]').forEach(x => x.setAttribute('aria-pressed', x === b)); onPick(b.dataset.k); }); }
+function toggles(boxId, items, state, onChange){ const box = $('#'+boxId); box.innerHTML = items.map((it, i) => `<button class="btn" data-i="${i}" aria-pressed="${state[i]}">${it}</button>`).join(''); box.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; const i = +b.dataset.i; state[i] = !state[i]; b.setAttribute('aria-pressed', state[i]); onChange(); }); }
+function alpha(color, a){ // color 為 #RRGGBB
+  const c = color.replace('#',''); if (c.length !== 6) return color; const n = parseInt(c, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+
+/* ---------- 框的運算 ---------- */
+const S = 224, STR = 32, G = 7;
+const GTS = [{n:'人', b:[25,72,71,168]}, {n:'車', b:[112,150,208,202]}, {n:'球', b:[82,18,142,78]}];
+const area = b => Math.max(0, b[2]-b[0])*Math.max(0, b[3]-b[1]);
+function iou(a, b){ const iw = Math.max(0, Math.min(a[2],b[2]) - Math.max(a[0],b[0])), ih = Math.max(0, Math.min(a[3],b[3]) - Math.max(a[1],b[1])); const I = iw*ih, U = area(a) + area(b) - I; return U > 0 ? I/U : 0; }
+const toXY = ([cx,cy,w,h]) => [cx-w/2, cy-h/2, cx+w/2, cy+h/2];
+const toC = ([x1,y1,x2,y2]) => [(x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1];
+const decode = (A, d) => [A[0] + A[2]*d[0], A[1] + A[3]*d[1], A[2]*Math.exp(d[2]), A[3]*Math.exp(d[3])];
+const encode = (A, g) => [(g[0]-A[0])/A[2], (g[1]-A[1])/A[3], Math.log(g[2]/A[2]), Math.log(g[3]/A[3])];
+const SIZES = [32, 64, 128], RATIOS = [0.5, 1, 2], SIZE_N = ['小 32', '中 64', '大 128'], RATIO_N = ['扁 1:2', '方 1:1', '高 2:1'];
+const anchorWH = (s, r) => [s/Math.sqrt(r), s*Math.sqrt(r)];
+function makeAnchors(){ const out = []; for (let i = 0; i < G; i++) for (let j = 0; j < G; j++){ let a = 0; SIZES.forEach((s, si) => RATIOS.forEach((r, ri) => { const [w, h] = anchorWH(s, r); out.push({i, j, a:a++, si, ri, c:[(j+.5)*STR, (i+.5)*STR, w, h]}); })); } return out; }
+const ANCHORS = makeAnchors();
+const sizeColor = si => [tok('--row'), tok('--pen'), tok('--good')][si];
+
+/* 把影像座標 [lo, hi] 對到畫布中央的正方形 */
+function view(w, h, lo, hi){ const side = Math.min(w, h) - 8, k = side/(hi - lo), ox = (w - side)/2, oy = (h - side)/2; return {k, X:x => ox + (x - lo)*k, Y:y => oy + (y - lo)*k, inv:(px, py) => [(px - ox)/k + lo, (py - oy)/k + lo]}; }
+function box(ctx, V, b, color, lw = 2, dash, fill){ const x = V.X(b[0]), y = V.Y(b[1]), w = (b[2]-b[0])*V.k, h = (b[3]-b[1])*V.k; ctx.save(); if (fill){ ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); } ctx.strokeStyle = color; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash); ctx.strokeRect(x, y, w, h); ctx.restore(); }
+function scene(ctx, V, opt = {}){
+  ctx.fillStyle = tok('--sunk'); ctx.fillRect(V.X(0), V.Y(0), S*V.k, S*V.k);
+  const m = alpha(tok('--muted').length === 7 ? tok('--muted') : '#5A6672', .45);
+  ctx.fillStyle = m;
+  // 人
+  ctx.beginPath(); ctx.arc(V.X(48), V.Y(86), 12*V.k, 0, 7); ctx.fill();
+  ctx.fillRect(V.X(34), V.Y(100), 28*V.k, 40*V.k); ctx.fillRect(V.X(36), V.Y(140), 10*V.k, 28*V.k); ctx.fillRect(V.X(50), V.Y(140), 10*V.k, 28*V.k);
+  // 車
+  ctx.fillRect(V.X(114), V.Y(170), 92*V.k, 22*V.k); ctx.fillRect(V.X(136), V.Y(152), 48*V.k, 20*V.k);
+  ctx.beginPath(); ctx.arc(V.X(136), V.Y(193), 9*V.k, 0, 7); ctx.arc(V.X(186), V.Y(193), 9*V.k, 0, 7); ctx.fill();
+  // 球
+  ctx.beginPath(); ctx.arc(V.X(112), V.Y(48), 29*V.k, 0, 7); ctx.fill();
+  if (opt.grid){ ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.beginPath(); const g = opt.grid; for (let t = 0; t <= S + .1; t += S/g){ ctx.moveTo(V.X(t), V.Y(0)); ctx.lineTo(V.X(t), V.Y(S)); ctx.moveTo(V.X(0), V.Y(t)); ctx.lineTo(V.X(S), V.Y(t)); } ctx.stroke(); }
+  ctx.strokeStyle = tok('--ink'); ctx.lineWidth = 1; ctx.strokeRect(V.X(0), V.Y(0), S*V.k, S*V.k);
+  if (opt.gt) GTS.forEach((g, i) => { if (opt.gtOn && !opt.gtOn[i]) return; box(ctx, V, g.b, tok('--good'), 2, [5, 3]); txt(ctx, g.n, V.X(g.b[0]) + 3, V.Y(g.b[1]) + 13, tok('--good'), 'left', 12, true); });
+}
+function canvasPoint(cv, e){ const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+
+/* ---------- 第 2 節：IoU ---------- */
+(function(){
+  const cv = $('#cv-iou'), A = [50, 50, 150, 150];
+  function draw(){
+    const x = +$('#iou-x').value, y = +$('#iou-y').value, w = +$('#iou-w').value, h = +$('#iou-h').value;
+    ['x','y','w','h'].forEach(k => setOut('iou-'+k, $('#iou-'+k).value));
+    const B = [x, y, x + w, y + h];
+    const {ctx, w:W, h:H} = sizeCanvas(cv, 1, 340), V = view(W, H, 0, 340);
+    ctx.fillStyle = tok('--sunk'); ctx.fillRect(V.X(0), V.Y(0), 340*V.k, 340*V.k);
+    const I = [Math.max(A[0],B[0]), Math.max(A[1],B[1]), Math.min(A[2],B[2]), Math.min(A[3],B[3])];
+    if (I[2] > I[0] && I[3] > I[1]) box(ctx, V, I, tok('--violet'), 1, null, alpha(tok('--violet'), .35));
+    box(ctx, V, A, tok('--good'), 2.5); box(ctx, V, B, tok('--col'), 2.5);
+    txt(ctx, 'A', V.X(A[0]) + 4, V.Y(A[1]) + 14, tok('--good'), 'left', 13, true); txt(ctx, 'B', V.X(B[2]) - 14, V.Y(B[3]) - 5, tok('--col'), 'left', 13, true);
+    const iw = Math.max(0, I[2]-I[0]), ih = Math.max(0, I[3]-I[1]), In = iw*ih, U = area(A) + area(B) - In;
+    $('#iou-out').innerHTML = `A = (50, 50, 150, 150)，面積 10000<br>B = (${x}, ${y}, ${x+w}, ${y+h})，面積 ${w*h}<br><br>交集寬 = min(150, ${x+w}) − max(50, ${x}) = ${iw}<br>交集高 = min(150, ${y+h}) − max(50, ${y}) = ${ih}<br>交集 = ${In}<br>聯集 = 10000 + ${w*h} − ${In} = ${U}<br><br><b>IoU = ${In} / ${U} = ${fx(In/U, 3)}</b><br><span style="color:var(--muted)">${In/U > .7 ? '超過 0.7：RPN 會把這種 anchor 當正樣本' : In/U < .3 ? '低於 0.3：RPN 會當負樣本（背景）' : '介於 0.3 和 0.7：RPN 訓練時忽略'}</span>`;
+  }
+  bindRange(['iou-x','iou-y','iou-w','iou-h'], draw); onR(draw);
+})();
+
+/* ---------- 第 4 節：格子對應原圖 ---------- */
+(function(){
+  const cv = $('#cv-grid'); let g = 7, sel = [3, 3], V;
+  picker('grid-pick', {7:{n:'7×7（步長 32，投影片）'}, 14:{n:'14×14（步長 16，真實 conv5_3）'}}, '7', k => { g = +k; sel = [Math.min(sel[0], g-1), Math.min(sel[1], g-1)]; if (g === 14 && sel[0] === 3 && sel[1] === 3) sel = [6, 6]; draw(); });
+  function draw(){
+    const {ctx, w, h} = sizeCanvas(cv, 1, 380); V = view(w, h, 0, S); scene(ctx, V, {grid:g});
+    const s = S/g, [i, j] = sel, b = [j*s, i*s, (j+1)*s, (i+1)*s];
+    box(ctx, V, b, tok('--row'), 2.5, null, alpha(tok('--row'), .25));
+    ctx.fillStyle = tok('--row'); ctx.beginPath(); ctx.arc(V.X((j+.5)*s), V.Y((i+.5)*s), 4, 0, 7); ctx.fill();
+    $('#grid-out').innerHTML = `特徵圖 ${g}×${g}，步長 s = 224 / ${g} = ${s}<br><br>選到第 <b>${i}</b> 列、第 <b>${j}</b> 欄（從 0 開始）<br>對應原圖 x：${j}×${s} = ${j*s} 到 ${(j+1)*s}<br>對應原圖 y：${i}×${s} = ${i*s} 到 ${(i+1)*s}<br>中心 = ((${j}+0.5)×${s}, (${i}+0.5)×${s}) = <b>(${(j+.5)*s}, ${(i+.5)*s})</b><br><br>這一格有一個 512 維向量；<br>RPN 就在這個中心擺 k 個 anchor。<br><br><span style="color:var(--muted)">點畫布上其他格子試試。</span>`;
+  }
+  cv.addEventListener('click', e => { const [px, py] = canvasPoint(cv, e), [x, y] = V.inv(px, py), s = S/g; const j = Math.floor(x/s), i = Math.floor(y/s); if (i >= 0 && i < g && j >= 0 && j < g){ sel = [i, j]; draw(); } });
+  onR(draw);
+})();
+
+/* ---------- 第 5 節：anchor ---------- */
+(function(){
+  const cv = $('#cv-anc'); let sel = [3, 3], V; const sOn = [true, true, true], rOn = [true, true, true];
+  toggles('anc-sizes', SIZE_N, sOn, draw); toggles('anc-ratios', RATIO_N, rOn, draw);
+  function draw(){
+    const {ctx, w, h} = sizeCanvas(cv, 1, 400); V = view(w, h, -50, S + 50);
+    ctx.fillStyle = tok('--paper'); ctx.fillRect(0, 0, w, h);
+    scene(ctx, V, {grid:G});
+    const [i, j] = sel, cx = (j+.5)*STR, cy = (i+.5)*STR; let rows = '', k = 0;
+    SIZES.forEach((s, si) => { if (!sOn[si]) return; RATIOS.forEach((r, ri) => { if (!rOn[ri]) return; const [aw, ah] = anchorWH(s, r); box(ctx, V, toXY([cx, cy, aw, ah]), sizeColor(si), 2); k++; rows += `<tr><td class="num">${k}</td><td>${SIZE_N[si]}</td><td>${RATIO_N[ri]}</td><td class="num">${fx(aw,1)}×${fx(ah,1)}</td></tr>`; }); });
+    ctx.fillStyle = tok('--ink'); ctx.beginPath(); ctx.arc(V.X(cx), V.Y(cy), 4, 0, 7); ctx.fill();
+    const ns = sOn.filter(Boolean).length, nr = rOn.filter(Boolean).length;
+    $('#anc-out').innerHTML = `格子 (${i}, ${j})，中心 (${cx}, ${cy})<br><b>k = ${ns} 種大小 × ${nr} 種比例 = ${k}</b><br>全圖 anchor 數 = 7 × 7 × ${k} = <b>${49*k}</b><br>cls 輸出 7×7×${2*k}，reg 輸出 7×7×${4*k}<div class="tbl" style="margin-top:6px"><table><thead><tr><th>#</th><th>大小</th><th>比例</th><th>w×h</th></tr></thead><tbody>${rows || '<tr><td colspan="4">（全部關掉了）</td></tr>'}</tbody></table></div>`;
+  }
+  cv.addEventListener('click', e => { const [px, py] = canvasPoint(cv, e), [x, y] = V.inv(px, py); const j = Math.floor(x/STR), i = Math.floor(y/STR); if (i >= 0 && i < G && j >= 0 && j < G){ sel = [i, j]; draw(); } });
+  onR(draw);
+})();
+
+/* ---------- 第 6 節：通道位置 ---------- */
+(function(){
+  const cv = $('#cv-ch');
+  function draw(){
+    const i = +$('#ch-i').value, j = +$('#ch-j').value, a = +$('#ch-a').value; setOut('ch-i', i); setOut('ch-j', j); setOut('ch-a', a);
+    const si = Math.floor(a/3), ri = a % 3, s = SIZES[si], r = RATIOS[ri], [aw, ah] = anchorWH(s, r), cx = (j+.5)*STR, cy = (i+.5)*STR;
+    $('#ch-cls').innerHTML = Array.from({length:18}, (_, c) => `<span class="${Math.floor(c/2) === a ? 'on' : ''}">${c}</span>`).join('');
+    $('#ch-reg').innerHTML = Array.from({length:36}, (_, c) => `<span class="${Math.floor(c/4) === a ? 'on2' : ''}">${c}</span>`).join('');
+    const idx = (i*7 + j)*9 + a;
+    $('#ch-out').innerHTML = `anchor a = ${a}：${SIZE_N[si]}、${RATIO_N[ri]}，${fx(aw,1)}×${fx(ah,1)}<br>中心 (${cx}, ${cy})，是全部 441 個裡的第 ${idx} 個<br><br><span style="color:var(--col)">cls[${i}][${j}][${2*a}]、cls[${i}][${j}][${2*a+1}]</span> → 背景、物體分數<br><span style="color:var(--row)">reg[${i}][${j}][${4*a}..${4*a+3}]</span> → dx, dy, dw, dh`;
+    const {ctx, w, h} = sizeCanvas(cv, 1, 320), V = view(w, h, -50, S + 50);
+    scene(ctx, V, {grid:G});
+    box(ctx, V, [j*STR, i*STR, (j+1)*STR, (i+1)*STR], tok('--ink'), 2, null, alpha(tok('--row'), .2));
+    box(ctx, V, toXY([cx, cy, aw, ah]), sizeColor(si), 2.5);
+  }
+  bindRange(['ch-i','ch-j','ch-a'], draw); onR(draw);
+})();
+
+/* ---------- 第 8 節：解碼 ---------- */
+(function(){
+  const cv = $('#cv-dec'); let gi = 1, ai = 6;
+  const nearest = g => { const c = toC(g); return [Math.min(G-1, Math.max(0, Math.floor(c[1]/STR))), Math.min(G-1, Math.max(0, Math.floor(c[0]/STR)))]; };
+  const anchorFor = () => { const [i, j] = nearest(GTS[gi].b), si = Math.floor(ai/3), ri = ai % 3, [w, h] = anchorWH(SIZES[si], RATIOS[ri]); return [(j+.5)*STR, (i+.5)*STR, w, h]; };
+  picker('dec-gt', {0:{n:'標註框：人'}, 1:{n:'標註框：車'}, 2:{n:'標註框：球'}}, '1', k => { gi = +k; zero(); });
+  const an = {}; for (let a = 0; a < 9; a++) an[a] = {n:`${['小','中','大'][Math.floor(a/3)]}${['扁','方','高'][a%3]}`};
+  picker('dec-anc', an, '6', k => { ai = +k; draw(); });
+  const ids = ['dec-dx','dec-dy','dec-dw','dec-dh'];
+  function zero(){ ids.forEach(id => $('#'+id).value = 0); draw(); }
+  $('#dec-zero').addEventListener('click', zero);
+  $('#dec-ans').addEventListener('click', () => { const t = encode(anchorFor(), toC(GTS[gi].b)); ids.forEach((id, k) => { const el = $('#'+id); el.value = Math.max(+el.min, Math.min(+el.max, t[k])); }); draw(); });
+  function draw(){
+    const d = ids.map(id => +$('#'+id).value); ids.forEach((id, k) => setOut(id, fx(d[k])));
+    const A = anchorFor(), P = decode(A, d), g = toC(GTS[gi].b), t = encode(A, g), Pb = toXY(P);
+    const {ctx, w, h} = sizeCanvas(cv, 1, 380), V = view(w, h, -40, S + 40);
+    scene(ctx, V, {grid:G});
+    box(ctx, V, GTS[gi].b, tok('--good'), 2.5, [6, 3]);
+    box(ctx, V, toXY(A), tok('--row'), 2, [3, 3]);
+    box(ctx, V, Pb, tok('--col'), 2.5);
+    ctx.fillStyle = tok('--row'); ctx.beginPath(); ctx.arc(V.X(A[0]), V.Y(A[1]), 3.5, 0, 7); ctx.fill();
+    ctx.fillStyle = tok('--col'); ctx.beginPath(); ctx.arc(V.X(P[0]), V.Y(P[1]), 3.5, 0, 7); ctx.fill();
+    const I = iou(Pb, GTS[gi].b), I0 = iou(toXY(A), GTS[gi].b);
+    $('#dec-out').innerHTML = `<span style="color:var(--row)">anchor</span>：中心 (${fx(A[0],0)}, ${fx(A[1],0)})，${fx(A[2],1)}×${fx(A[3],1)}<br><br>x = ${fx(A[0],0)} + ${fx(A[2],1)} × ${fx(d[0])} = ${fx(P[0],1)}<br>y = ${fx(A[1],0)} + ${fx(A[3],1)} × ${fx(d[1])} = ${fx(P[1],1)}<br>w = ${fx(A[2],1)} × e^${fx(d[2])} = ${fx(A[2],1)} × ${fx(Math.exp(d[2]),3)} = ${fx(P[2],1)}<br>h = ${fx(A[3],1)} × e^${fx(d[3])} = ${fx(A[3],1)} × ${fx(Math.exp(d[3]),3)} = ${fx(P[3],1)}<br><span style="color:var(--col)">預測框</span> (x₁,y₁,x₂,y₂) = (${Pb.map(v => fx(v,1)).join(', ')})<br><br><span style="color:var(--good)">標註框</span>：中心 (${fx(g[0],0)}, ${fx(g[1],0)})，${fx(g[2],0)}×${fx(g[3],0)}<br>正確答案 t = (${t.map(v => fx(v)).join(', ')})<br><br>anchor 與標註框 IoU = ${fx(I0,3)}<br><b>預測框與標註框 IoU = ${fx(I,3)}</b>`;
+  }
+  bindRange(ids, draw); onR(draw);
+})();
+
+/* ---------- 第 9 節：Proposal layer ---------- */
+(function(){
+  const cv = $('#cv-pp'); let st = 0, seed = 7, pred;
+  const NAMES = ['0 anchor', '1 解碼', '2 裁切', '3 去小框', '4 排序取前 N', '5 NMS', '6 取前 K'];
+  const stage = $('#pp-stage'); stage.innerHTML = NAMES.map((n, i) => `<button data-i="${i}" aria-pressed="${i === 0}">${n}</button>`).join('');
+  stage.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b){ st = +b.dataset.i; draw(); } });
+  $('#pp-next-btn').addEventListener('click', () => { st = Math.min(6, st + 1); draw(); });
+  $('#pp-prev-btn').addEventListener('click', () => { st = Math.max(0, st - 1); draw(); });
+  $('#pp-seed').addEventListener('click', () => { seed++; gen(); draw(); });
+  function gen(){
+    const r = mulberry32(seed*97 + 3), gs = gaussFrom(r);
+    pred = ANCHORS.map(A => {
+      let m = 0, gb = null; GTS.forEach(g => { const v = iou(toXY(A.c), g.b); if (v > m){ m = v; gb = g.b; } });
+      const p = 1/(1 + Math.exp(-(12*(m - .4) + .9*gs())));
+      let d;
+      if (m > .15){ const t = encode(A.c, toC(gb)); d = t.map(v => v*(.8 + .12*gs()) + .04*gs()); }
+      else d = [.12*gs(), .12*gs(), .15*gs(), .15*gs()];
+      return {A, p, d, box:toXY(decode(A.c, d))};
+    });
+  }
+  function nms(list, thr){ const keep = [], dead = new Set(); for (let a = 0; a < list.length; a++){ if (dead.has(a)) continue; keep.push(list[a]); for (let b = a + 1; b < list.length; b++) if (!dead.has(b) && iou(list[a].b, list[b].b) > thr) dead.add(b); } return keep; }
+  function draw(){
+    stage.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === st));
+    const preN = +$('#pp-pre').value, thr = +$('#pp-thr').value, postN = +$('#pp-post').value; setOut('pp-pre', preN); setOut('pp-thr', thr.toFixed(2)); setOut('pp-post', postN);
+    const s1 = pred.map(q => ({p:q.p, b:q.box, A:q.A}));
+    const s2 = s1.map(q => ({...q, b:[Math.max(0, Math.min(S, q.b[0])), Math.max(0, Math.min(S, q.b[1])), Math.max(0, Math.min(S, q.b[2])), Math.max(0, Math.min(S, q.b[3]))]}));
+    const s3 = s2.filter(q => q.b[2]-q.b[0] >= 12 && q.b[3]-q.b[1] >= 12);
+    const s4 = [...s3].sort((a, b) => b.p - a.p).slice(0, preN);
+    const s5 = nms(s4, thr), s6 = s5.slice(0, postN);
+    const stages = [ANCHORS, s1, s2, s3, s4, s5, s6], counts = [441, 441, 441, s3.length, s4.length, s5.length, s6.length];
+    const {ctx, w, h} = sizeCanvas(cv, 1, 420), V = view(w, h, -60, S + 60);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+    scene(ctx, V, {grid:G});
+    if (st === 0){ ANCHORS.forEach(A => box(ctx, V, toXY(A.c), alpha(tok('--row'), .12), 1)); ANCHORS.forEach(A => { if (A.a === 0){ ctx.fillStyle = tok('--row'); ctx.beginPath(); ctx.arc(V.X(A.c[0]), V.Y(A.c[1]), 2.5, 0, 7); ctx.fill(); } }); }
+    else {
+      const list = [...stages[st]].sort((a, b) => a.p - b.p), col = tok('--col');
+      const strong = st >= 5;
+      list.forEach(q => box(ctx, V, q.b, alpha(col, strong ? .35 + .65*q.p : Math.max(.04, q.p*.8)), strong ? 2 : 1.2));
+    }
+    GTS.forEach(g => { box(ctx, V, g.b, tok('--good'), 2, [5, 3]); txt(ctx, g.n, V.X(g.b[0]) + 3, V.Y(g.b[1]) + 13, tok('--good'), 'left', 12, true); });
+    ctx.restore();
+    const desc = [
+      '7×7 格 × 每格 9 個，固定不動的模板（只畫淡色）。',
+      '每個 anchor 套上自己的 4 個修正量。有些框跑出影像、有些很小。',
+      '超出影像的部分切掉（座標夾在 0 到 224）。',
+      '寬或高小於 12 像素的丟掉。',
+      `依物體分數排序，留前 ${preN} 個。`,
+      `NMS：IoU > ${thr.toFixed(2)} 的重複框刪掉。`,
+      `留前 ${postN} 個 → 這些就是 proposals。`][st];
+    const top = (st >= 4 ? stages[st] : [...(st === 0 ? [] : stages[st])].sort((a, b) => b.p - a.p)).slice(0, 5);
+    $('#pp-out').innerHTML = `<b>步驟 ${st}</b>：${desc}<br><br>${NAMES.map((n, i) => `<span style="${i === st ? 'color:var(--col);font-weight:700' : 'color:var(--muted)'}">${n.slice(2)}：${counts[i]} 個</span>`).join('<br>')}${top.length ? '<br><br>分數最高的 5 個 [分數, x₁, y₁, x₂, y₂]：<br>' + top.map(q => `[${fx(q.p,3)}, ${q.b.map(v => fx(v,0)).join(', ')}]`).join('<br>') : ''}`;
+  }
+  gen(); bindRange(['pp-pre','pp-thr','pp-post'], draw); onR(draw);
+})();
+
+/* ---------- 第 10 節：NMS 一步一步 ---------- */
+(function(){
+  const cv = $('#cv-nms');
+  const B = [
+    {n:'A', b:[24,70,72,170], p:.95}, {n:'B', b:[30,80,78,175], p:.88}, {n:'C', b:[16,60,66,158], p:.80},
+    {n:'D', b:[110,148,206,200], p:.92}, {n:'E', b:[122,144,214,204], p:.75}, {n:'F', b:[104,156,192,202], p:.62},
+    {n:'G', b:[58,110,130,190], p:.55}
+  ];
+  let state, log;
+  function reset(){ state = B.map(() => 'wait'); log = []; draw(); }
+  function step(){
+    const thr = +$('#nms-thr').value;
+    const idx = B.map((q, i) => i).filter(i => state[i] === 'wait').sort((a, b) => B[b].p - B[a].p);
+    if (!idx.length){ log.push('沒有剩下的框，NMS 結束。'); draw(); return; }
+    const m = idx[0]; state[m] = 'keep'; let line = `第 ${log.length + 1} 輪：最高分 ${B[m].n}（${B[m].p}）→ 保留。`;
+    const rm = [];
+    idx.slice(1).forEach(i => { const v = iou(B[m].b, B[i].b); if (v > thr){ state[i] = 'gone'; rm.push(`${B[i].n} IoU ${fx(v)} > ${thr.toFixed(2)} 刪`); } else rm.push(`${B[i].n} IoU ${fx(v)} 留著`); });
+    log.push(line + (rm.length ? '<br>　' + rm.join('；') : '')); draw();
+  }
+  $('#nms-step').addEventListener('click', step); $('#nms-reset').addEventListener('click', reset);
+  $('#nms-thr').addEventListener('input', reset);
+  function draw(){
+    setOut('nms-thr', (+$('#nms-thr').value).toFixed(2));
+    const {ctx, w, h} = sizeCanvas(cv, 1, 380), V = view(w, h, 0, S);
+    scene(ctx, V, {});
+    B.forEach((q, i) => {
+      const s = state[i], c = s === 'keep' ? tok('--col') : s === 'gone' ? alpha(tok('--muted').length === 7 ? tok('--muted') : '#5A6672', .35) : tok('--row');
+      box(ctx, V, q.b, c, s === 'keep' ? 3 : 1.6, s === 'gone' ? [3, 3] : null);
+      const lx = V.X(q.b[2]) - 3, ly = [1, 4].includes(i) ? V.Y(q.b[3]) - 4 : V.Y(q.b[1]) + 13 + (i === 2 || i === 5 ? 14 : 0);
+      txt(ctx, `${q.n} ${q.p}`, i === 2 || i === 5 ? V.X(q.b[0]) + 3 : lx, ly, c, i === 2 || i === 5 ? 'left' : 'right', 11, true);
+    });
+    const tag = s => s === 'keep' ? '<span class="chip good">保留</span>' : s === 'gone' ? '<span class="chip bad">刪除</span>' : '<span class="chip info">待處理</span>';
+    $('#nms-out').innerHTML = B.map((q, i) => `${q.n}　分數 ${q.p}　${tag(state[i])}`).join('<br>') + '<br><br>' + (log.length ? log.join('<br>') : '按「下一步」開始。藍色＝待處理，琥珀色＝保留，虛線＝被刪掉。');
+  }
+  reset(); renders.push(draw);
+})();
+
+/* ---------- 第 11 節：RoI Pooling / Align ---------- */
+(function(){
+  const cv = $('#cv-roi'), cv2 = $('#cv-roi2'), FS = 8, ST = 32; let mode = 'pool', P = 2;
+  const r = mulberry32(11), F = Array.from({length:FS}, () => Array.from({length:FS}, () => Math.floor(r()*10)));
+  picker('roi-mode', {pool:{n:'RoI Pooling（取整）'}, align:{n:'RoI Align（不取整）'}}, 'pool', k => { mode = k; draw(); });
+  picker('roi-p', {2:{n:'輸出 2×2'}, 3:{n:'3×3'}, 7:{n:'7×7'}}, '2', k => { P = +k; draw(); });
+  const ids = ['roi-x1','roi-y1','roi-x2','roi-y2'];
+  function bil(x, y){ let u = Math.max(0, Math.min(FS-1, x - .5)), v = Math.max(0, Math.min(FS-1, y - .5)); const c0 = Math.floor(u), r0 = Math.floor(v), c1 = Math.min(c0+1, FS-1), r1 = Math.min(r0+1, FS-1), a = u - c0, b = v - r0; return (1-a)*(1-b)*F[r0][c0] + a*(1-b)*F[r0][c1] + (1-a)*b*F[r1][c0] + a*b*F[r1][c1]; }
+  function draw(){
+    let [x1, y1, x2, y2] = ids.map(id => +$('#'+id).value);
+    if (x2 < x1 + 16){ x2 = Math.min(256, x1 + 16); $('#roi-x2').value = x2; }
+    if (y2 < y1 + 16){ y2 = Math.min(256, y1 + 16); $('#roi-y2').value = y2; }
+    ids.forEach((id, k) => setOut(id, [x1, y1, x2, y2][k]));
+    const {ctx, w, h} = sizeCanvas(cv, 1, 380), side = Math.min(w, h) - 8, c = side/FS, ox = (w - side)/2, oy = (h - side)/2;
+    const X = v => ox + v*c, Y = v => oy + v*c;
+    ctx.font = Math.max(10, Math.min(15, c*.38)) + 'px ' + tok('--f-mono');
+    const out = [], marks = [], bins = [], samples = [];
+    const fx1 = x1/ST, fy1 = y1/ST, fx2 = x2/ST, fy2 = y2/ST;
+    let info;
+    if (mode === 'pool'){
+      const rsw = Math.round(fx1), rsh = Math.round(fy1), rew = Math.round(fx2), reh = Math.round(fy2);
+      const rw = Math.max(rew - rsw + 1, 1), rh = Math.max(reh - rsh + 1, 1), bw = rw/P, bh = rh/P;
+      for (let ph = 0; ph < P; ph++){ const row = []; for (let pw = 0; pw < P; pw++){
+        let hs = Math.min(Math.max(Math.floor(ph*bh) + rsh, 0), FS), he = Math.min(Math.max(Math.ceil((ph+1)*bh) + rsh, 0), FS), ws = Math.min(Math.max(Math.floor(pw*bw) + rsw, 0), FS), we = Math.min(Math.max(Math.ceil((pw+1)*bw) + rsw, 0), FS);
+        let mx = 0, arg = null; if (he > hs && we > ws){ mx = -1; for (let a = hs; a < he; a++) for (let b = ws; b < we; b++) if (F[a][b] > mx){ mx = F[a][b]; arg = [a, b]; } }
+        row.push(mx); if (arg) marks.push(arg); bins.push([ws, hs, we, he]); } out.push(row); }
+      info = `投影：(${x1}, ${y1}, ${x2}, ${y2}) ÷ 32<br>= (${fx(fx1)}, ${fx(fy1)}, ${fx(fx2)}, ${fx(fy2)})<br>四捨五入 → 欄 ${rsw}–${rew}、列 ${rsh}–${reh}<br>區域 ${rw} 寬 × ${rh} 高（格）<br>每小格 ${fx(bw)} × ${fx(bh)} 格<br>（${rh < P || rw < P ? '區域比輸出小，有些格子會重複取同一個值' : '每小格取範圍內最大值'}）`;
+    } else {
+      const bw = (fx2 - fx1)/P, bh = (fy2 - fy1)/P;
+      for (let ph = 0; ph < P; ph++){ const row = []; for (let pw = 0; pw < P; pw++){
+        let s = 0; [.25, .75].forEach(fy => [.25, .75].forEach(fxp => { const sx = fx1 + (pw + fxp)*bw, sy = fy1 + (ph + fy)*bh; s += bil(sx, sy); samples.push([sx, sy]); }));
+        row.push(s/4); bins.push([fx1 + pw*bw, fy1 + ph*bh, fx1 + (pw+1)*bw, fy1 + (ph+1)*bh]); } out.push(row); }
+      info = `投影：(${x1}, ${y1}, ${x2}, ${y2}) ÷ 32<br>= (${fx(fx1)}, ${fx(fy1)}, ${fx(fx2)}, ${fx(fy2)})，<b>不取整</b><br>每小格 ${fx(bw)} × ${fx(bh)} 格<br>每小格取 4 個點（小黑點），<br>每點用周圍 4 格做雙線性內插，再平均`;
+    }
+    // 特徵圖
+    if (mode === 'pool'){ const rsw = Math.round(fx1), rsh = Math.round(fy1), rew = Math.round(fx2), reh = Math.round(fy2); ctx.fillStyle = alpha(tok('--row'), .22); ctx.fillRect(X(rsw), Y(rsh), (rew - rsw + 1)*c, (reh - rsh + 1)*c); ctx.strokeStyle = tok('--row'); ctx.lineWidth = 2.5; ctx.strokeRect(X(rsw), Y(rsh), (Math.min(FS, rew + 1) - rsw)*c, (Math.min(FS, reh + 1) - rsh)*c); }
+    for (let a = 0; a < FS; a++) for (let b = 0; b < FS; b++){ ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(X(b), Y(a), c, c); txt(ctx, String(F[a][b]), X(b) + c/2, Y(a) + c/2 + 4, tok('--ink'), 'center', Math.max(10, Math.min(15, c*.38))); }
+    ctx.save(); ctx.strokeStyle = tok('--violet'); ctx.lineWidth = 1.4; ctx.setLineDash([4, 3]); bins.forEach(bb => ctx.strokeRect(X(bb[0]) + 2, Y(bb[1]) + 2, (bb[2]-bb[0])*c - 4, (bb[3]-bb[1])*c - 4)); ctx.restore();
+    ctx.strokeStyle = tok('--violet'); ctx.lineWidth = 2.2; marks.forEach(([a, b]) => { ctx.beginPath(); ctx.arc(X(b) + c/2, Y(a) + c/2, c*.34, 0, 7); ctx.stroke(); });
+    ctx.fillStyle = tok('--ink'); samples.forEach(([sx, sy]) => { ctx.beginPath(); ctx.arc(X(sx), Y(sy), 2.6, 0, 7); ctx.fill(); });
+    ctx.save(); ctx.strokeStyle = tok('--col'); ctx.lineWidth = 2.5; ctx.setLineDash([6, 3]); ctx.strokeRect(X(fx1), Y(fy1), (fx2 - fx1)*c, (fy2 - fy1)*c); ctx.restore();
+    // 輸出
+    const o = sizeCanvas(cv2, .55, 200), s2 = Math.min(o.h - 10, o.w*.6), cc = s2/P, o2x = (o.w - s2)/2, o2y = 5;
+    out.forEach((row, a) => row.forEach((v, b) => { o.ctx.fillStyle = alpha(tok('--violet'), .08 + .07*v); o.ctx.fillRect(o2x + b*cc, o2y + a*cc, cc, cc); o.ctx.strokeStyle = tok('--violet'); o.ctx.lineWidth = 1.5; o.ctx.strokeRect(o2x + b*cc, o2y + a*cc, cc, cc); txt(o.ctx, mode === 'pool' ? String(v) : fx(v, 1), o2x + b*cc + cc/2, o2y + a*cc + cc/2 + 4, tok('--ink'), 'center', Math.max(9, Math.min(15, cc*.32)), true); }));
+    $('#roi-out').innerHTML = `${info}<br><br>輸出 ${P}×${P}：${out.map(r => '[' + r.map(v => mode === 'pool' ? v : fx(v, 2)).join(', ') + ']').join(' ')}<br><span style="color:var(--muted)">真實網路是 512 個通道各做一次，得到 ${P}×${P}×512。</span>`;
+  }
+  bindRange(ids, draw); onR(draw);
+})();
+
+/* ---------- 第 13 節：標籤分配 ---------- */
+(function(){
+  const cv = $('#cv-lb'); let cross = true, force = true;
+  const tb = (id, set) => $(id).addEventListener('click', e => { const v = e.currentTarget.getAttribute('aria-pressed') !== 'true'; e.currentTarget.setAttribute('aria-pressed', v); set(v); draw(); });
+  tb('#lb-cross', v => cross = v); tb('#lb-force', v => force = v);
+  function draw(){
+    const pt = +$('#lb-pos').value, nt = +$('#lb-neg').value; setOut('lb-pos', pt.toFixed(2)); setOut('lb-neg', nt.toFixed(2));
+    const L = ANCHORS.map(A => { const b = toXY(A.c), out = b[0] < 0 || b[1] < 0 || b[2] > S || b[3] > S; const ious = GTS.map(g => iou(b, g.b)); const m = Math.max(...ious); return {A, b, out, ious, m, lab:'ign'}; });
+    L.forEach(q => { if (cross && q.out){ q.lab = 'cross'; return; } q.lab = q.m >= pt ? 'pos' : q.m < nt ? 'neg' : 'ign'; });
+    const forced = [];
+    if (force) GTS.forEach((g, gi) => { let best = null; L.forEach(q => { if (q.lab === 'cross') return; if (!best || q.ious[gi] > best.ious[gi]) best = q; }); if (best && best.ious[gi] > 0){ if (best.lab !== 'pos'){ best.lab = 'fpos'; } forced.push([g.n, best]); } });
+    const cnt = k => L.filter(q => q.lab === k).length;
+    const npos = cnt('pos') + cnt('fpos'), nneg = cnt('neg'), sp = Math.min(npos, 128), sn = Math.min(nneg, 256 - sp);
+    const {ctx, w, h} = sizeCanvas(cv, 1, 420), V = view(w, h, -60, S + 60);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+    scene(ctx, V, {grid:G});
+    L.forEach(q => { if (q.lab === 'ign'){ ctx.fillStyle = tok('--col'); ctx.beginPath(); ctx.arc(V.X(q.A.c[0]) + (q.A.a % 3 - 1)*4, V.Y(q.A.c[1]) + (Math.floor(q.A.a/3) - 1)*4, 2, 0, 7); ctx.fill(); } });
+    L.forEach(q => { if (q.lab === 'pos') box(ctx, V, q.b, tok('--row'), 2.2); if (q.lab === 'fpos') box(ctx, V, q.b, tok('--violet'), 2.2, [5, 3]); });
+    GTS.forEach(g => { box(ctx, V, g.b, tok('--good'), 2.4); txt(ctx, g.n, V.X(g.b[0]) + 3, V.Y(g.b[1]) + 13, tok('--good'), 'left', 12, true); });
+    ctx.restore();
+    const best = GTS.map((g, gi) => { let m = 0; L.forEach(q => { if (!(cross && q.out)) m = Math.max(m, q.ious[gi]); }); return `${g.n}：最佳 IoU ${fx(m, 3)}`; });
+    $('#lb-out').innerHTML = `441 個 anchor：<br>${cross ? `超出邊界（忽略）：${cnt('cross')}<br>` : ''}<span style="color:var(--row)">正樣本（IoU ≥ ${pt.toFixed(2)}）：${cnt('pos')}</span><br><span style="color:var(--violet)">正樣本（最佳 anchor 補上）：${cnt('fpos')}</span><br>負樣本（IoU &lt; ${nt.toFixed(2)}）：${nneg}<br><span style="color:var(--col)">忽略（介於中間）：${cnt('ign')}</span><br><br>${best.join('<br>')}<br><br>抽 256 個：正 ${sp} + 負 ${sn}${npos < 128 ? `<br><span style="color:var(--muted)">正樣本不到 128，用負樣本補滿</span>` : ''}${sp + sn < 256 ? `<br><span style="color:var(--muted)">（這個小例子總數不到 256，全部都用）</span>` : ''}`;
+  }
+  bindRange(['lb-pos','lb-neg'], draw); onR(draw);
+})();
+
+/* ---------- 第 14 節：Smooth L1 ---------- */
+(function(){
+  const cv = $('#cv-sl');
+  function draw(){
+    const b = +$('#sl-b').value, x0 = +$('#sl-x').value; setOut('sl-b', b.toFixed(1)); setOut('sl-x', x0.toFixed(2));
+    const sl = x => Math.abs(x) < b ? .5*x*x/b : Math.abs(x) - .5*b, g = x => Math.abs(x) < b ? x/b : Math.sign(x);
+    const {ctx, w, h} = sizeCanvas(cv, .7, 300), pad = {l:30, r:10, t:10, b:22};
+    const X = x => pad.l + (x + 3)/6*(w - pad.l - pad.r), Y = y => h - pad.b - y/4.5*(h - pad.t - pad.b);
+    ctx.strokeStyle = tok('--rule'); ctx.lineWidth = 1; ctx.strokeRect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b); ctx.beginPath(); ctx.moveTo(X(0), pad.t); ctx.lineTo(X(0), h - pad.b); ctx.stroke();
+    [-3, -2, -1, 0, 1, 2, 3].forEach(v => txt(ctx, String(v), X(v), h - 6, null, 'center', 11)); [0, 1, 2, 3, 4].forEach(v => txt(ctx, String(v), pad.l - 6, Y(v) + 4, null, 'right', 11));
+    const curve = (f, c, lw, dash) => { ctx.save(); ctx.beginPath(); ctx.rect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b); ctx.clip(); ctx.strokeStyle = c; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash); ctx.beginPath(); for (let i = 0; i <= 300; i++){ const x = -3 + 6*i/300; i ? ctx.lineTo(X(x), Y(f(x))) : ctx.moveTo(X(x), Y(f(x))); } ctx.stroke(); ctx.restore(); };
+    curve(x => .5*x*x, tok('--row'), 1.6, [5, 4]); curve(x => Math.abs(x), tok('--muted'), 1.6, [2, 3]); curve(sl, tok('--col'), 3);
+    ctx.fillStyle = tok('--col'); ctx.beginPath(); ctx.arc(X(x0), Y(sl(x0)), 5, 0, 7); ctx.fill();
+    txt(ctx, 'L2 = 0.5x²', X(-2.9), Y(4.1), tok('--row'), 'left', 11); txt(ctx, 'L1 = |x|', X(-2.9), Y(3.6), tok('--muted'), 'left', 11); txt(ctx, 'Smooth L1', X(-2.9), Y(3.1), tok('--col'), 'left', 11, true);
+    $('#sl-out').innerHTML = `誤差 x = ${x0.toFixed(2)}，β = ${b.toFixed(1)}<br><br>L2 = ${fx(.5*x0*x0, 3)}，梯度 ${fx(x0, 3)}<br>L1 = ${fx(Math.abs(x0), 3)}，梯度 ${fx(Math.sign(x0), 0)}<br><span style="color:var(--col)"><b>Smooth L1 = ${fx(sl(x0), 3)}，梯度 ${fx(g(x0), 3)}</b></span><br><br><span style="color:var(--muted)">${Math.abs(x0) < b ? '|x| < β：在平方區，梯度隨誤差變小，接近目標時會溫和收斂。' : '|x| ≥ β：在線性區，梯度固定 ±1。L2 的梯度會是 ' + fx(x0, 2) + '，誤差越大越大。'}</span>`;
+  }
+  bindRange(['sl-b','sl-x'], draw); onR(draw);
+})();
+
+/* ---------- 第 15 節：輸出形狀計算 ---------- */
+(function(){
+  let m = 'rpn', C = 20;
+  const M = {
+    rpn:{n:'Faster R-CNN RPN'}, ssd:{n:'SSD300'}, y1:{n:'YOLOv1'}, y2:{n:'YOLOv2'}, y3:{n:'YOLOv3（416）'}, af:{n:'anchor-free（640）'}
+  };
+  picker('hd-model', M, m, k => { m = k; draw(); });
+  picker('hd-c', {20:{n:'C = 20（VOC）'}, 80:{n:'C = 80（COCO）'}}, '20', k => { C = +k; draw(); });
+  function draw(){
+    let s = '';
+    if (m === 'rpn'){ s = `每個位置：k × (2 + 4) = 9 × 6 = 54 個數（分兩個輸出：18 + 36）<br>投影片 7×7：7×7×18 + 7×7×36 → <b>441 個 anchor</b><br>真實 1000×600、步長 16：約 60×40×9 ≈ <b>21,600 個 anchor</b><br><span style="color:var(--muted)">只分物體／背景，和 C 無關；類別交給第二階段（21 或 81 類）。</span>`; }
+    else if (m === 'ssd'){ const L = [[38,4],[19,6],[10,6],[5,6],[3,4],[1,4]]; let tot = 0; s = `每個 default box：(C + 1) + 4 = ${C+1} + 4 = ${C+5} 個數<br>`; L.forEach(([g, k]) => { tot += g*g*k; s += `${g}×${g} × ${k} 個 = ${g*g*k}，輸出 ${g}×${g}×${k*(C+5)}<br>`; }); s += `<b>總共 ${tot.toLocaleString()} 個框</b>`; }
+    else if (m === 'y1'){ s = `S = 7、每格 B = 2 個框<br>每格：B × 5 + C = 2 × 5 + ${C} = ${10 + C}<br>輸出 <b>7×7×${10 + C}</b>${C === 20 ? '（就是論文的 7×7×30）' : ''}<br>總共 7 × 7 × 2 = <b>98 個框</b><br><span style="color:var(--muted)">沒有 anchor：框的座標直接預測；每格只有一組類別機率，所以一格最多只能認出一個類別。</span>`; }
+    else if (m === 'y2'){ s = `416 輸入、步長 32 → 13×13，每格 k = 5 個 anchor<br>每格：5 × (5 + ${C}) = ${5*(5+C)}<br>輸出 <b>13×13×${5*(5+C)}</b><br>總共 13 × 13 × 5 = <b>845 個框</b>`; }
+    else if (m === 'y3'){ const gs = [13, 26, 52]; let tot = 0; s = `3 個尺度，每格 3 個 anchor<br>每格：3 × (5 + ${C}) = ${3*(5+C)}${C === 80 ? '（常看到的 255）' : ''}<br>`; gs.forEach(g => { tot += g*g*3; s += `${g}×${g}×${3*(5+C)} → ${g*g*3} 個框<br>`; }); s += `<b>總共 ${tot.toLocaleString()} 個框</b>`; }
+    else { const gs = [80, 40, 20]; let tot = 0; s = `3 個尺度（步長 8、16、32），每個位置 1 個預測，沒有 anchor<br>每個位置：4（到四邊的距離）+ ${C} 類 = ${4 + C}（v8 的距離實際用分佈表示，通道會更多）<br>`; gs.forEach(g => { tot += g*g; s += `${g}×${g} → ${g*g} 個<br>`; }); s += `<b>總共 ${tot.toLocaleString()} 個預測</b>`; }
+    $('#hd-out').innerHTML = s;
+  }
+  draw();
+})();
+
+/* ---------- 第 16、17 節：SSD 與 YOLOv1 ---------- */
+const S3 = 300;
+const SSD_L = [
+  {n:'Conv4_3', f:38, step:8, min:30, max:60, ar:[2]}, {n:'Conv7 (FC7)', f:19, step:16, min:60, max:111, ar:[2,3]},
+  {n:'Conv8_2', f:10, step:32, min:111, max:162, ar:[2,3]}, {n:'Conv9_2', f:5, step:64, min:162, max:213, ar:[2,3]},
+  {n:'Conv10_2', f:3, step:100, min:213, max:264, ar:[2]}, {n:'Conv11_2', f:1, step:300, min:264, max:315, ar:[2]}
+];
+function ssdCellWH(L){ const o = [[L.min, L.min, '1:1'], [Math.sqrt(L.min*L.max), Math.sqrt(L.min*L.max), "1:1'"]]; L.ar.forEach(a => { o.push([L.min*Math.sqrt(a), L.min/Math.sqrt(a), a + ':1']); o.push([L.min/Math.sqrt(a), L.min*Math.sqrt(a), '1:' + a]); }); return o; }
+const SSD_BOXES = []; SSD_L.forEach((L, li) => { const wh = ssdCellWH(L); for (let i = 0; i < L.f; i++) for (let j = 0; j < L.f; j++) wh.forEach(([w, h, t]) => SSD_BOXES.push({li, i, j, t, b:toXY([(j+.5)*L.step, (i+.5)*L.step, w, h])})); });
+const OBJ3 = [
+  {n:'人', b:[40,110,76,215]}, {n:'瓶子', b:[62,148,76,182]},
+  {n:'鳥1', c:'鳥', b:[168,46,192,64]}, {n:'鳥2', c:'鳥', b:[188,51,212,69]}, {n:'鳥3', c:'鳥', b:[176,67,200,85]},
+  {n:'狗', b:[150,170,280,280]}
+];
+OBJ3.forEach(o => o.c = o.c || o.n);
+function scene3(ctx, V){
+  ctx.fillStyle = tok('--sunk'); ctx.fillRect(V.X(0), V.Y(0), S3*V.k, S3*V.k);
+  const m = alpha(tok('--muted').length === 7 ? tok('--muted') : '#5A6672', .45); ctx.fillStyle = m;
+  ctx.beginPath(); ctx.arc(V.X(58), V.Y(124), 12*V.k, 0, 7); ctx.fill(); ctx.fillRect(V.X(44), V.Y(138), 28*V.k, 42*V.k); ctx.fillRect(V.X(46), V.Y(180), 10*V.k, 35*V.k); ctx.fillRect(V.X(60), V.Y(180), 10*V.k, 35*V.k);
+  ctx.fillStyle = alpha(tok('--muted').length === 7 ? tok('--muted') : '#5A6672', .75); ctx.fillRect(V.X(64), V.Y(154), 10*V.k, 28*V.k); ctx.fillRect(V.X(66), V.Y(148), 6*V.k, 7*V.k);
+  ctx.fillStyle = m;
+  [[180,55],[200,60],[188,76]].forEach(([x, y]) => { ctx.beginPath(); ctx.ellipse(V.X(x), V.Y(y), 11*V.k, 7*V.k, 0, 0, 7); ctx.fill(); });
+  ctx.beginPath(); ctx.ellipse(V.X(210), V.Y(240), 60*V.k, 32*V.k, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(V.X(262), V.Y(200), 18*V.k, 0, 7); ctx.fill();
+  ctx.strokeStyle = tok('--ink'); ctx.lineWidth = 1; ctx.strokeRect(V.X(0), V.Y(0), S3*V.k, S3*V.k);
+}
+function gridLines(ctx, V, n, size, color){ ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.beginPath(); for (let t = 0; t <= n; t++){ const v = Math.min(S3, t*size); ctx.moveTo(V.X(v), V.Y(0)); ctx.lineTo(V.X(v), V.Y(S3)); ctx.moveTo(V.X(0), V.Y(v)); ctx.lineTo(V.X(S3), V.Y(v)); } ctx.stroke(); }
+
+(function(){
+  const cv = $('#cv-ssd'); let li = 0, sel = [19, 19], V;
+  const items = {}; SSD_L.forEach((L, k) => items[k] = {n:`${L.f}×${L.f}`});
+  picker('ssd-layer', items, '0', k => { li = +k; const f = SSD_L[li].f; sel = [Math.floor(f/2), Math.floor(f/2)]; if (li === 0) sel = [7, 22]; draw(); });
+  sel = [7, 22];
+  function draw(){
+    const L = SSD_L[li], {ctx, w, h} = sizeCanvas(cv, 1, 420); V = view(w, h, -60, S3 + 60);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+    scene3(ctx, V); gridLines(ctx, V, L.f, L.step, alpha(tok('--row'), L.f > 20 ? .18 : .35));
+    const [i, j] = sel, cx = (j+.5)*L.step, cy = (i+.5)*L.step;
+    box(ctx, V, [j*L.step, i*L.step, Math.min(S3, (j+1)*L.step), Math.min(S3, (i+1)*L.step)], tok('--ink'), 1.5, null, alpha(tok('--row'), .25));
+    const wh = ssdCellWH(L), cols = [tok('--row'), tok('--violet'), tok('--pen'), tok('--pen'), tok('--col'), tok('--col')];
+    wh.forEach(([bw, bh], k) => box(ctx, V, toXY([cx, cy, bw, bh]), cols[k], 2, k % 2 && k > 1 ? [5, 3] : null));
+    ctx.fillStyle = tok('--ink'); ctx.beginPath(); ctx.arc(V.X(cx), V.Y(cy), 3.5, 0, 7); ctx.fill();
+    ctx.restore();
+    let cum = 0;
+    const rows = SSD_L.map((Lk, k) => { const n = Lk.f*Lk.f*(2 + 2*Lk.ar.length); cum += n; return `<tr${k === li ? ' style="background:var(--col-soft)"' : ''}><td>${Lk.n}</td><td class="num">${Lk.f}×${Lk.f}×${2 + 2*Lk.ar.length}</td><td class="num">${n}</td><td class="num">${cum}</td></tr>`; }).join('');
+    const k = wh.length;
+    $('#ssd-out').innerHTML = `<b>${L.n}</b>：${L.f}×${L.f}，一格 ≈ ${L.step} 像素<br>格子 (${i}, ${j})，中心 (${cx}, ${cy})<br>每格 <b>${k} 個</b> default box：<br>${wh.map(([bw, bh, t], q) => `<span style="color:${cols[q]}">● ${t}　${fx(bw,0)}×${fx(bh,0)}</span>`).join('<br>')}<br><br>輸出：${L.f}×${L.f}×(${k}×(21+4)) = ${L.f}×${L.f}×${k*25}<div class="tbl" style="margin-top:6px"><table><thead><tr><th>層</th><th>格×格×框</th><th>框數</th><th>累計</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  cv.addEventListener('click', e => { const [px, py] = canvasPoint(cv, e), [x, y] = V.inv(px, py), L = SSD_L[li]; const j = Math.floor(x/L.step), i = Math.floor(y/L.step); if (i >= 0 && i < L.f && j >= 0 && j < L.f){ sel = [i, j]; draw(); } });
+  onR(draw);
+})();
+
+(function(){
+  const cv = $('#cv-vs'); let mode = 'yolo';
+  picker('vs-mode', {yolo:{n:'YOLOv1：7×7 格'}, ssd:{n:'SSD：8732 個 default box'}}, mode, k => { mode = k; draw(); });
+  const cs = S3/7;
+  function yoloAssign(){
+    const cells = {}; OBJ3.forEach(o => { const c = toC(o.b), key = Math.floor(c[1]/cs) + ',' + Math.floor(c[0]/cs); (cells[key] = cells[key] || []).push(o); });
+    const lost = new Set(), notes = [];
+    Object.entries(cells).forEach(([key, os]) => {
+      const sorted = [...os].sort((a, b) => area(b.b) - area(a.b)), cls = sorted[0].c; let kept = 0;
+      sorted.forEach(o => { if (o.c !== cls){ lost.add(o.n); return; } if (kept >= 2){ lost.add(o.n); return; } kept++; });
+      if (os.length > 1){ const [r, c] = key.split(','); const ls = os.filter(o => lost.has(o.n)).map(o => o.n); notes.push(`格子 (${r}, ${c})：${os.map(o => o.n).join('、')} 的中心都在這格${ls.length ? `<br>　→ <span style="color:var(--pen)">${ls.join('、')} 會漏掉</span>（${new Set(os.map(o => o.c)).size > 1 ? '一格只有一組類別機率' : '一格只有 2 個框'}）` : ''}`); }
+    });
+    return {cells, lost, notes};
+  }
+  function draw(){
+    const {ctx, w, h} = sizeCanvas(cv, 1, 420), V = view(w, h, 0, S3);
+    scene3(ctx, V);
+    if (mode === 'yolo'){
+      const {cells, lost, notes} = yoloAssign();
+      Object.keys(cells).forEach(key => { const [r, c] = key.split(',').map(Number); ctx.fillStyle = alpha(tok('--row'), cells[key].length > 1 ? .3 : .15); ctx.fillRect(V.X(c*cs), V.Y(r*cs), cs*V.k, cs*V.k); });
+      gridLines(ctx, V, 7, cs, alpha(tok('--row'), .55));
+      OBJ3.forEach(o => { const L = lost.has(o.n), c = toC(o.b); box(ctx, V, o.b, L ? tok('--pen') : tok('--good'), 2, L ? [4, 3] : null); ctx.fillStyle = L ? tok('--pen') : tok('--good'); ctx.beginPath(); ctx.arc(V.X(c[0]), V.Y(c[1]), 3, 0, 7); ctx.fill(); });
+      $('#vs-out').innerHTML = `YOLOv1：輸入切成 7×7（這裡用 300×300 的圖示意，原版輸入是 448），每格負責「中心落在格內」的物體，最多 2 個框、1 組類別機率。<br><br>${notes.join('<br><br>')}<br><br>共 ${OBJ3.length} 個物體，<span style="color:var(--pen)">漏掉 ${lost.size} 個</span>。<br><span style="color:var(--muted)">（點是物體中心；藍色是有物體中心的格子。）</span>`;
+    } else {
+      const res = OBJ3.map(o => { let best = null, bi = 0, n5 = 0; SSD_BOXES.forEach(d => { const v = iou(d.b, o.b); if (v > bi){ bi = v; best = d; } if (v > .5) n5++; }); return {o, best, bi, n5}; });
+      res.forEach(({o, best}) => { box(ctx, V, best.b, tok('--col'), 2); box(ctx, V, o.b, tok('--good'), 2, [4, 3]); });
+      $('#vs-out').innerHTML = `SSD：對每個物體，在全部 8732 個 default box 裡找 IoU 最高的（琥珀色）。<br><br>${res.map(({o, best, bi, n5}) => `<b>${o.n}</b>：最佳來自 ${SSD_L[best.li].n}（${SSD_L[best.li].f}×${SSD_L[best.li].f}），${best.t}，IoU ${fx(bi, 2)}；IoU &gt; 0.5 的有 ${n5} 個`).join('<br>')}<br><br><span style="color:var(--muted)">每個物體都有自己的 default box 去配對，同一格的不同類別互不影響（每個框各自有 21 類分數）。IoU 不高的物體，靠修正量再拉過去。</span>`;
+    }
+  }
+  onR(draw);
+})();
+
+/* ---------- 測驗 ---------- */
+(function(){
+  const Q = [
+    {q:'投影片上 7×7×9×2 的「9」是什麼？', o:['9 個類別','每格 3 種大小 × 3 種長寬比的 anchor','9 次 NMS','3×3 卷積的 9 個權重'], a:1, e:'k = 3 sizes × 3 aspect ratios = 9 個 anchor，每格都擺同一組。'},
+    {q:'RPN 的 cls 輸出 7×7×18、reg 輸出 7×7×36。為什麼不說成 7×7×54？', o:['因為 54 太大，GPU 放不下','它們是同一批 441 個 anchor 的兩種資訊（2 個分數、4 個修正量），分開輸出、分開算 loss','因為 36 是給第二階段用的','其實就是 54，兩種說法一樣'], a:1, e:'18 = 9×2 分數，36 = 9×4 修正量，平行的兩個 1×1 卷積。'},
+    {q:'anchor 和 proposal 的差別是？', o:['一樣的東西','anchor 是固定的模板框；proposal 是 anchor 經過修正、篩選、NMS 後留下的候選框','proposal 是固定的，anchor 是學出來的','anchor 只在測試時使用'], a:1, e:'anchor 不需要學習；網路學的是怎麼對 anchor 打分數和修正。'},
+    {q:'anchor 寬 64，網路輸出 dw = 0.69（≈ ln 2）。修正後的寬是？', o:['64.69','約 44','約 128','約 89'], a:2, e:'w = A_w·e^{dw} = 64 × e^{0.69} ≈ 64 × 2 = 128。dw 是縮放倍率的對數。'},
+    {q:'中心修正為什麼寫成 x = A_x + A_w·d_x，要乘上 A_w？', o:['為了讓 x 永遠是正數','讓位移變成「anchor 寬度的幾成」，大框小框用同一套比例學習','因為論文規定','為了讓 IoU 變大'], a:1, e:'d_x = 0.1 對任何大小的 anchor 都代表「往右移寬度的 10%」。'},
+    {q:'Proposal layer 有幾個可以學習的參數？', o:['0 個，它只是固定的處理步驟（解碼、裁切、排序、NMS）','27,648 個','和 RPN 一樣多','每個 anchor 4 個'], a:0, e:'參數都在 RPN 的卷積層；Proposal layer 只做後處理。'},
+    {q:'7×7×9 = 441 個 anchor 的例子裡，「先留分數前 12000 個」這一步效果是？', o:['只留 12000 個中的前 300 個','等於全部保留，因為總數才 441','會出錯','會把 441 補到 12000 個'], a:1, e:'12000/6000 是為真實影像約 2 萬個 anchor 設計的。'},
+    {q:'NMS 門檻從 0.7 降到 0.3，會發生什麼？', o:['留下更多框','刪掉更多框；靠很近的兩個物體可能被誤刪一個','沒有影響','分數會變高'], a:1, e:'IoU 只要超過 0.3 就刪，比較兇。'},
+    {q:'proposal 是原圖上的 (14.6, 41.6, 171.0, 169.6)，步長 32，RoI Pooling 第一步投影後約為？', o:['(0.46, 1.30, 5.34, 5.30)','(14, 41, 171, 169)','(467, 1331, 5472, 5427)','(0, 0, 7, 7)'], a:0, e:'除以 32。接著四捨五入成 (0, 1, 5, 5)；RoI Align 則不取整。'},
+    {q:'RoI Pooling 輸出 7×7×512，而 proposal 有大有小。它怎麼做到固定大小？', o:['把 proposal 在原圖上縮放成 224×224','不管區域多大，都切成 7×7 小格，每小格每通道取最大值','只取 proposal 中心那一格','用全連接層把它補成 7×7'], a:1, e:'這就是 Fast R-CNN 比 R-CNN 快的關鍵：只在共用的特徵圖上挖。'},
+    {q:'偵測頭的框輸出為什麼是 N×84（VOC）？', o:['84 = 21 類 × 4，每個類別各有一組修正量','84 = 7×12','84 = 2k + 4k + 30','因為有 84 個 proposal'], a:0, e:'人和車的框該怎麼修很不一樣，所以每類各學一組。'},
+    {q:'RPN 訓練時，某個人的標註框沒有任何 anchor 的 IoU 超過 0.7，怎麼辦？', o:['這個人不參與訓練','它 IoU 最高的那個 anchor 也被當成正樣本','把門檻改成 0.3','把這張圖丟掉'], a:1, e:'這條補充規則保證每個物體至少有一個 anchor 負責。'},
+    {q:'RPN loss 裡框的那一項乘上 p*（正樣本 1、負樣本 0），意思是？', o:['只有正樣本才算框的 loss','負樣本的框 loss 加倍','p* 是學習率','讓分類更準'], a:0, e:'背景沒有「正確的框」可以學。'},
+    {q:'把 RPN 的 2 個分數換成 C + 1 個類別分數、拿掉第二階段，最接近哪個模型？', o:['R-CNN','SSD','Selective Search','RoI Align'], a:1, e:'SSD 每個 default box 輸出 (C+1) + 4 個數。'},
+    {q:'下列哪一個沒有使用 anchor？', o:['SSD','YOLOv1','YOLOv2','YOLOv3'], a:1, e:'YOLOv1 每格直接猜 2 個框；YOLOv2 才借用 anchor。'},
+    {q:'YOLOv2 的 b_x = σ(t_x) + c_x，和 Faster R-CNN 的 x = A_x + A_w·d_x 相比，主要好處是？', o:['算得比較快','框的中心被鎖在所在格子內，訓練初期比較穩定','不再需要 anchor','可以預測類別'], a:1, e:'σ 的輸出在 0 到 1，中心不會跑到別的格子。'},
+    {q:'RPN 論文圖上中間層寫 256-d，用 VGG-16 時是幾維？', o:['256','512','1024','4096'], a:1, e:'256-d 是用 ZF 網路時的數字；VGG-16 最後一層卷積有 512 個通道，中間層也是 512 維。'},
+    {q:'SSD 在 Conv4_3（38×38）的輸出是 38×38×(4×(classes+4))。VOC 20 類時，每格輸出幾個數？', o:['96','100','144','4'], a:1, e:'classes 要加上背景 = 21，4 × (21 + 4) = 100。'},
+    {q:'SSD 每格只有 4 或 6 個 default box，比 Faster R-CNN 的 9 個少，主要是因為？', o:['GPU 記憶體不夠','大小交給 6 張不同解析度的特徵圖分工，每層只需要少數形狀','SSD 不需要框','論文作者偷懶'], a:1, e:'38×38 管小物體、1×1 管很大的物體；每層只負責一段大小。'},
+    {q:'YOLOv1 輸出 7×7×30，30 是怎麼來的？', o:['30 個類別','2 個框 × (x, y, w, h, conf) + 20 類機率','3 × 10 個 anchor','6 個尺度 × 5'], a:1, e:'2 × 5 + 20 = 30。類別機率每格一組，2 個框共用。'},
+    {q:'一隻貓和一個杯子的中心落在 YOLOv1 的同一格，會怎樣？', o:['兩個都能正確認出','一格只有一組類別機率，其中一個會認錯或漏掉','會自動切成更細的格子','SSD 也一樣會漏'], a:1, e:'這是 YOLOv1 的結構限制；SSD 每個 default box 各自有類別分數，沒有這個問題。'}
+  ];
+  let ok = 0, done = 0;
+  $('#quiz').innerHTML = Q.map((x, i) => `<div class="q" data-i="${i}"><div class="qt">${i+1}. ${x.q}</div><div class="opts">${x.o.map((o, j) => `<button class="opt" data-j="${j}">${o}</button>`).join('')}</div></div>`).join('');
+  $('#quiz').addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if (!b || b.disabled) return; const qd = b.closest('.q'), x = Q[+qd.dataset.i], j = +b.dataset.j;
+    qd.querySelectorAll('.opt').forEach((o, k) => { o.disabled = true; if (k === x.a) o.classList.add('right'); });
+    if (j !== x.a) b.classList.add('wrong'); else ok++;
+    done++; const ex = document.createElement('div'); ex.className = 'ex'; ex.innerHTML = (j === x.a ? '<b>答對了。</b>' : '<b>再看一次：</b>') + x.e; qd.appendChild(ex);
+    $('#quiz-score').textContent = `已作答 ${done} / ${Q.length}，答對 ${ok}`;
+  });
+  $('#quiz-score').textContent = `共 ${Q.length} 題`;
+})();
+
+/* ---------- 術語表 ---------- */
+(function(){
+  const T = [
+    ['物件偵測','Object detection','找出物體的位置（框）和類別','1'],
+    ['候選框、區域提案','Region proposal','「這裡可能有東西」的框，還沒有類別','1、9'],
+    ['選擇性搜尋','Selective Search','傳統演算法，合併相似區塊產生候選框','3'],
+    ['標註框','Ground truth (GT)','人工標好的正確框','2、13'],
+    ['交並比','IoU','交集 ÷ 聯集，量兩框有多重疊','2'],
+    ['特徵圖','Feature map','卷積網路的輸出，每格一個向量','4'],
+    ['步長','Stride','特徵圖一格對應原圖幾像素','4'],
+    ['感受野','Receptive field','特徵圖上一格「看得到」的原圖範圍','4'],
+    ['錨框','Anchor box','每格預先擺好的固定模板框','5'],
+    ['尺寸、尺度','Size / scale','anchor 的面積大小','5'],
+    ['長寬比','Aspect ratio','anchor 的高寬比例','5'],
+    ['區域提案網路','Region Proposal Network (RPN)','在特徵圖上預測哪些 anchor 有東西、怎麼修','6'],
+    ['滑動視窗','Sliding window','RPN 的 3×3 卷積','6'],
+    ['分類層／迴歸層','cls layer / reg layer','輸出 2k 個分數／4k 個修正量','6'],
+    ['物體性分數','Objectness score','「是物體」的機率','7'],
+    ['邊界框迴歸','Bounding-box regression','預測修正量 dx dy dw dh','8'],
+    ['解碼／編碼','Decode / encode','修正量 → 框／框 → 正確修正量','8'],
+    ['非極大值抑制','Non-Maximum Suppression (NMS)','刪掉和高分框重疊太多的框','10'],
+    ['感興趣區域池化','RoI Pooling','把任意大小的框變成固定 P×P 的特徵','11'],
+    ['感興趣區域對齊','RoI Align','不取整、用雙線性內插的 RoI Pooling','11'],
+    ['雙線性內插','Bilinear interpolation','用周圍 4 格加權平均估計小數位置的值','11'],
+    ['偵測頭','Detection head','第二階段：分類 + 第二次修框','12'],
+    ['正樣本／負樣本','Positive / negative sample','要學「有東西」／「背景」的 anchor','13'],
+    ['交叉熵','Cross-entropy','分類的 loss','14'],
+    ['平滑 L1 損失','Smooth L1 loss','小誤差像平方、大誤差像絕對值','14'],
+    ['交替訓練','Alternating training','輪流訓練 RPN 和偵測頭','14'],
+    ['兩階段／單階段','Two-stage / one-stage','先提案再分類／一次完成','15'],
+    ['預設框','Default box','SSD 對 anchor 的叫法','15'],
+    ['先驗框','Prior','YOLO 對 anchor 的叫法','18'],
+    ['多尺度特徵圖','Multi-scale feature maps','不同解析度的特徵圖各管一段大小的物體','16'],
+    ['困難負樣本挖掘','Hard negative mining','挑最容易被誤認的背景來訓練','16'],
+    ['骨幹網路','Backbone','負責抽特徵的主幹，例如 VGG-16','17'],
+    ['資料增強','Data augmentation','隨機裁切、翻轉、變色，增加訓練資料的多樣性','16'],
+    ['無錨框','Anchor-free','不用 anchor，直接預測到四邊的距離','15'],
+    ['召回率','Recall','真實物體中被找到的比例','18'],
+    ['預印本','arXiv preprint','正式發表前先公開的論文版本','20'],
+    ['平均精度均值','mean Average Precision (mAP)','各類別 AP 的平均，偵測的主要指標','20'],
+    ['每秒影格數','Frames Per Second (FPS)','每秒能處理幾張影像','20'],
+    ['空洞卷積','Atrous / dilated convolution','卷積核跳著取樣，看得更廣','20']
+  ];
+  $('#gloss').innerHTML = T.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="num">${r[3]}</td></tr>`).join('');
+})();
+</script>
+
+<footer class="ls-foot" aria-label="作者與授權">
+  <p><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p>內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。頁面中的程式碼採 MIT 授權。</p>
+  <p>引用的論文、影片與圖表，版權屬原作者，不在上述授權範圍內。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p>需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。</p>
+  <p><a href="../index.html">← 回到「學習空間」目錄</a></p>
+</footer>
+</body></html>

@@ -1,5 +1,8 @@
 # HISTORY
 
+## v0.7.0 — 2026-11-10
+- 新增「Faster R-CNN 互動教學」（`notes/faster-rcnn.html`）：結構整理、目錄列、署名／授權頁尾；姊妹篇連結到站內線代、機率、微積分與 CNN 筆記；首頁「AI 學習分享」新增卡片（置於 CNN 之後）。
+
 ## v0.6.0 — 2026-11-09
 - 新增 Workshop 範例「生成式 AI 與心理健康」（`notes/genai-mental-health.html`，原頁已有中英切換）。
 - Workshop 區塊雙語化（標題、說明、卡片皆中英文）；兩個 workshop 頁的目錄列與署名／授權頁尾改為中英雙語，並跟隨頁面的語言切換；首頁頁尾補英文署名。
