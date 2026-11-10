@@ -192,7 +192,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
   <header class="hero">
     <div>
       <h1>從 Anchor 到 YOLO：Faster R-CNN 互動教學</h1>
-      <p class="lead">寫給「看了 RPN、proposals 卻怎麼都兜不起來」的人。我們用投影片上的 <b>7×7 特徵圖、每格 9 個 anchor</b> 當主線，每一步都有可以操作的示範：自己擺 anchor、拉 dx dy dw dh、一步一步做 NMS、看 RoI Pooling 怎麼取最大值。</p>
+      <p class="lead">寫給「看了 RPN、proposals 卻怎麼都兜不起來」的人。我們用一個簡化的教學範例：<b>224×224 的影像、7×7 的特徵圖、每格 9 個 anchor</b> 當主線，每一步都有可以操作的示範：自己擺 anchor、拉 dx dy dw dh、一步一步做 NMS、看 RoI Pooling 怎麼取最大值。</p>
       <p class="lead">最後一篇說明 <b>SSD 怎麼把 RPN 直接變成偵測頭、SSD 和 YOLOv1 差在哪、YOLO 又怎麼改造 anchor</b>，所以這一頁也是看懂單階段偵測器的起點。顏色約定：<span class="r">藍色＝anchor（預先擺好的模板框）</span>、<span class="c">琥珀色＝網路預測出來的框</span>、<span style="color:var(--good);font-weight:600">綠色＝標註框（正確答案）</span>、<span class="pen">紅色＝常見錯誤</span>。</p>
     </div>
     <div class="hero-fig" aria-label="Faster R-CNN 五個步驟">
@@ -218,7 +218,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <h2>這一頁在講什麼：從「到處猜框」到「擺好模板再微調」</h2>
     <div class="prose">
       <p>物件偵測要回答兩件事：<strong>東西在哪裡</strong>（一個框）、<strong>是什麼</strong>（一個類別）。最早的方法很直接：先用別的演算法在圖上猜出約 2,000 個「可能有東西」的框，這些框就叫 <strong>proposals（候選框、區域提案）</strong>，再一個一個拿去分類。</p>
-      <p>Faster R-CNN（2015）的關鍵貢獻是：<strong>不再用外部演算法猜框，而是讓網路自己在特徵圖的每一格上擺好幾個固定形狀的模板框（anchor），再學著判斷「這個模板裡有沒有東西」以及「模板要怎麼移動、縮放才會剛好框住」</strong>。負責這件事的小網路叫 RPN（Region Proposal Network）。投影片標題「use anchor instead of proposals」說的就是這件事。</p>
+      <p>Faster R-CNN（2015）的關鍵貢獻是：<strong>不再用外部演算法猜框，而是讓網路自己在特徵圖的每一格上擺好幾個固定形狀的模板框（anchor），再學著判斷「這個模板裡有沒有東西」以及「模板要怎麼移動、縮放才會剛好框住」</strong>。負責這件事的小網路叫 RPN（Region Proposal Network）。一句話概括就是：<strong>用 anchor 取代外部產生的 proposals</strong>。</p>
       <p>這個「擺好模板 + 預測修正量」的想法後來被 SSD（default boxes）和 YOLOv2、v3（anchor boxes）直接拿去用，只是把「有沒有東西」換成「是哪一類」，並且拿掉第二階段。所以理解 RPN，就等於理解了單階段偵測器的一半。</p>
     </div>
     <div class="tbl"><table>
@@ -244,10 +244,10 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
         <tr><td>IoU</td><td>Intersection over Union，兩框交集面積 ÷ 聯集面積，0 到 1</td><td class="num">2</td></tr>
         <tr><td>\(\cap,\ \cup\)</td><td>交集（重疊的部分）、聯集（合起來的部分）</td><td class="num">2</td></tr>
         <tr><td>stride \(s\)</td><td>步長：特徵圖上一格對應原圖幾個像素（本頁 32）</td><td class="num">4</td></tr>
-        <tr><td>\(k\)</td><td>每一格的 anchor 數，投影片上 \(k=3\times3=9\)</td><td class="num">5</td></tr>
+        <tr><td>\(k\)</td><td>每一格的 anchor 數，本頁 \(k=3\times3=9\)</td><td class="num">5</td></tr>
         <tr><td>\(r\)</td><td>長寬比 aspect ratio，本頁定義 \(r=h/w\)</td><td class="num">5</td></tr>
         <tr><td>\(A_x,A_y,A_w,A_h\)</td><td>anchor 的中心、寬、高（A 代表 anchor）</td><td class="num">8</td></tr>
-        <tr><td>\(d_x,d_y,d_w,d_h\)</td><td>網路預測的修正量（投影片上的 dx dy dw dh）</td><td class="num">8</td></tr>
+        <tr><td>\(d_x,d_y,d_w,d_h\)</td><td>網路預測的修正量（常寫成 dx dy dw dh）</td><td class="num">8</td></tr>
         <tr><td>\(G\)、\(t\)</td><td>G：標註框（ground truth）；t：讓 anchor 變成 G 的「正確修正量」</td><td class="num">8、13</td></tr>
         <tr><td>\(e^{x}\)、\(\ln\)</td><td>e ≈ 2.718 的 x 次方；自然對數（e 次方的反運算）</td><td class="num">8</td></tr>
         <tr><td>\(\sigma(x)\)</td><td>sigmoid：\(1/(1+e^{-x})\)，把任何數壓到 0 到 1</td><td class="num">7、18</td></tr>
@@ -294,7 +294,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <div class="label">第 3 節</div>
     <h2>R-CNN 三代：proposals 從哪裡來</h2>
     <div class="prose">
-      <p>先釐清投影片上的一個小筆誤：「region proposal network of <em>fast</em> RCNN」應該是 <strong>Faster</strong> R-CNN。三代名字很像，差別其實只有兩件事：<strong>候選框從哪裡來</strong>，以及 <strong>CNN 跑幾次</strong>。</p>
+      <p>R-CNN、Fast R-CNN、Faster R-CNN 三代名字很像，常被混在一起（例如把 RPN 說成 Fast R-CNN 的一部分，其實它是 <strong>Faster</strong> R-CNN 才提出的）。三代的差別主要在兩件事：<strong>候選框從哪裡來</strong>，以及 <strong>CNN 跑幾次</strong>。</p>
     </div>
     <div class="tbl"><table>
       <thead><tr><th></th><th>R-CNN（2014）</th><th>Fast R-CNN（2015）</th><th>Faster R-CNN（2015）</th></tr></thead>
@@ -306,10 +306,51 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
         <tr><td>分類器</td><td>SVM</td><td>softmax（網路內）</td><td>softmax（網路內）</td></tr>
       </tbody>
     </table></div>
+    <h3>候選框的來源：Selective Search</h3>
     <div class="prose">
-      <p><strong>Selective Search</strong> 是一個傳統（非深度學習）演算法：先把影像切成很多顏色、紋理相近的小區塊，再反覆把最像的鄰居合併，合併過程中出現過的每一塊都當成一個候選框。它不用學習，但很慢，而且跟後面的網路沒有任何關係，網路學得再好也幫不了它。</p>
-      <p>Fast R-CNN 已經解決了「CNN 跑 2,000 次」的問題，於是整個系統的瓶頸變成 Selective Search 本身。Faster R-CNN 的想法是：<strong>卷積特徵圖本來就已經算出來了，裡面應該已經有「哪裡有東西」的資訊，那就在上面再加幾層，直接預測候選框</strong>。這幾層就是 RPN，它和後面的偵測網路<strong>共用同一張特徵圖</strong>，所以幾乎不增加計算量。</p>
+      <p><strong>Selective Search</strong>（Uijlings 等人，2013）是一個傳統、非深度學習的演算法：先把影像切成很多顏色、紋理相近的小區塊，再反覆把最相似的鄰居合併，合併過程中出現過的每一塊都當成一個候選框。每張圖約產生 2,000 個。它不用學習，但在 CPU 上每張要約 2 秒，而且和後面的網路完全沒有關係：網路學得再好，也改善不了候選框的品質。</p>
     </div>
+
+    <h3>R-CNN（2014）：每個候選框各跑一次 CNN</h3>
+    <div class="prose"><p>R-CNN 是「Regions with CNN features」的縮寫，是第一個把深度 CNN 特徵成功用在物件偵測的方法。測試時的流程：</p></div>
+    <div class="steps">
+      <div><div><strong>產生候選框</strong>：Selective Search 約 2,000 個。</div></div>
+      <div><div><strong>裁切並縮放</strong>：把每個候選框在原圖上裁下來（四周多留 16 像素的背景），不管原本長寬比，直接<strong>強制縮放（warp）成 227×227</strong>，因為 AlexNet 只接受固定大小的輸入。</div></div>
+      <div><div><strong>取特徵</strong>：每個候選框各自送進 CNN（AlexNet），取倒數第二層全連接的 <strong>4,096 維</strong>向量。2,000 個框就要跑 2,000 次 CNN。</div></div>
+      <div><div><strong>分類</strong>：每個類別一個線性 <strong>SVM</strong>（支持向量機），判斷這個特徵屬不屬於這一類。</div></div>
+      <div><div><strong>修框與去重</strong>：用一個線性迴歸修正框的位置（bounding-box regression，本頁第 8 節的修正量公式就是從這裡來的），再對每一類做 NMS。</div></div>
+    </div>
+    <div class="prose">
+      <p><strong>訓練分成三個獨立的階段</strong>：先用 ImageNet 預訓練的 CNN 在偵測資料上微調（和標註框 IoU ≥ 0.5 的候選框當正樣本）；再把所有候選框的特徵算出來<strong>存到硬碟</strong>，拿來訓練 SVM（只有標註框本身當正樣本、IoU &lt; 0.3 當負樣本）；最後另外訓練框迴歸器。三個部分各自訓練，彼此無法互相調整。</p>
+      <p><strong>缺點</strong>：慢。測試時一張圖要跑約 2,000 次 CNN，用 AlexNet 在 GPU 上約 13 秒，換成 VGG-16 約 47 秒；訓練時光是存特徵就要數百 GB 的硬碟空間。強制縮放也會讓物體變形。</p>
+    </div>
+
+    <h3>SPPnet（2014）：先算整張圖，再挖每個框</h3>
+    <div class="prose"><p>何愷明等人發現，2,000 個候選框大量重疊，同一塊影像被 CNN 算了很多次。SPPnet 改成<strong>整張圖只跑一次卷積</strong>，再把每個候選框投影到特徵圖上，用「空間金字塔池化（Spatial Pyramid Pooling）」把大小不一的區域變成固定長度的向量。測試速度比 R-CNN 快幾十倍。但它的訓練仍然是多階段的，而且金字塔池化之前的卷積層在微調時不容易更新。</p></div>
+
+    <h3>Fast R-CNN（2015）：一個網路、一次訓練</h3>
+    <div class="prose"><p>Fast R-CNN 接續 SPPnet 的想法，並把整個流程收進一個網路：</p></div>
+    <div class="steps">
+      <div><div><strong>整張圖跑一次卷積</strong>（VGG-16），得到特徵圖。</div></div>
+      <div><div><strong>RoI Pooling</strong>：Selective Search 的每個候選框投影到特徵圖上，切成 7×7 格取最大值，得到固定大小的特徵（它是只有一層的空間金字塔池化，詳見第 11 節）。</div></div>
+      <div><div><strong>兩個輸出一起學</strong>：全連接層之後分成 softmax 分類（C + 1 類）和框迴歸兩個分支，用一個<strong>多任務 loss</strong> 同時訓練（第 14 節），SVM 和獨立的迴歸器都不需要了。</div></div>
+      <div><div><strong>端到端微調</strong>：梯度可以穿過 RoI Pooling 傳回卷積層，整個網路一起更新；也不必再把特徵存到硬碟。</div></div>
+    </div>
+    <div class="prose"><p>結果：用 VGG-16 時，測試比 R-CNN 快約 146 倍（不含產生候選框的時間），訓練快約 9 倍，準確率也更高。但 Selective Search 每張仍要約 2 秒，比網路本身（約 0.3 秒）還慢，候選框變成新的瓶頸。</p></div>
+
+    <h3>Faster R-CNN（2015）：連候選框也交給網路</h3>
+    <div class="prose">
+      <p>Faster R-CNN 的想法是：<strong>卷積特徵圖本來就已經算出來了，裡面應該已經有「哪裡有東西」的資訊，那就在上面再加幾層，直接預測候選框</strong>。這幾層就是 RPN，它和後面的偵測網路<strong>共用同一張特徵圖</strong>，產生候選框只需要約 10 毫秒。整個系統（VGG-16）約每秒 5 張，第一次讓整條偵測流程幾乎都在 GPU 上的神經網路裡完成。本頁第 4 到 14 節就是在詳細拆解 Faster R-CNN。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>模型（VGG-16）</th><th>VOC 2007 test mAP</th><th>每張測試時間</th></tr></thead>
+      <tbody>
+        <tr><td>R-CNN</td><td class="num">66.0</td><td class="num">約 47 秒</td></tr>
+        <tr><td>Fast R-CNN</td><td class="num">66.9（加上 VOC 2012 訓練資料：70.0）</td><td class="num">約 0.3 秒 + Selective Search 約 2 秒</td></tr>
+        <tr><td>Faster R-CNN</td><td class="num">69.9（加上 VOC 2012 訓練資料：73.2）</td><td class="num">約 0.2 秒（含候選框）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="prose"><p>（mAP：mean Average Precision，偵測最常用的準確率指標，越高越好，詳見第 20 節。除非特別註明，都是只用 VOC 2007 的訓練資料。）</p></div>
     <div class="box key"><b class="t">一句話記住</b><p>如果把 Faster R-CNN 的 RPN 換回 Selective Search，剩下的部分就是 Fast R-CNN。所以「RPN + RoI Pooling」就是「Faster 的新東西 + Fast 的舊東西」。</p></div>
   </section>
 
@@ -318,10 +359,10 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <h2>特徵圖、步長，以及「一格」對應原圖哪裡</h2>
     <div class="prose">
       <p>卷積網路每經過一次 stride 2 的池化，寬高就減半。VGG-16 經過 5 次池化，寬高變成原圖的 \(1/32\)。這個縮小倍率叫 <strong>stride（步長）\(s\)</strong>：特徵圖上走一格，等於原圖走 \(s\) 個像素。</p>
-      <p>投影片以 224×224 的輸入為例：\(224\div32=7\)，所以特徵圖是 7×7，每一格有一個 512 維的向量（512 是最後一層卷積的通道數）。第 \(i\) 列、第 \(j\) 欄那一格（從 0 開始數），在原圖上的中心是：</p>
+      <p>本頁的教學範例以 224×224 的輸入、總步長 32 為例：\(224\div32=7\)，所以特徵圖是 7×7，每一格有一個 512 維的向量（512 是最後一層卷積的通道數）。第 \(i\) 列、第 \(j\) 欄那一格（從 0 開始數），在原圖上的中心是：</p>
     </div>
     <div class="formula">\[ \big(\,(j+0.5)\,s,\ \ (i+0.5)\,s\,\big) \qquad\text{例如 } s=32,\ (i,j)=(3,3)\ \Rightarrow\ (112,\,112) \]</div>
-    <div class="box warn"><b class="t">投影片的 7×7 是示意</b><p>真實的 Faster R-CNN 用的是 VGG-16 的 <code>conv5_3</code>，它在第 5 次池化<strong>之前</strong>，步長是 16：224 的輸入會得到 14×14，不是 7×7。原論文把影像短邊縮放到 600，所以特徵圖大約 60×40（38×63 左右）。本頁照投影片用 7×7、步長 32 來講，道理完全一樣，只是數字比較小、畫得出來。</p></div>
+    <div class="box warn"><b class="t">本頁的 7×7 是簡化範例</b><p>真實的 Faster R-CNN 用的是 VGG-16 的 <code>conv5_3</code>，它在第 5 次池化<strong>之前</strong>，步長是 16：224 的輸入會得到 14×14，不是 7×7。原論文把影像短邊縮放到 600，所以特徵圖大約 60×40（38×63 左右）。本頁用 7×7、步長 32 來講，道理完全一樣，只是數字比較小、畫得出來。</p></div>
     <div class="demo">
       <h4>示範：點一格，看它對應原圖哪一塊</h4>
       <div class="btns" id="grid-pick"></div>
@@ -334,14 +375,14 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
   <div class="part-head b" id="partB">
     <div class="eyebrow">第二篇</div>
     <h2>Anchor 與 RPN</h2>
-    <div><p>對應課程投影片：「use anchor instead of proposals」（9 個 anchor 和 dx dy dw dh）以及論文的「2k scores / 4k coordinates」圖。</p></div>
+    <div><p>RPN 的兩個核心：每格 9 個 anchor 與修正量 dx dy dw dh，以及 Faster R-CNN 論文 Figure 3 的「2k scores / 4k coordinates」結構。</p></div>
   </div>
 
   <section class="sec" id="s5">
     <div class="label">第 5 節</div>
     <h2>Anchor：3 種大小 × 3 種長寬比 = 9 個模板</h2>
     <div class="prose">
-      <p><strong>Anchor（錨框）</strong>是事先擺好、<strong>固定不動、不需要學習</strong>的參考框。在特徵圖的<strong>每一格</strong>中心，都擺上同一組 \(k\) 個不同形狀的框。投影片上是 3 種大小（sizes，也叫 scales）× 3 種長寬比（aspect ratios），所以 \(k=3\times3=9\)。這就是 7×7×9×2 和 7×7×9×4 裡那個「9」的由來。</p>
+      <p><strong>Anchor（錨框）</strong>是事先擺好、<strong>固定不動、不需要學習</strong>的參考框。在特徵圖的<strong>每一格</strong>中心，都擺上同一組 \(k\) 個不同形狀的框。Faster R-CNN 用的是 3 種大小（sizes，也叫 scales）× 3 種長寬比（aspect ratios），所以 \(k=3\times3=9\)。這就是 7×7×9×2 和 7×7×9×4 裡那個「9」的由來。</p>
       <p>為什麼要多種形狀？因為物體有高有扁：人是直立的長方形，車是橫的長方形，球接近正方形。如果每格只有一個正方形模板，網路就得從很遠的形狀硬拉過去，很難學。多擺幾種，總有一個比較接近，只要再「微調」一點點就好。</p>
       <p>給定大小 \(s\)（代表面積 \(s^2\)）和長寬比 \(r=h/w\)，要求面積不變：\(w\cdot h=s^2\) 且 \(h=r\,w\)，解出來：</p>
     </div>
@@ -350,7 +391,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       <p>論文的設定是面積 \(128^2,\ 256^2,\ 512^2\)、長寬比 1:1、1:2、2:1（影像短邊 600 像素）。本頁的 224 像素小圖改用 32、64、128，比例一樣。</p>
     </div>
     <div class="demo">
-      <h4>示範：點特徵圖上的任一格，看那一格的 anchor（顏色和投影片一樣：藍小、紅中、綠大）</h4>
+      <h4>示範：點特徵圖上的任一格，看那一格的 anchor（藍小、紅中、綠大）</h4>
       <div class="ctrls">
         <div class="btns" id="anc-sizes"></div>
         <div class="btns" id="anc-ratios"></div>
@@ -358,7 +399,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       <div class="two"><div class="cv"><canvas id="cv-anc"></canvas></div><div class="out" id="anc-out"></div></div>
       <p class="hint">試試看：關掉一些大小或比例，k 就會變少；全部打開是 9。邊緣格子的大 anchor 會超出影像，這是正常的（訓練時這些會被忽略，見第 13 節）。</p>
     </div>
-    <div class="box key"><b class="t">anchor 不是 proposal</b><p>投影片寫「9 proposals for each grid」，嚴格說是 9 個 <strong>anchor</strong>。anchor 是固定模板；網路對它打分數、修正位置，再經過篩選之後留下來的，才叫 proposals。7×7×9 = <b>441 個 anchor</b>，最後可能只留幾十到幾百個 proposals。</p></div>
+    <div class="box key"><b class="t">anchor 不是 proposal</b><p>常聽到「每格 9 個 proposals」，嚴格說是 9 個 <strong>anchor</strong>。anchor 是固定模板；網路對它打分數、修正位置，再經過篩選之後留下來的，才叫 proposals。7×7×9 = <b>441 個 anchor</b>，最後可能只留幾十到幾百個 proposals。</p></div>
   </section>
 
   <section class="sec" id="s6">
@@ -368,7 +409,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       <p>對照論文那張圖（sliding window → 256-d → cls layer / reg layer）：</p>
     </div>
     <div class="steps">
-      <div><div><strong>sliding window（滑動視窗）</strong>：一個 3×3 的視窗在特徵圖上逐格滑過。實作上就是一層 <strong>3×3 卷積</strong>（padding 1，所以輸出仍是 7×7），後面接 ReLU。這和投影片的「3×3×512」是同一件事。</div></div>
+      <div><div><strong>sliding window（滑動視窗）</strong>：一個 3×3 的視窗在特徵圖上逐格滑過。實作上就是一層 <strong>3×3 卷積</strong>（padding 1，所以輸出仍是 7×7），後面接 ReLU。常見的寫法「3×3×512」指的就是這層：3×3 卷積核、512 個輸出通道。</div></div>
       <div><div><strong>intermediate layer（中間層）</strong>：每個位置得到一個向量。論文用 ZF 網路時是 <strong>256 維</strong>（圖上的 256-d），用 VGG-16 時是 <strong>512 維</strong>。</div></div>
       <div><div><strong>cls layer（分類層）</strong>：輸出 <strong>2k 個分數</strong>，每個 anchor 2 個：「是物體」和「是背景」。k = 9 時就是 18。</div></div>
       <div><div><strong>reg layer（迴歸層）</strong>：輸出 <strong>4k 個座標修正量</strong>，每個 anchor 4 個：\(d_x,d_y,d_w,d_h\)。k = 9 時就是 36。</div></div>
@@ -415,7 +456,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       </tbody>
     </table></div>
     <div class="prose">
-      <p>投影片上的 X Y W H 欄就是修正量表，T F 欄就是分數表。把 18 和 36 疊成 54 個通道在數學上不是不行，但兩組數字的意義、損失函數都不同，分開最清楚。總共是 441 × (2 + 4) = 2,646 個數字。</p>
+      <p>有些圖會把它畫成兩欄：X Y W H 是修正量表，T F（True／False，物體／背景）是分數表。把 18 和 36 疊成 54 個通道在數學上不是不行，但兩組數字的意義、損失函數都不同，分開最清楚。總共是 441 × (2 + 4) = 2,646 個數字。</p>
       <p><strong>兩個 Reshape 在做什麼？</strong>softmax 要在「同一個 anchor 的 2 個分數」之間做，才能得到加總為 1 的兩個機率。所以先把 7×7×18 變形成 7×7×9×2，對最後一維做 softmax，再變回 7×7×18。Reshape 只是換個排列方式，<strong>不會改變任何數字</strong>。</p>
     </div>
     <div class="formula">\[ P(\text{物體})=\frac{e^{z_\text{物}}}{e^{z_\text{物}}+e^{z_\text{背}}}\qquad\text{例如 } z_\text{物}=1.2,\ z_\text{背}=-0.3:\ \ \frac{e^{1.2}}{e^{1.2}+e^{-0.3}}=\frac{3.320}{3.320+0.741}=0.818 \]</div>
@@ -428,7 +469,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <div class="label">第 8 節</div>
     <h2>dx、dy、dw、dh：網路預測的是「修正量」，不是座標</h2>
     <div class="prose">
-      <p>投影片右邊那張圖：灰色是 anchor，橘色是真正的物體。網路不直接猜「框在 (93, 106)、寬 156」，而是猜<strong>相對於 anchor 要怎麼改</strong>。設 anchor 的中心、寬、高是 \(A_x,A_y,A_w,A_h\)，網路輸出 \(d_x,d_y,d_w,d_h\)，修正後的框是：</p>
+      <p>網路不直接猜「框在 (93, 106)、寬 156」，而是猜<strong>相對於 anchor 要怎麼改</strong>。設 anchor 的中心、寬、高是 \(A_x,A_y,A_w,A_h\)，網路輸出 \(d_x,d_y,d_w,d_h\)，修正後的框是：</p>
     </div>
     <div class="formula">\[ x=A_x+A_w\,d_x,\qquad y=A_y+A_h\,d_y,\qquad w=A_w\,e^{d_w},\qquad h=A_h\,e^{d_h} \]</div>
     <div class="prose">
@@ -712,7 +753,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     <h2>SSD：把 RPN 直接當成偵測頭</h2>
     <div class="box amber" style="margin-top:0;margin-bottom:14px"><b class="t">論文</b><p><b>SSD: Single Shot MultiBox Detector</b>，Wei Liu 等人，arXiv 2015 年 12 月、ECCV 2016。SSD = <b>S</b>ingle <b>S</b>hot（一次前向）MultiBox <b>D</b>etector。詳見第 20 節。</p></div>
     <div class="prose">
-      <p>投影片「Use RPN as detection head」說的就是上一節的想法真的做出來的樣子。SSD（Single Shot MultiBox Detector，2016）在 VGG-16 的 <code>Conv4_3</code> 特徵圖（38×38×512）上，直接接一個 3×3 卷積，輸出：</p>
+      <p>「把 RPN 當成偵測頭（use RPN as detection head）」，就是上一節的想法真的做出來的樣子。SSD（Single Shot MultiBox Detector，2016）在 VGG-16 的 <code>Conv4_3</code> 特徵圖（38×38×512）上，直接接一個 3×3 卷積，輸出：</p>
     </div>
     <div class="formula">\[ 38\times38\times\big(\underbrace{4}_{\text{每格 default box 數}}\times(\underbrace{\text{classes}}_{C+1}+\underbrace{4}_{\text{修正量}})\big)\qquad\text{VOC：}\ 38\times38\times\big(4\times(21+4)\big)=38\times38\times100 \]</div>
     <div class="prose">
@@ -723,7 +764,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
       <tbody>
         <tr><td>每格的模板框</td><td>9 個 anchor</td><td>4 或 6 個 default box（就是 anchor）</td></tr>
         <tr><td>每個框的分數</td><td>2 個：物體／背景</td><td><b>C + 1 個</b>：每一類 + 背景，直接 softmax</td></tr>
-        <tr><td>每個框的修正量</td><td>4 個（dx, dy, dw, dh）</td><td>4 個，編碼方式相同（投影片寫 cx, cy, dh, dw）</td></tr>
+        <tr><td>每個框的修正量</td><td>4 個（dx, dy, dw, dh）</td><td>4 個，編碼方式相同（有些資料寫成 cx, cy, dh, dw）</td></tr>
         <tr><td>預測層</td><td>3×3 conv，再接兩個 1×1 conv</td><td>直接一個 3×3 conv（實作上分類、框各一個）</td></tr>
         <tr><td>用幾張特徵圖</td><td>1 張</td><td><b>6 張，解析度由大到小</b></td></tr>
         <tr><td>之後</td><td>Proposal layer → RoI Pooling → 偵測頭</td><td><b>直接</b>每類 NMS → 結果</td></tr>
@@ -803,9 +844,9 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
   <section class="sec" id="s17">
     <div class="label">第 17 節</div>
     <h2>SSD 與 YOLOv1 的技術差異</h2>
-    <div class="box amber" style="margin-top:0;margin-bottom:14px"><b class="t">論文</b><p><b>You Only Look Once: Unified, Real-Time Object Detection</b>，Joseph Redmon 等人，arXiv 2015 年 6 月、CVPR 2016。YOLO = <b>Y</b>ou <b>O</b>nly <b>L</b>ook <b>O</b>nce（整張圖只看一次）。它和 Faster R-CNN 同一個月上 arXiv，比 SSD 早半年；SSD 論文的比較圖（就是本節的投影片）把 YOLO 當成主要對手。詳見第 20 節。</p></div>
+    <div class="box amber" style="margin-top:0;margin-bottom:14px"><b class="t">論文</b><p><b>You Only Look Once: Unified, Real-Time Object Detection</b>，Joseph Redmon 等人，arXiv 2015 年 6 月、CVPR 2016。YOLO = <b>Y</b>ou <b>O</b>nly <b>L</b>ook <b>O</b>nce（整張圖只看一次）。它和 Faster R-CNN 同一個月上 arXiv，比 SSD 早半年；SSD 論文的架構比較圖（Figure 2）把 YOLO 當成主要對手。詳見第 20 節。</p></div>
     <div class="prose">
-      <p>兩者都是單階段（一次前向就輸出結果），正式發表都在 2016 年（YOLOv1 在 CVPR 2016 年 6 月，SSD 在 ECCV 2016 年 10 月），但設計差很多。投影片用三張圖點出三個重點：<strong>骨幹不同</strong>、<strong>SSD 用多種解析度、YOLOv1 只用一張特徵圖</strong>、<strong>SSD 的預測數量多很多（8732 對 98）</strong>。下面完整比較：</p>
+      <p>兩者都是單階段（一次前向就輸出結果），正式發表都在 2016 年（YOLOv1 在 CVPR 2016 年 6 月，SSD 在 ECCV 2016 年 10 月），但設計差很多。SSD 論文的 Figure 2 把兩者畫在一起比較，可以看出三個重點：<strong>骨幹不同</strong>、<strong>SSD 用多種解析度、YOLOv1 只用一張特徵圖</strong>、<strong>SSD 的預測數量多很多（8732 對 98）</strong>。下面完整比較：</p>
     </div>
     <div class="tbl"><table>
       <thead><tr><th></th><th>SSD300</th><th>YOLOv1</th></tr></thead>
@@ -953,7 +994,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
         <tr><td>RPN 中間層是 256 維</td><td>論文圖上的 256-d 是用 <b>ZF 網路</b>時的數字；用 VGG-16 時是 <b>512 維</b></td></tr>
         <tr><td>cls、reg 是兩個全連接層</td><td>論文這樣稱呼，但因為每個位置共用權重，實作上就是兩個 <b>1×1 卷積</b>（第 6 節）</td></tr>
         <tr><td>每個 anchor 一定是 2 個分數</td><td>原版是 2 個 + softmax；很多實作改成 1 個 + sigmoid，cls 層變成 k 個通道，兩者等價（第 7 節）</td></tr>
-        <tr><td>conv5_3 是 7×7</td><td>投影片的示意。conv5_3 步長 16，224 輸入是 14×14；7×7 是 pool5 之後的大小（第 4 節）</td></tr>
+        <tr><td>conv5_3 是 7×7</td><td>很多教學圖用 7×7 示意。conv5_3 步長 16，224 輸入是 14×14；7×7 是 pool5 之後的大小（第 4 節）</td></tr>
       </tbody>
     </table></div>
     <h3>Proposal layer 與訓練</h3>
@@ -1028,13 +1069,13 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     </table></div>
     <div class="box key"><b class="t">從時間軸看出的三件事</b>
       <p>1. <strong>Faster R-CNN 和 YOLOv1 同一個月上 arXiv</strong>（2015 年 6 月），兩者是平行發展的：一個走兩階段 + anchor，一個走單階段、不用 anchor。所以 YOLOv1 沒有 anchor 並不奇怪。</p>
-      <p>2. <strong>SSD 晚了半年</strong>，它結合了兩邊：單階段（像 YOLO）+ anchor（像 Faster R-CNN 的 RPN），再加上多尺度。SSD 論文裡直接拿 YOLO 和 Faster R-CNN 做比較，投影片上的「SSD vs YOLO v1」圖就是 SSD 論文的 Figure 2。</p>
+      <p>2. <strong>SSD 晚了半年</strong>，它結合了兩邊：單階段（像 YOLO）+ anchor（像 Faster R-CNN 的 RPN），再加上多尺度。SSD 論文裡直接拿 YOLO 和 Faster R-CNN 做比較，論文的 Figure 2 就是 SSD 與 YOLO 的架構對照圖（第 17 節）。</p>
       <p>3. <strong>YOLOv2 再晚一年</strong>，回頭借用 anchor、全卷積、多尺度訓練。Ross Girshick 同時是 R-CNN 三代和 YOLOv1 的作者，兩條路線其實出自同一群人。</p>
     </div>
 
-    <div class="box amber"><b class="t">投影片時間軸和本表的年份對照</b>
-      <p>投影片多數用<strong>正式發表年份</strong>，本表另外列出 arXiv 時間，所以會有一兩年的差距，兩者都不算錯：</p>
-      <p>・<b>Faster R-CNN 寫 2016</b>：arXiv 和 NIPS 都是 2015；期刊版（TPAMI）是 2017。<br>・<b>YOLOv1、SSD 寫 2016</b>：會議是 2016，arXiv 是 2015 年 6 月和 12 月。<br>・<b>YOLOv2 寫 2016</b>：arXiv 2016 年 12 月，會議是 CVPR 2017。<br>・<b>CenterNet 寫 2018</b>：較常見的說法是 <b>2019</b>（arXiv 2019 年 4 月）。而且 2019 年有兩篇都叫 CenterNet：一篇是 Zhou 等人的「Objects as Points」（本表列的、最常被提到的那篇），另一篇是 Duan 等人的「Keypoint Triplets」。<br>・投影片的「ConerNet」是筆誤，應為 <b>CornerNet</b>。</p>
+    <div class="box amber"><b class="t">為什麼不同資料寫的年份不一樣</b>
+      <p>有的資料用 arXiv 年份，有的用會議年份，有的甚至用期刊版年份，所以同一個模型可能差一兩年，都不算錯：</p>
+      <p>・<b>Faster R-CNN 寫 2015 或 2016、2017</b>：arXiv 和 NIPS 都是 2015；期刊版（TPAMI）是 2017。<br>・<b>YOLOv1、SSD 寫 2016</b>：會議是 2016，arXiv 是 2015 年 6 月和 12 月。<br>・<b>YOLOv2 寫 2016</b>：arXiv 2016 年 12 月，會議是 CVPR 2017。<br>・<b>CenterNet</b>：是 <b>2019</b>（arXiv 2019 年 4 月）。而且 2019 年有兩篇都叫 CenterNet：一篇是 Zhou 等人的「Objects as Points」（本表列的、最常被提到的那篇），另一篇是 Duan 等人的「Keypoint Triplets」。<br>・<b>CornerNet</b> 偶爾被誤拼成 ConerNet。</p>
     </div>
     <h3>時間軸上的其他模型</h3>
     <div class="tbl"><table>
@@ -1077,15 +1118,15 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
         <tr><td>FPS</td><td>Frames Per Second</td><td>每秒能處理幾張影像</td></tr>
         <tr><td>VOC</td><td>PASCAL Visual Object Classes</td><td>20 類的偵測資料集；PASCAL 是 Pattern Analysis, Statistical Modelling and Computational Learning 的縮寫。「VOC 2007 test」是最常見的比較基準</td></tr>
         <tr><td>COCO</td><td>Common Objects in Context</td><td>微軟的 80 類偵測資料集，比 VOC 大、難</td></tr>
-        <tr><td>s1、s2</td><td>stride 1、stride 2</td><td>投影片上的「Conv: 3x3x512-s2」：3×3 卷積、512 個輸出通道、步長 2（寬高減半）</td></tr>
+        <tr><td>s1、s2</td><td>stride 1、stride 2</td><td>架構圖上的「Conv: 3x3x512-s2」：3×3 卷積、512 個輸出通道、步長 2（寬高減半）</td></tr>
         <tr><td>Conv4_3</td><td></td><td>第 4 組卷積的第 3 層。VGG 把卷積分成 5 組，所以有 Conv1_1 到 Conv5_3；SSD 加的層延續編號，叫 Conv8_2、Conv9_2 等</td></tr>
         <tr><td>atrous</td><td>à trous（法文「有洞的」）</td><td>空洞卷積：卷積核中間跳著取樣，不增加參數就能看得更廣</td></tr>
       </tbody>
     </table></div>
 
-    <h3>看懂投影片上的卷積標示</h3>
+    <h3>看懂 SSD 架構圖上的卷積標示</h3>
     <div class="prose">
-      <p>投影片（SSD 論文 Figure 2）在每個方塊下面寫了像 <code>Conv: 1x1x256</code>、<code>Conv: 3x3x512-s2</code> 這樣的標示，讀法是「卷積核大小 × 輸出通道數，步長」：</p>
+      <p>SSD 論文的 Figure 2 在每個方塊下面寫了像 <code>Conv: 1x1x256</code>、<code>Conv: 3x3x512-s2</code> 這樣的標示，讀法是「卷積核大小 × 輸出通道數，步長」：</p>
       <ul>
         <li><code>Conv: 3x3x1024</code>：3×3 卷積，輸出 1024 通道（FC6 改成的卷積層）。</li>
         <li><code>Conv: 1x1x1024</code>：1×1 卷積，輸出 1024 通道（FC7 改成的卷積層）。</li>
@@ -1113,7 +1154,7 @@ footer{margin-top:48px;color:var(--muted);font-size:13px}
     </table></div>
   </section>
 
-  <footer>本頁的數字例子都已用 Python 實際計算驗證；示範中 RPN 的分數與修正量是模擬出來的，不是真的網路輸出。姊妹篇：DL 學習網站（單元九、十）、<a href="linear-algebra.html">線代</a>、<a href="probability-statistics.html">機率</a>、<a href="ai-calculus.html">微積分</a>筆記；前一步可先看 <a href="cnn-convolution.html">CNN 卷積筆記</a>。</footer>
+  <footer>本頁的數字例子都已用 Python 實際計算驗證；示範中 RPN 的分數與修正量是模擬出來的，不是真的網路輸出。模型的數據（mAP、速度、層的設定）取自各篇原始論文，論文連結見第 20 節。</footer>
 </main>
 </div>
 
@@ -1221,7 +1262,7 @@ function canvasPoint(cv, e){ const r = cv.getBoundingClientRect(); return [e.cli
 /* ---------- 第 4 節：格子對應原圖 ---------- */
 (function(){
   const cv = $('#cv-grid'); let g = 7, sel = [3, 3], V;
-  picker('grid-pick', {7:{n:'7×7（步長 32，投影片）'}, 14:{n:'14×14（步長 16，真實 conv5_3）'}}, '7', k => { g = +k; sel = [Math.min(sel[0], g-1), Math.min(sel[1], g-1)]; if (g === 14 && sel[0] === 3 && sel[1] === 3) sel = [6, 6]; draw(); });
+  picker('grid-pick', {7:{n:'7×7（步長 32，教學範例）'}, 14:{n:'14×14（步長 16，真實 conv5_3）'}}, '7', k => { g = +k; sel = [Math.min(sel[0], g-1), Math.min(sel[1], g-1)]; if (g === 14 && sel[0] === 3 && sel[1] === 3) sel = [6, 6]; draw(); });
   function draw(){
     const {ctx, w, h} = sizeCanvas(cv, 1, 380); V = view(w, h, 0, S); scene(ctx, V, {grid:g});
     const s = S/g, [i, j] = sel, b = [j*s, i*s, (j+1)*s, (i+1)*s];
@@ -1493,7 +1534,7 @@ function canvasPoint(cv, e){ const r = cv.getBoundingClientRect(); return [e.cli
   picker('hd-c', {20:{n:'C = 20（VOC）'}, 80:{n:'C = 80（COCO）'}}, '20', k => { C = +k; draw(); });
   function draw(){
     let s = '';
-    if (m === 'rpn'){ s = `每個位置：k × (2 + 4) = 9 × 6 = 54 個數（分兩個輸出：18 + 36）<br>投影片 7×7：7×7×18 + 7×7×36 → <b>441 個 anchor</b><br>真實 1000×600、步長 16：約 60×40×9 ≈ <b>21,600 個 anchor</b><br><span style="color:var(--muted)">只分物體／背景，和 C 無關；類別交給第二階段（21 或 81 類）。</span>`; }
+    if (m === 'rpn'){ s = `每個位置：k × (2 + 4) = 9 × 6 = 54 個數（分兩個輸出：18 + 36）<br>教學範例 7×7：7×7×18 + 7×7×36 → <b>441 個 anchor</b><br>真實 1000×600、步長 16：約 60×40×9 ≈ <b>21,600 個 anchor</b><br><span style="color:var(--muted)">只分物體／背景，和 C 無關；類別交給第二階段（21 或 81 類）。</span>`; }
     else if (m === 'ssd'){ const L = [[38,4],[19,6],[10,6],[5,6],[3,4],[1,4]]; let tot = 0; s = `每個 default box：(C + 1) + 4 = ${C+1} + 4 = ${C+5} 個數<br>`; L.forEach(([g, k]) => { tot += g*g*k; s += `${g}×${g} × ${k} 個 = ${g*g*k}，輸出 ${g}×${g}×${k*(C+5)}<br>`; }); s += `<b>總共 ${tot.toLocaleString()} 個框</b>`; }
     else if (m === 'y1'){ s = `S = 7、每格 B = 2 個框<br>每格：B × 5 + C = 2 × 5 + ${C} = ${10 + C}<br>輸出 <b>7×7×${10 + C}</b>${C === 20 ? '（就是論文的 7×7×30）' : ''}<br>總共 7 × 7 × 2 = <b>98 個框</b><br><span style="color:var(--muted)">沒有 anchor：框的座標直接預測；每格只有一組類別機率，所以一格最多只能認出一個類別。</span>`; }
     else if (m === 'y2'){ s = `416 輸入、步長 32 → 13×13，每格 k = 5 個 anchor<br>每格：5 × (5 + ${C}) = ${5*(5+C)}<br>輸出 <b>13×13×${5*(5+C)}</b><br>總共 13 × 13 × 5 = <b>845 個框</b>`; }
@@ -1590,7 +1631,7 @@ function gridLines(ctx, V, n, size, color){ ctx.strokeStyle = color; ctx.lineWid
 /* ---------- 測驗 ---------- */
 (function(){
   const Q = [
-    {q:'投影片上 7×7×9×2 的「9」是什麼？', o:['9 個類別','每格 3 種大小 × 3 種長寬比的 anchor','9 次 NMS','3×3 卷積的 9 個權重'], a:1, e:'k = 3 sizes × 3 aspect ratios = 9 個 anchor，每格都擺同一組。'},
+    {q:'RPN 輸出可以寫成 7×7×9×2，其中的「9」是什麼？', o:['9 個類別','每格 3 種大小 × 3 種長寬比的 anchor','9 次 NMS','3×3 卷積的 9 個權重'], a:1, e:'k = 3 sizes × 3 aspect ratios = 9 個 anchor，每格都擺同一組。'},
     {q:'RPN 的 cls 輸出 7×7×18、reg 輸出 7×7×36。為什麼不說成 7×7×54？', o:['因為 54 太大，GPU 放不下','它們是同一批 441 個 anchor 的兩種資訊（2 個分數、4 個修正量），分開輸出、分開算 loss','因為 36 是給第二階段用的','其實就是 54，兩種說法一樣'], a:1, e:'18 = 9×2 分數，36 = 9×4 修正量，平行的兩個 1×1 卷積。'},
     {q:'anchor 和 proposal 的差別是？', o:['一樣的東西','anchor 是固定的模板框；proposal 是 anchor 經過修正、篩選、NMS 後留下的候選框','proposal 是固定的，anchor 是學出來的','anchor 只在測試時使用'], a:1, e:'anchor 不需要學習；網路學的是怎麼對 anchor 打分數和修正。'},
     {q:'anchor 寬 64，網路輸出 dw = 0.69（≈ ln 2）。修正後的寬是？', o:['64.69','約 44','約 128','約 89'], a:2, e:'w = A_w·e^{dw} = 64 × e^{0.69} ≈ 64 × 2 = 128。dw 是縮放倍率的對數。'},
