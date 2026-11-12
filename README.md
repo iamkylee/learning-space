@@ -1,6 +1,6 @@
 # 學習空間 Learning Space
 
-十一份互動式學習筆記與範例：**Workshop 範例（中英雙語）：金門單車環島、生成式 AI 與心理健康**、**AI 微積分筆記**、**線代與矩陣微分筆記**、**機率統計與 AI 筆記**、**深度學習互動教材**、**CNN 卷積筆記**、**Faster R-CNN 互動教學**、**Transformer 解剖圖**、**優化器學習地圖**、**從機率到 KL 散度**。
+十二份互動式學習筆記與範例：**Workshop 範例（中英雙語）：金門單車環島、生成式 AI 與心理健康、設計思考**、**AI 微積分筆記**、**線代與矩陣微分筆記**、**機率統計與 AI 筆記**、**深度學習互動教材**、**CNN 卷積筆記**、**Faster R-CNN 互動教學**、**Transformer 解剖圖**、**優化器學習地圖**、**從機率到 KL 散度**。
 
 - 線上閱讀：<https://iamkylee.github.io/learning-space/>
 - 作者：iamkylee@gmail.com ｜ 由 Claude 協助產生分享，作者審閱分享。

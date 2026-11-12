@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>設計思考雙鑽石學習手冊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: 一條長卷軸，依雙鑽石四階段排列；每階段 = 課堂做法 → 補充方法 → 案例貫穿。便利貼顏色即階段色。 */
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --ink:#1b1f27;
+  --muted:#5d6472;
+  --line:#d9dde4;
+  --accent:#2e4bd6;
+  --r:#e2445c; --r-soft:#fde4e8;
+  --g:#2f9e57; --g-soft:#dff3e6;
+  --b:#2b7de0; --b-soft:#e0edfc;
+  --y:#e3a10b; --y-soft:#fff2c9;
+  --font-display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13161c; --surface:#1c2029; --ink:#eceef3; --muted:#a3aab8; --line:#323846;
+    --accent:#8ea2ff;
+    --r:#ff7a8d; --r-soft:#3a1f26; --g:#5fd08a; --g-soft:#1b3326;
+    --b:#6fb0ff; --b-soft:#1b2a40; --y:#ffc94a; --y-soft:#3a3018;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13161c; --surface:#1c2029; --ink:#eceef3; --muted:#a3aab8; --line:#323846;
+  --accent:#8ea2ff;
+  --r:#ff7a8d; --r-soft:#3a1f26; --g:#5fd08a; --g-soft:#1b3326;
+  --b:#6fb0ff; --b-soft:#1b2a40; --y:#ffc94a; --y-soft:#3a3018;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.75;-webkit-text-size-adjust:100%}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.prose{max-width:40em}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:clamp(28px,6vw,44px);font-weight:900;letter-spacing:.01em}
+h2{font-size:clamp(22px,4.4vw,30px);font-weight:900}
+h3{font-size:18px;font-weight:700;margin-top:28px}
+p{margin:10px 0}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.small{font-size:14px;color:var(--muted)}
+
+/* top nav */
+nav.phases{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.phases .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:8px;padding-bottom:8px}
+nav.phases a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-size:14px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+nav.phases a .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:1px}
+
+header.hero{padding:40px 0 16px}
+header.hero p.lead{font-size:18px;color:var(--muted);max-width:36em}
+
+section{padding:36px 0;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+
+/* diamond */
+.diagram{overflow-x:auto;margin:18px 0 4px}
+.diagram svg{display:block;width:100%;min-width:620px;height:auto}
+.diagram text{font-family:var(--font-body);fill:var(--ink)}
+.diagram .lbl{font-size:15px;font-weight:700}
+.diagram .sub{font-size:11px;fill:var(--muted)}
+.diagram .out{font-size:11px;fill:var(--muted)}
+.diagram .ph{cursor:pointer;stroke:var(--ink);stroke-width:1.5;transition:opacity .15s}
+.diagram .ph:hover,.diagram .ph:focus{opacity:.75}
+.diagram .ax{stroke:var(--line)}
+
+/* phase header */
+.phase-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.chip{font-family:var(--font-mono);font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;border:1px solid currentColor}
+.time{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+
+/* three-part block */
+.block{margin-top:18px}
+.block-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-bottom:8px}
+.block-title .tag{font-family:var(--font-mono);font-size:11px;padding:1px 8px;border-radius:4px;background:var(--ink);color:var(--bg);font-weight:600}
+.case{border-left:4px solid var(--accent);background:var(--surface);border-radius:0 10px 10px 0;padding:16px 18px;margin-top:10px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.case .case-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;color:var(--accent);font-weight:600}
+
+ul.steps{padding-left:20px;margin:6px 0}
+ul.steps li{margin:4px 0}
+
+/* post-its */
+.notes{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.note{font-size:14px;line-height:1.45;padding:10px 12px;border-radius:3px;min-width:110px;max-width:220px;box-shadow:0 1px 0 rgba(0,0,0,.06),0 3px 8px rgba(0,0,0,.06);color:#1b1f27}
+.note.r{background:#ffd3da}
+.note.g{background:#c9efd5}
+.note.b{background:#cfe3fb}
+.note.y{background:#ffeaa0}
+.note.big{max-width:none;flex:1 1 220px;font-weight:700;padding:14px 16px}
+.note small{display:block;font-weight:400;color:#4a505c;margin-top:4px}
+
+/* legend */
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.legend .item{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.legend .sw{flex:0 0 26px;height:26px;border-radius:3px}
+
+/* tables */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--muted);font-size:13px}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
+
+/* tension */
+.tension{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:14px}
+.tension .vs{font-family:var(--font-mono);font-size:12px;color:var(--r);font-weight:600}
+.tension div:last-child{text-align:right}
+
+/* journey */
+.journey svg{display:block;width:100%;min-width:640px;height:auto}
+.journey text{font-family:var(--font-body);fill:var(--ink)}
+
+/* builder */
+.builder label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+.builder input{width:100%;font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.builder .result{margin-top:14px;font-size:16px;line-height:1.7}
+.builder .result mark{background:none;font-weight:700;padding:0 2px}
+.btn{font:inherit;font-size:14px;padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+
+/* scoring */
+.score-row{display:grid;grid-template-columns:7em 1fr 2.2em;gap:10px;align-items:center;font-size:14px;margin:4px 0}
+.score-row input[type=range]{width:100%;accent-color:var(--accent)}
+.score-row output{font-family:var(--font-mono);text-align:right}
+.concept h4{margin:0 0 4px;font-size:16px}
+.total{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px}
+.bar{flex:1;height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);border-radius:5px;transition:width .2s}
+.total b{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.concept.best{outline:2px solid var(--accent)}
+
+/* chat prototype */
+.chat{display:flex;flex-direction:column;gap:8px;max-width:420px;font-size:14px}
+.bub{padding:9px 13px;border-radius:14px;line-height:1.55;max-width:85%}
+.bub.bot{background:var(--b-soft);align-self:flex-start;border-bottom-left-radius:4px}
+.bub.me{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips span{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--surface)}
+
+/* agenda */
+.agenda{display:flex;flex-direction:column;gap:6px}
+.agenda .row{display:grid;grid-template-columns:5.5em 1fr;gap:12px;align-items:start;font-size:14px}
+.agenda .row .t{font-family:var(--font-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+
+footer{padding:28px 0 60px;border-top:1px solid var(--line)}
+footer ol{padding-left:20px;font-size:14px}
+footer li{margin:4px 0}
+
+/* glossary */
+.gl-q{display:block;width:100%;max-width:360px;font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);margin:4px 0 12px}
+table.gloss td:nth-child(3){min-width:16em}
+.abbr{font-family:var(--font-mono);font-weight:600;font-size:13px;background:var(--b-soft);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.ph-tag{font-family:var(--font-mono);font-size:12px;font-weight:600;white-space:nowrap}
+
+/* language toggle */
+html[data-lang="en"] .zh{display:none !important}
+html:not([data-lang="en"]) .en{display:none !important}
+.langs{order:99;margin-left:auto;display:flex;flex:0 0 auto;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.langs button{font:inherit;font-size:13px;padding:4px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:700}
+
+@media (max-width:480px){
+  .tension{grid-template-columns:1fr;text-align:left}
+  .tension div:last-child{text-align:left}
+  .score-row{grid-template-columns:6em 1fr 2em}
+}
+</style>
+<meta name="description" content="設計思考雙鑽石（探索、定義、發展、交付）學習手冊：用虛構案例「晚安小站」串起四階段，附 HMW 練習與名詞簡表。 Design Thinking double-diamond handbook: a fictional case through Discover, Define, Develop, Deliver, with an HMW exercise and glossary.">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>.ls-foot{max-width:1000px}</style>
+</head>
+<body>
+<div class="ls-top"><a href="../index.html"><span class="zh">← 學習空間</span><span class="en">← Learning Space</span></a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
+
+<nav class="phases" aria-label="章節">
+  <div class="wrap">
+    <div class="langs" role="group" aria-label="語言 Language">
+      <button type="button" id="lang-zh" aria-pressed="true">中文</button>
+      <button type="button" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+    <a class="zh" href="#overview">總覽</a>
+    <a class="zh" href="#discover"><span class="dot" style="background:var(--r)"></span>Discover</a>
+    <a class="zh" href="#define"><span class="dot" style="background:var(--g)"></span>Define</a>
+    <a class="zh" href="#develop"><span class="dot" style="background:var(--y)"></span>Develop</a>
+    <a class="zh" href="#deliver"><span class="dot" style="background:var(--accent)"></span>Deliver</a>
+    <a class="zh" href="#practice">練習</a>
+    <a class="zh" href="#glossary">名詞簡表</a>
+    <a class="zh" href="#sources">資料來源</a>
+    <a class="en" href="#overview-en">Overview</a>
+    <a class="en" href="#discover-en"><span class="dot" style="background:var(--r)"></span>Discover</a>
+    <a class="en" href="#define-en"><span class="dot" style="background:var(--g)"></span>Define</a>
+    <a class="en" href="#develop-en"><span class="dot" style="background:var(--y)"></span>Develop</a>
+    <a class="en" href="#deliver-en"><span class="dot" style="background:var(--accent)"></span>Deliver</a>
+    <a class="en" href="#practice-en">Practice</a>
+    <a class="en" href="#glossary-en">Glossary</a>
+    <a class="en" href="#sources-en">Sources</a>
+  </div>
+</nav>
+
+<div class="wrap zh">
+
+<header class="hero">
+  <div class="eyebrow">Design Thinking · Double Diamond</div>
+  <h1>設計思考學習手冊：<br>用一個心理健康聊天機器人走完雙鑽石</h1>
+  <p class="lead">整理自課堂簡報，補上外部方法與工具。全篇用同一個案例「晚安小站」串起四個階段，看一個模糊的問題如何一步步變成可測試的方案。不熟的名詞可以查<a href="#glossary">名詞簡表</a>。</p>
+</header>
+
+<!-- ============ OVERVIEW ============ -->
+<section id="overview">
+  <div class="eyebrow">00 · 總覽</div>
+  <h2>從 A（不知道）走到 B（知道）</h2>
+  <div class="prose">
+    <p>IDEO 執行長 Tim Brown 把設計思考定義為以人為本的創新方法：整合人的需求、技術的可能性與商業成功的條件。雙鑽石（Double Diamond）是英國設計協會（Design Council）2004 年提出的流程圖，把這件事拆成兩顆鑽石、四個階段，每一階段都先<strong>發散</strong>（打開可能性）再<strong>收斂</strong>（做出選擇）。</p>
+    <p>第一顆鑽石是<strong>做對的事</strong>（Designing the right thing）：弄清楚真正的問題，最後收斂成一個「我們可以如何……？」（How Might We，簡稱 HMW）問題。第二顆是<strong>把事做對</strong>（Designing things right）：找出並打磨解法。點下面的區塊可以跳到該階段。</p>
+  </div>
+
+  <div class="diagram" role="group" aria-label="雙鑽石流程圖，可點選四個階段">
+    <svg viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg">
+      <text x="250" y="22" text-anchor="middle" class="sub">做對的事 Designing the right thing</text>
+      <text x="570" y="22" text-anchor="middle" class="sub">把事做對 Designing things right</text>
+      <line x1="40" y1="160" x2="90" y2="160" class="ax" stroke-width="1.5"/>
+      <line x1="730" y1="160" x2="780" y2="160" class="ax" stroke-width="1.5"/>
+      <circle cx="30" cy="160" r="22" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="30" y="166" text-anchor="middle" class="lbl">A</text>
+      <circle cx="790" cy="160" r="22" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="790" y="166" text-anchor="middle" class="lbl">B</text>
+
+      <polygon class="ph" tabindex="0" role="link" aria-label="Discover 探索" data-go="discover" points="90,160 250,40 250,280" fill="var(--r-soft)"/>
+      <polygon class="ph" tabindex="0" role="link" aria-label="Define 定義" data-go="define" points="250,40 410,160 250,280" fill="var(--g-soft)"/>
+      <polygon class="ph" tabindex="0" role="link" aria-label="Develop 發展" data-go="develop" points="410,160 570,40 570,280" fill="var(--y-soft)"/>
+      <polygon class="ph" tabindex="0" role="link" aria-label="Deliver 交付" data-go="deliver" points="570,40 730,160 570,280" fill="var(--b-soft)"/>
+
+      <g pointer-events="none">
+        <text x="195" y="150" text-anchor="middle" class="lbl">Discover</text>
+        <text x="195" y="170" text-anchor="middle" class="sub">探索・研究</text>
+        <text x="305" y="150" text-anchor="middle" class="lbl">Define</text>
+        <text x="305" y="170" text-anchor="middle" class="sub">定義・綜整</text>
+        <text x="515" y="150" text-anchor="middle" class="lbl">Develop</text>
+        <text x="515" y="170" text-anchor="middle" class="sub">發展・發想</text>
+        <text x="625" y="150" text-anchor="middle" class="lbl">Deliver</text>
+        <text x="625" y="170" text-anchor="middle" class="sub">交付・實作</text>
+        <text x="150" y="88" text-anchor="middle" class="sub" transform="rotate(-37 150 88)">發散 Diverging</text>
+        <text x="350" y="88" text-anchor="middle" class="sub" transform="rotate(37 350 88)">收斂 Converging</text>
+        <text x="470" y="88" text-anchor="middle" class="sub" transform="rotate(-37 470 88)">發散 Diverging</text>
+        <text x="670" y="88" text-anchor="middle" class="sub" transform="rotate(37 670 88)">收斂 Converging</text>
+      </g>
+      <text x="90" y="306" text-anchor="middle" class="out">問題・挑戰</text>
+      <text x="250" y="306" text-anchor="middle" class="out">零散的研究發現</text>
+      <text x="410" y="306" text-anchor="middle" class="out">HMW 問題</text>
+      <text x="570" y="306" text-anchor="middle" class="out">一堆點子</text>
+      <text x="730" y="306" text-anchor="middle" class="out">方案・產品</text>
+      <text x="90" y="322" text-anchor="middle" class="out">（Client brief）</text>
+      <text x="250" y="322" text-anchor="middle" class="out">（Insights）</text>
+      <text x="410" y="322" text-anchor="middle" class="out">（Final brief）</text>
+      <text x="570" y="322" text-anchor="middle" class="out">（Ideas）</text>
+      <text x="730" y="322" text-anchor="middle" class="out">（Solution）</text>
+    </svg>
+  </div>
+  <p class="small">底部標示每個交界處交出去的成果。在第一顆鑽石內部，研究資料依序被壓縮成 Insights → Themes → Opportunity areas → HMW。</p>
+
+  <h3>課堂的便利貼顏色系統</h3>
+  <p class="small">簡報裡每一步都指定一種顏色。牆上一眼就能看出團隊走到哪一步，也能追溯每個點子來自哪個痛點。</p>
+  <div class="legend">
+    <div class="item"><div class="sw" style="background:#ffd3da"></div><div><b>紅 R</b><br><span class="small">Discover：田野故事的關鍵字</span></div></div>
+    <div class="item"><div class="sw" style="background:#c9efd5"></div><div><b>綠 G</b><br><span class="small">Define：挑戰陳述＋根本原因</span></div></div>
+    <div class="item"><div class="sw" style="background:#cfe3fb"></div><div><b>藍 B</b><br><span class="small">Define：HMW 問題</span></div></div>
+    <div class="item"><div class="sw" style="background:#ffeaa0"></div><div><b>黃 Y</b><br><span class="small">Develop：點子；大張黃色＝概念主題</span></div></div>
+  </div>
+
+  <h3>案例設定：「晚安小站」</h3>
+  <div class="case">
+    <div class="case-label">CASE · 貫穿全篇（虛構示範）</div>
+    <p>某大學諮商中心想做一個對話式代理人（conversational agent），陪伴學生處理日常情緒。初始需求只有一句話：「學生不太來諮商，我們想做個 AI（人工智慧，Artificial Intelligence）聊天機器人。」這就是 A 點，一份模糊的 client brief。</p>
+    <p>課堂引用 Tseng &amp; Liao（2025）對心理健康對話代理人的四項設計洞察：<b>結構化支持</b>、<b>情緒覺察與自我揭露</b>、<b>情緒安全與個人化</b>、<b>從追蹤到反思</b>。這屬於次級研究（secondary research），後面會看到它們如何和團隊自己的發現互相印證。</p>
+  </div>
+</section>
+
+<!-- ============ DISCOVER ============ -->
+<section id="discover">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--r)">01 DISCOVER</span>
+    <span class="time">課堂 20 分鐘</span>
+  </div>
+  <h2>探索：先理解人，不急著解題</h2>
+  <div class="prose"><p><b>目標</b>：建立對人們心理健康經驗的豐富理解。<b>產出</b>：探索其中的張力與模式（Tensions / Patterns）。</p></div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">課堂</span>簡報上的三個動作</div>
+    <ul class="steps">
+      <li><b>分享田野故事</b>：每人講自己訪談或觀察到的真實片段，越具體越好。</li>
+      <li><b>找出關係，畫出張力與模式</b>：哪些故事重複出現？哪裡有矛盾？</li>
+      <li><b>關鍵字寫在紅色便利貼</b>：一張一個概念，方便後續移動分群。</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">補充</span>課堂沒展開、但這階段常用的方法</div>
+    <div class="grid2">
+      <div class="card"><b>拆解題目（Rip the brief）</b><p class="small">把 client brief 裡的假設逐條拆開。「學生不來諮商」是真的嗎？「AI 聊天機器人」是解法還是預設答案？</p></div>
+      <div class="card"><b>初級研究</b><p class="small">深度訪談、情境觀察、日記研究。問「上次……是什麼情況？」，問具體經驗，少問意見。</p></div>
+      <div class="card"><b>次級研究</b><p class="small">文獻、競品分析、統計資料。Tseng &amp; Liao 的四項洞察就屬於這類。</p></div>
+      <div class="card"><b>同理心地圖</b><p class="small">把一位使用者的 說／想／做／感受 分四格整理，找出說與做不一致的地方，那常是張力所在。</p></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">案例</span>晚安小站的田野故事</div>
+    <div class="case">
+      <div class="case-label">CASE · DISCOVER</div>
+      <p>團隊訪談了 8 位學生、2 位諮商師。幾段代表性的故事（示範內容）：</p>
+      <ul class="steps">
+        <li>大三學生小安：凌晨兩點睡不著，想找人說話，但「這時間傳訊息給朋友好像很打擾」。</li>
+        <li>研究生阿哲：下載過心情紀錄 App，每天點表情點了一個月，「圖表很漂亮，但我還是不知道自己怎麼了」。</li>
+        <li>諮商師：初談預約要等兩到三週，「很多學生等到真的崩了才來」。</li>
+        <li>大一學生 Mia：試過 AI 聊天，「它一直叫我深呼吸，感覺被敷衍」。</li>
+      </ul>
+      <p>寫成紅色便利貼的關鍵字：</p>
+      <div class="notes">
+        <div class="note r">深夜最難熬</div>
+        <div class="note r">怕打擾朋友</div>
+        <div class="note r">怕被評價</div>
+        <div class="note r">諮商要排隊</div>
+        <div class="note r">紀錄了卻看不懂</div>
+        <div class="note r">罐頭回應＝被敷衍</div>
+        <div class="note r">說不出自己的感受</div>
+        <div class="note r">想要有人主動問</div>
+      </div>
+      <p>把便利貼放在一起看，浮現三組張力：</p>
+      <div class="tension"><div>想被理解、想說出來</div><span class="vs">VS</span><div>怕被看見、怕被評價</div></div>
+      <div class="tension"><div>希望有人引導、給方向</div><span class="vs">VS</span><div>討厭被說教、被套公式</div></div>
+      <div class="tension"><div>記錄了很多情緒資料</div><span class="vs">VS</span><div>看不出意義，無法反思</div></div>
+      <p class="small">這三組張力分別對應 Tseng &amp; Liao 的「情緒安全與自我揭露」「結構化支持與個人化」「從追蹤到反思」。初級與次級研究互相印證，代表方向可信。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DEFINE ============ -->
+<section id="define">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--g)">02 DEFINE</span>
+    <span class="time">課堂 10 + 10 分鐘 + HMW</span>
+  </div>
+  <h2>定義：把發現收斂成一個值得解的問題</h2>
+  <div class="prose"><p>課堂用三個步驟收斂：先標出痛點，再追問原因，最後改寫成 HMW 問題。對應流程圖裡 Insights → Themes → Opportunity areas → HMW 的壓縮過程。</p></div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">課堂</span>步驟一：痛點地圖（10 分鐘）</div>
+    <p>在使用者經歷的各個「時刻」貼上表情：😊 正向時刻（愉悅、順暢、成功）、😣 負向時刻（困惑、等待、挫折、不信任）。重點是找出那些<b>需求沒被滿足</b>的時刻。</p>
+    <p class="small">補充：這其實就是簡化版的<b>使用者旅程地圖（Customer Journey Map）</b>。完整版會在每個時刻記錄行為、想法、情緒、接觸點與機會。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · 小安的一夜</div>
+    <div class="journey" style="overflow-x:auto">
+      <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="小安深夜情緒旅程曲線，六個時刻中四個為負向">
+        <line x1="40" y1="110" x2="680" y2="110" stroke="var(--line)" stroke-dasharray="4 4"/>
+        <text x="6" y="46" font-size="11" fill="var(--muted)">正向</text>
+        <text x="6" y="180" font-size="11" fill="var(--muted)">負向</text>
+        <polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="80,150 190,165 300,70 410,60 520,170 630,155"/>
+        <g font-size="22" text-anchor="middle">
+          <text x="80" y="142">😣</text><text x="190" y="157">😣</text><text x="300" y="62">😊</text>
+          <text x="410" y="52">😊</text><text x="520" y="162">😣</text><text x="630" y="147">😣</text>
+        </g>
+        <g font-size="12" text-anchor="middle">
+          <text x="80" y="205">躺床睡不著</text><text x="80" y="221" fill="var(--muted)">等待</text>
+          <text x="190" y="205">想傳訊息又放下</text><text x="190" y="221" fill="var(--muted)">怕打擾</text>
+          <text x="300" y="205">打開 AI 聊天</text><text x="300" y="221" fill="var(--muted)">隨時可用</text>
+          <text x="410" y="205">說出一點心事</text><text x="410" y="221" fill="var(--muted)">沒有壓力</text>
+          <text x="520" y="205">收到罐頭建議</text><text x="520" y="221" fill="var(--muted)">不信任</text>
+          <text x="630" y="205">隔天看心情圖表</text><text x="630" y="221" fill="var(--muted)">困惑</text>
+        </g>
+      </svg>
+    </div>
+    <p class="small">值得注意的是：AI 「隨時在、沒壓力」本身是正向時刻，問題出在回應品質和事後的意義感。這提醒團隊別把機器人整個推翻。</p>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">課堂</span>步驟二：框定挑戰（10 分鐘，綠色便利貼）</div>
+    <p>針對每個負向痛點追問「為什麼」，寫成句型：</p>
+    <div class="card" style="font-size:17px">挑戰在於【人】難以【未被滿足的需求／問題】，因為<span style="color:var(--g);font-weight:700">【根本原因】</span>。</div>
+    <p class="small">補充：追問原因可用 <b>5 Whys</b>，連問五次「為什麼」，直到碰到可以著力的原因，而不是停在表面症狀。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · 從「收到罐頭建議 😣」往下挖</div>
+    <ul class="steps">
+      <li>為什麼不信任？→ 回應跟自己說的內容無關。</li>
+      <li>為什麼無關？→ 機器人沒抓到小安真正的情緒，只抓到「睡不著」。</li>
+      <li>為什麼沒抓到？→ 小安自己也說不清楚，只講了表層。</li>
+      <li>為什麼說不清楚？→ 平常沒有練習辨識情緒的語彙，也怕說太多被評價。</li>
+    </ul>
+    <div class="notes">
+      <div class="note g big">挑戰在於大學生難以在情緒低落的當下說出真正的感受，<small>因為他們缺乏辨識情緒的語彙，而且不確定對方能否安全地承接。</small></div>
+      <div class="note g big">挑戰在於學生難以從情緒紀錄中得到幫助，<small>因為工具只呈現數據，沒有引導他們連結事件與感受。</small></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">課堂</span>步驟三：寫出 HMW 問題（藍色便利貼）</div>
+    <div class="card" style="font-size:17px">我們可以如何幫助【人／利害關係人】<span style="color:var(--b);font-weight:700">【滿足需求／達成期望結果】</span>，透過處理<span style="color:var(--g);font-weight:700">【根本原因】</span>？</div>
+    <p>HMW 句型源自 1970 年代的寶僑（Procter &amp; Gamble，P&amp;G），後由 IDEO 發揚。每個字都有用意：<b>How</b> 代表可以解，<b>Might</b> 代表允許多種可能，<b>We</b> 代表一起做。</p>
+    <p><b>常見錯誤</b>：範圍抓得太大或太小。</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>範圍</th><th>例子</th><th>問題</th></tr></thead>
+      <tbody>
+        <tr><td>太大</td><td>HMW 解決大學生的心理健康問題？</td><td>不知從何下手</td></tr>
+        <tr><td>太小</td><td>HMW 讓聊天機器人多加十種情緒按鈕？</td><td>已經預設了解法</td></tr>
+        <tr><td>剛好</td><td>見下方案例</td><td>有方向，又留下多種解法的空間</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · 晚安小站的 HMW</div>
+    <div class="notes">
+      <div class="note b big">HMW 幫助深夜睡不著的大學生<b>安心地整理並說出自己的感受</b>，透過處理他們缺乏情緒語彙、又擔心被評價的問題？</div>
+      <div class="note b big">HMW 幫助有記錄習慣的學生<b>從情緒紀錄中看見自己的模式</b>，透過處理工具只給數據、不給意義的問題？</div>
+    </div>
+    <p class="small">第一顆鑽石到此結束。團隊從「做個 AI 聊天機器人」走到兩個具體、以人為中心的問題，這就是交給第二顆鑽石的 Final brief。</p>
+  </div>
+</section>
+
+<!-- ============ DEVELOP ============ -->
+<section id="develop">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--y)">03 DEVELOP</span>
+    <span class="time">課堂 15 分鐘</span>
+  </div>
+  <h2>發展：先求多，再分群</h2>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">課堂</span>兩個動作</div>
+    <ul class="steps">
+      <li><b>快速發想</b>：一張黃色便利貼寫一個點子，針對 HMW 盡量多寫。</li>
+      <li><b>把相似點子歸成較大的概念主題</b>：用大張黃色便利貼當主題標題。這就是<b>親和圖（Affinity Diagram）</b>。</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">補充</span>IDEO.org 的七條腦力激盪規則</div>
+    <div class="grid4">
+      <div class="card small"><b style="color:var(--ink)">1. 暫緩評判</b><br>現在不說「這不可能」。</div>
+      <div class="card small"><b style="color:var(--ink)">2. 鼓勵瘋狂點子</b><br>離譜的點子常能引出可行的版本。</div>
+      <div class="card small"><b style="color:var(--ink)">3. 接續別人的點子</b><br>用「好，而且……」取代「但是」。</div>
+      <div class="card small"><b style="color:var(--ink)">4. 聚焦主題</b><br>把 HMW 貼在牆上隨時看。</div>
+      <div class="card small"><b style="color:var(--ink)">5. 一次一人說話</b><br>每個想法都被聽見。</div>
+      <div class="card small"><b style="color:var(--ink)">6. 視覺化</b><br>能畫就畫，比文字傳達更快。</div>
+      <div class="card small"><b style="color:var(--ink)">7. 追求數量</b><br>15 分鐘的目標可以設 50 個點子。</div>
+      <div class="card small"><b style="color:var(--ink)">延伸：Crazy 8s</b><br>8 分鐘畫 8 個草圖，逼自己跳出第一個想法。</div>
+    </div>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · 發想與分群</div>
+    <p>針對兩個 HMW，團隊 15 分鐘寫出 40 多張黃色便利貼，節錄如下，並分成四個主題：</p>
+
+    <div class="notes"><div class="note y big">主題 A：安心說出口<small>對應「情緒安全與自我揭露」</small></div></div>
+    <div class="notes">
+      <div class="note y">匿名、不存對話的「樹洞模式」</div>
+      <div class="note y">機器人先分享一個情境，降低開口門檻</div>
+      <div class="note y">可以只丟一個顏色或貼圖代表心情</div>
+    </div>
+
+    <div class="notes"><div class="note y big">主題 B：有結構的陪伴<small>對應「結構化支持」</small></div></div>
+    <div class="notes">
+      <div class="note y">「睡前三分鐘」固定三題引導</div>
+      <div class="note y">情緒詞卡：從「不舒服」細分到「委屈、焦慮、失落」</div>
+      <div class="note y">隨時說「我只想被聽」來關閉建議</div>
+    </div>
+
+    <div class="notes"><div class="note y big">主題 C：從紀錄到看見自己<small>對應「從追蹤到反思」</small></div></div>
+    <div class="notes">
+      <div class="note y">每週一封「給自己的信」摘要</div>
+      <div class="note y">把情緒和事件連起來的時間軸</div>
+      <div class="note y">AI 提問：「這週哪一刻最像你？」</div>
+    </div>
+
+    <div class="notes"><div class="note y big">主題 D：接上真人<small>補足 AI 的界線</small></div></div>
+    <div class="notes">
+      <div class="note y">偵測高風險字詞，提供校內與 24 小時專線</div>
+      <div class="note y">一鍵把整理好的摘要帶去初談</div>
+      <div class="note y">（瘋狂點子）AI 幫你寫訊息約朋友吃宵夜</div>
+    </div>
+    <p class="small">四個主題中有三個和 Tseng &amp; Liao 的洞察重疊；主題 D 是團隊從諮商師訪談中長出來的，反映了心理健康領域特有的安全需求。</p>
+  </div>
+</section>
+
+<!-- ============ DELIVER ============ -->
+<section id="deliver">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--accent)">04 DELIVER</span>
+    <span class="time">評估 → 原型 → 測試 → 迭代</span>
+  </div>
+  <h2>交付：選出值得做的，做出來，拿去測</h2>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">課堂</span>四個評估面向</div>
+    <div class="grid2">
+      <div class="card"><b>可欲性 Desirability</b><p class="small">真的滿足使用者需求、創造價值嗎？</p></div>
+      <div class="card"><b>可行性 Feasibility</b><p class="small">現有資源與技術做得出來嗎？</p></div>
+      <div class="card"><b>存續性 Viability</b><p class="small">對組織或生態系來說能長久維持嗎？</p></div>
+      <div class="card"><b>創新性 Innovation</b><p class="small">有帶來新觀點或替代做法嗎？</p></div>
+    </div>
+    <p class="small">補充：前三項是 IDEO 經典的「可欲性、可行性、存續性」（Desirability, Feasibility, Viability，簡稱 DVF）三圈，最好的方案落在三圈交集。課堂多加了「創新性」。設計思考建議<b>先從可欲性出發</b>，再引入另外兩個視角。</p>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · 互動評分（拖動滑桿試試）</div>
+    <p>團隊把四個主題濃縮成三個概念，每個面向 1–5 分。數值是示範，你可以依自己的判斷調整。</p>
+    <div class="grid2" id="scoring"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">補充</span>原型與測試：Build, test, iterate</div>
+    <p>流程圖第二顆鑽石的右半邊畫了好幾輪「建造、測試、迭代」，代表收斂不是一次到位，而是每輪淘汰一些、留下一些。</p>
+    <div class="grid2">
+      <div class="card"><b>低擬真原型</b><p class="small">紙本流程、對話腳本、Figma 線框。目的是快速驗證，不求漂亮。</p></div>
+      <div class="card"><b>綠野仙蹤法（Wizard of Oz）</b><p class="small">聊天機器人特別適用：由真人在幕後扮演 AI 回覆，先驗證「對話設計」是否有效，再投資技術。</p></div>
+      <div class="card"><b>可用性測試</b><p class="small">找 5 位使用者邊用邊說出想法（think-aloud），觀察卡住、猶豫、皺眉的時刻。</p></div>
+      <div class="card"><b>心理健康領域的額外檢查</b><p class="small">危機轉介流程、隱私與資料保存、AI 角色的界線聲明，都要在測試前與專業人員一起確認。</p></div>
+    </div>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · 「睡前三分鐘」原型片段</div>
+    <div class="grid2">
+      <div class="chat" aria-label="原型對話示範">
+        <div class="bub bot">嗨，今晚還醒著呀。想聊聊，還是只想有人陪一下？</div>
+        <div class="chips"><span>想聊聊</span><span>只想被聽</span><span>丟個顏色就好</span></div>
+        <div class="bub me">想聊聊</div>
+        <div class="bub bot">好。今天哪個時刻最讓你在意？不用完整，一個畫面就可以。</div>
+        <div class="bub me">報告被組員說做得很爛</div>
+        <div class="bub bot">聽起來很不好受。這種感覺比較像「委屈」「丟臉」還是「生氣」？也可以都不是。</div>
+        <div class="chips"><span>委屈</span><span>丟臉</span><span>生氣</span><span>說不上來</span></div>
+      </div>
+      <div>
+        <p><b>第一輪測試發現</b>（綠野仙蹤法，6 位學生）</p>
+        <ul class="steps">
+          <li>😊 「只想被聽」選項很受歡迎，學生說「第一次覺得不用被修好」。</li>
+          <li>😊 情緒詞卡幫助 5/6 的人說出更精確的感受。</li>
+          <li>😣 三題有點多，凌晨時只想回一題。</li>
+          <li>😣 不確定對話會不會被諮商中心看到。</li>
+        </ul>
+        <p><b>第二輪迭代</b>：縮成一題、可選擇延伸；開場直接說明「對話只存在你的手機」。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRACTICE ============ -->
+<section id="practice">
+  <div class="eyebrow">05 · 練習</div>
+  <h2>自己寫一句挑戰陳述與 HMW</h2>
+  <p class="small">填入你自己專案的內容，下方會即時組成課堂的兩個句型。</p>
+  <div class="card builder">
+    <label for="f-people">人／利害關係人</label>
+    <input id="f-people" value="剛進職場的新鮮人">
+    <label for="f-need">未被滿足的需求（或期望結果）</label>
+    <input id="f-need" value="在下班後放下工作焦慮">
+    <label for="f-cause">根本原因</label>
+    <input id="f-cause" value="工作訊息隨時湧入，沒有明確的結束儀式">
+    <div class="result" id="b-out" aria-live="polite"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" id="b-copy" type="button">複製句子</button>
+      <button class="btn ghost" id="b-case" type="button">填入案例內容</button>
+    </div>
+  </div>
+
+  <h3>工作坊時間表（依課堂簡報整理）</h3>
+  <div class="card agenda">
+    <div class="row"><span class="t">20 分</span><span><b style="color:var(--r)">Discover</b>　分享田野故事 → 畫張力與模式 → 紅色便利貼</span></div>
+    <div class="row"><span class="t">10 分</span><span><b style="color:var(--g)">Define</b>　😊😣 痛點地圖</span></div>
+    <div class="row"><span class="t">10 分</span><span><b style="color:var(--g)">Define</b>　挑戰陳述＋根本原因（綠色）</span></div>
+    <div class="row"><span class="t">—</span><span><b style="color:var(--b)">Define</b>　寫 HMW 問題（藍色）</span></div>
+    <div class="row"><span class="t">15 分</span><span><b style="color:var(--y)">Develop</b>　快速發想（黃色）→ 歸納概念主題（大張黃色）</span></div>
+    <div class="row"><span class="t">—</span><span><b style="color:var(--accent)">Deliver</b>　用 DVF＋創新性評估概念</span></div>
+  </div>
+
+  <h3>重點回顧</h3>
+  <div class="grid2">
+    <div class="card"><b>先問對問題</b><p class="small">第一顆鑽石的價值在於避免「很有效率地解決錯的問題」。晚安小站的起點是「做 AI」，終點是「讓人安心說出感受」。</p></div>
+    <div class="card"><b>發散與收斂要分開</b><p class="small">發想時不評判，評估時才用 DVF。兩件事混在一起，點子會在萌芽前就被否決。</p></div>
+    <div class="card"><b>每一步都留下可追溯的痕跡</b><p class="small">紅 → 綠 → 藍 → 黃的顏色鏈，讓每個方案都能追溯回某個真實使用者的痛點。</p></div>
+    <div class="card"><b>流程不是直線</b><p class="small">測試發現新問題時，可以回到 Discover 或 Define。雙鑽石是地圖，不是單行道。</p></div>
+  </div>
+</section>
+
+<section id="glossary">
+  <div class="eyebrow">06 · 名詞</div>
+  <h2>設計思考專有名詞簡表</h2>
+  <p class="small">共 35 個名詞，依出現階段排序。可輸入中文、英文或縮寫篩選。</p>
+  <label for="gl-q" class="small">篩選名詞</label>
+  <input id="gl-q" class="gl-q" type="search" placeholder="例如：HMW、原型、insight">
+  <div class="tbl-wrap"><table class="gloss" id="gl-t">
+    <thead><tr><th>名詞</th><th>縮寫</th><th>意思</th><th>階段</th></tr></thead>
+    <tbody>
+<tr><td><b>設計思考</b><br><span class="small">Design Thinking</span></td><td><span class="small">—</span></td><td>以人為本的創新方法，整合人的需求、技術可能性與商業條件。</td><td><span class="ph-tag" style="color:var(--muted)">全程</span></td></tr>
+<tr><td><b>以人為本的設計</b><br><span class="small">Human-Centered Design</span></td><td><span class="abbr">HCD</span></td><td>從使用者真實需求出發的設計取向，IDEO.org 常用此名稱。</td><td><span class="ph-tag" style="color:var(--muted)">全程</span></td></tr>
+<tr><td><b>棘手問題</b><br><span class="small">Wicked Problem</span></td><td><span class="small">—</span></td><td>定義不清、牽涉多方、沒有標準答案的複雜問題，最適合用設計思考處理。</td><td><span class="ph-tag" style="color:var(--muted)">全程</span></td></tr>
+<tr><td><b>雙鑽石</b><br><span class="small">Double Diamond</span></td><td><span class="small">—</span></td><td>英國設計協會 2004 年提出的流程模型：探索、定義、發展、交付四階段。</td><td><span class="ph-tag" style="color:var(--muted)">全程</span></td></tr>
+<tr><td><b>發散／收斂</b><br><span class="small">Diverging / Converging</span></td><td><span class="small">—</span></td><td>發散是打開可能性、求多求廣；收斂是篩選、做決定。每階段都先發散再收斂。</td><td><span class="ph-tag" style="color:var(--muted)">全程</span></td></tr>
+<tr><td><b>委託簡報</b><br><span class="small">Client Brief</span></td><td><span class="small">—</span></td><td>專案一開始由委託方給的需求描述，通常模糊且帶有預設解法。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>拆解題目</b><br><span class="small">Rip the Brief</span></td><td><span class="small">—</span></td><td>逐條檢視委託簡報中的假設，分辨哪些是事實、哪些是預設答案。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>初級研究</b><br><span class="small">Primary Research</span></td><td><span class="small">—</span></td><td>親自蒐集的第一手資料，如訪談、觀察、日記研究。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>次級研究</b><br><span class="small">Secondary Research</span></td><td><span class="small">—</span></td><td>他人已發表的資料，如文獻、報告、競品分析。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>田野故事</b><br><span class="small">Field Stories</span></td><td><span class="small">—</span></td><td>研究中觀察或聽到的具體真實片段，用來分享與找出模式。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>同理心地圖</b><br><span class="small">Empathy Map</span></td><td><span class="small">—</span></td><td>把使用者的「說、想、做、感受」分四格整理的工具。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>張力／模式</b><br><span class="small">Tensions / Patterns</span></td><td><span class="small">—</span></td><td>模式是重複出現的現象；張力是使用者需求之間的矛盾，常藏著設計機會。</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>洞察</b><br><span class="small">Insight</span></td><td><span class="small">—</span></td><td>從研究資料中歸納出的、對使用者行為背後原因的新理解。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>主題</b><br><span class="small">Theme</span></td><td><span class="small">—</span></td><td>把相關洞察分群後的上層類別。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>機會領域</b><br><span class="small">Opportunity Area</span></td><td><span class="small">—</span></td><td>值得投入設計的方向，介於主題與 HMW 問題之間。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>痛點</b><br><span class="small">Pain Point</span></td><td><span class="small">—</span></td><td>使用者經驗中需求未被滿足、感到困擾的時刻。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>使用者旅程地圖</b><br><span class="small">Customer Journey Map</span></td><td><span class="small">—</span></td><td>依時間順序記錄使用者每個時刻的行為、想法與情緒。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>根本原因</b><br><span class="small">Root Cause</span></td><td><span class="small">—</span></td><td>造成痛點的深層原因，而不是表面症狀。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>五個為什麼</b><br><span class="small">5 Whys</span></td><td><span class="small">—</span></td><td>連續追問「為什麼」約五次，找出根本原因的技巧。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>挑戰陳述／觀點陳述</b><br><span class="small">Challenge Statement / Point of View</span></td><td><span class="abbr">POV</span></td><td>用「人＋需求＋原因」描述問題的一句話。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>我們可以如何……？</b><br><span class="small">How Might We</span></td><td><span class="abbr">HMW</span></td><td>把問題改寫成開放、正向、可發想的問句。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>最終簡報</b><br><span class="small">Final Brief</span></td><td><span class="small">—</span></td><td>第一顆鑽石的產出，重新定義後的設計問題。</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>發想</b><br><span class="small">Ideation</span></td><td><span class="small">—</span></td><td>針對 HMW 大量產生點子的過程。</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>腦力激盪</b><br><span class="small">Brainstorming</span></td><td><span class="small">—</span></td><td>團體發想的方式，強調暫緩評判、追求數量。</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>親和圖</b><br><span class="small">Affinity Diagram</span></td><td><span class="small">—</span></td><td>把便利貼依相似性分群並命名主題的方法。</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>瘋狂八格</b><br><span class="small">Crazy 8s</span></td><td><span class="small">—</span></td><td>8 分鐘內畫出 8 個草圖的快速發想練習。</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>概念</b><br><span class="small">Concept</span></td><td><span class="small">—</span></td><td>由一群點子整合而成、可被評估的方案雛形。</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>可欲性／可行性／存續性</b><br><span class="small">Desirability / Feasibility / Viability</span></td><td><span class="abbr">DVF</span></td><td>IDEO 的三個評估面向：人想要嗎、做得出來嗎、能長久嗎。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>創新性</b><br><span class="small">Innovation</span></td><td><span class="small">—</span></td><td>是否帶來新觀點或替代做法；課堂額外加入的評估面向。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>原型</b><br><span class="small">Prototype</span></td><td><span class="small">—</span></td><td>用來測試想法的簡易版本；低擬真（low-fi）原型如紙本或腳本。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>綠野仙蹤法</b><br><span class="small">Wizard of Oz</span></td><td><span class="small">—</span></td><td>由真人在幕後假扮系統回應，先驗證體驗再投資技術。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>可用性測試</b><br><span class="small">Usability Testing</span></td><td><span class="small">—</span></td><td>觀察使用者實際操作，找出卡住或困惑之處。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>放聲思考</b><br><span class="small">Think-Aloud</span></td><td><span class="small">—</span></td><td>請受測者邊操作邊說出心裡的想法。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>迭代</b><br><span class="small">Iteration</span></td><td><span class="small">—</span></td><td>建造、測試、修正的循環，重複進行直到方案成熟。</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>對話式代理人</b><br><span class="small">Conversational Agent</span></td><td><span class="abbr">CA</span></td><td>能用自然語言與人對話的系統，如聊天機器人。</td><td><span class="ph-tag" style="color:var(--muted)">案例</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small" id="gl-none" hidden>找不到符合的名詞。</p>
+</section>
+
+</div>
+
+<footer class="zh">
+  <div class="wrap">
+    <h2 id="sources" style="font-size:20px">資料來源與延伸閱讀</h2>
+    <ol>
+      <li>課堂簡報（2026/11/11），含雙鑽石流程圖與各階段活動說明。</li>
+      <li>Tseng &amp; Liao (2025)，心理健康對話代理人設計洞察，由課堂簡報引用。</li>
+      <li><a href="https://designcouncil.org.uk/our-resources/framework-for-innovation">Design Council – Framework for Innovation（雙鑽石）</a></li>
+      <li><a href="https://designthinking.ideo.com/history">IDEO – What is design thinking?（DVF 三面向）</a></li>
+      <li><a href="https://www.designkit.org/methods.html">IDEO.org Design Kit – Methods（HMW、腦力激盪規則）</a></li>
+      <li><a href="https://ixdf.org/literature/topics/design-thinking">Interaction Design Foundation – Design Thinking</a></li>
+      <li><a href="https://studio.wadeinstitute.org.au/tool-detail-how-might-we.html">Wade Institute – How Might We 工具說明</a></li>
+    </ol>
+    <p class="small">「晚安小站」為教學用虛構案例，訪談內容與測試數據皆為示範。</p>
+  </div>
+</footer>
+
+<div class="wrap en" lang="en">
+
+<header class="hero">
+  <div class="eyebrow">Design Thinking · Double Diamond</div>
+  <h1>A Design Thinking Handbook:<br>Walking a Mental-Health Chatbot Through the Double Diamond</h1>
+  <p class="lead">Built from the class slides, with methods and tools filled in from outside sources. One case, "Good Night Station", runs through all four phases so you can watch a vague problem become a testable solution. Unfamiliar terms are explained in the <a href="#glossary-en">glossary</a>.</p>
+</header>
+
+<!-- ============ OVERVIEW EN ============ -->
+<section id="overview-en">
+  <div class="eyebrow">00 · Overview</div>
+  <h2>From A (don't know) to B (do know)</h2>
+  <div class="prose">
+    <p>Tim Brown, chief executive officer (CEO) of IDEO, describes design thinking as a human-centered approach to innovation that brings together people's needs, the possibilities of technology and the requirements for business success. The Double Diamond, introduced by the UK Design Council in 2004, breaks this into two diamonds and four phases. Each phase first <strong>diverges</strong> (opens up possibilities) and then <strong>converges</strong> (makes choices).</p>
+    <p>The first diamond is about <strong>designing the right thing</strong>: understanding the real problem and narrowing it into a How Might We (HMW) question. The second is about <strong>designing things right</strong>: finding and refining the solution. Tap a phase below to jump to it.</p>
+  </div>
+
+  <div class="diagram" role="group" aria-label="Double Diamond diagram; select a phase">
+    <svg viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg">
+      <text x="250" y="22" text-anchor="middle" class="sub">Designing the right thing</text>
+      <text x="570" y="22" text-anchor="middle" class="sub">Designing things right</text>
+      <line x1="40" y1="160" x2="90" y2="160" class="ax" stroke-width="1.5"/>
+      <line x1="730" y1="160" x2="780" y2="160" class="ax" stroke-width="1.5"/>
+      <circle cx="30" cy="160" r="22" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="30" y="166" text-anchor="middle" class="lbl">A</text>
+      <circle cx="790" cy="160" r="22" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/>
+      <text x="790" y="166" text-anchor="middle" class="lbl">B</text>
+
+      <polygon class="ph" tabindex="0" role="link" aria-label="Discover" data-go="discover-en" points="90,160 250,40 250,280" fill="var(--r-soft)"/>
+      <polygon class="ph" tabindex="0" role="link" aria-label="Define" data-go="define-en" points="250,40 410,160 250,280" fill="var(--g-soft)"/>
+      <polygon class="ph" tabindex="0" role="link" aria-label="Develop" data-go="develop-en" points="410,160 570,40 570,280" fill="var(--y-soft)"/>
+      <polygon class="ph" tabindex="0" role="link" aria-label="Deliver" data-go="deliver-en" points="570,40 730,160 570,280" fill="var(--b-soft)"/>
+
+      <g pointer-events="none">
+        <text x="195" y="150" text-anchor="middle" class="lbl">Discover</text>
+        <text x="195" y="170" text-anchor="middle" class="sub">Research</text>
+        <text x="305" y="150" text-anchor="middle" class="lbl">Define</text>
+        <text x="305" y="170" text-anchor="middle" class="sub">Synthesis</text>
+        <text x="515" y="150" text-anchor="middle" class="lbl">Develop</text>
+        <text x="515" y="170" text-anchor="middle" class="sub">Ideation</text>
+        <text x="625" y="150" text-anchor="middle" class="lbl">Deliver</text>
+        <text x="625" y="170" text-anchor="middle" class="sub">Implementation</text>
+        <text x="150" y="88" text-anchor="middle" class="sub" transform="rotate(-37 150 88)">Diverging</text>
+        <text x="350" y="88" text-anchor="middle" class="sub" transform="rotate(37 350 88)">Converging</text>
+        <text x="470" y="88" text-anchor="middle" class="sub" transform="rotate(-37 470 88)">Diverging</text>
+        <text x="670" y="88" text-anchor="middle" class="sub" transform="rotate(37 670 88)">Converging</text>
+      </g>
+      <text x="90" y="306" text-anchor="middle" class="out">Question,</text>
+      <text x="90" y="322" text-anchor="middle" class="out">client brief</text>
+      <text x="250" y="306" text-anchor="middle" class="out">Unstructured</text>
+      <text x="250" y="322" text-anchor="middle" class="out">research findings</text>
+      <text x="410" y="306" text-anchor="middle" class="out">Final brief,</text>
+      <text x="410" y="322" text-anchor="middle" class="out">HMW question</text>
+      <text x="570" y="306" text-anchor="middle" class="out">Ideas</text>
+      <text x="730" y="306" text-anchor="middle" class="out">Answer, product,</text>
+      <text x="730" y="322" text-anchor="middle" class="out">solution</text>
+    </svg>
+  </div>
+  <p class="small">The bottom row shows what each phase hands on to the next. Inside the first diamond, research is compressed step by step: Insights → Themes → Opportunity areas → HMW.</p>
+
+  <h3>The class's sticky-note color system</h3>
+  <p class="small">The slides give every step its own color. Anyone can see at a glance where the team is on the wall, and trace each idea back to the pain point it came from.</p>
+  <div class="legend">
+    <div class="item"><div class="sw" style="background:#ffd3da"></div><div><b>Red (R)</b><br><span class="small">Discover: keywords from field stories</span></div></div>
+    <div class="item"><div class="sw" style="background:#c9efd5"></div><div><b>Green (G)</b><br><span class="small">Define: challenge statement + root cause</span></div></div>
+    <div class="item"><div class="sw" style="background:#cfe3fb"></div><div><b>Blue (B)</b><br><span class="small">Define: HMW question</span></div></div>
+    <div class="item"><div class="sw" style="background:#ffeaa0"></div><div><b>Yellow (Y)</b><br><span class="small">Develop: ideas; large yellow = concept themes</span></div></div>
+  </div>
+
+  <h3>The case: "Good Night Station"</h3>
+  <div class="case">
+    <div class="case-label">CASE · RUNS THROUGH THE WHOLE PAGE (FICTIONAL)</div>
+    <p>A university counselling centre wants a conversational agent that helps students handle everyday emotions. The starting brief is one line: "Students rarely come to counselling, so we want an artificial intelligence (AI) chatbot." That is point A, a vague client brief.</p>
+    <p>The class cites four design insights for mental-health conversational agents from Tseng &amp; Liao (2025): <b>structured support</b>, <b>emotional awareness &amp; self-disclosure</b>, <b>emotional safety &amp; personalization</b>, and <b>from tracking to reflection</b>. This counts as secondary research, and you will see it confirm the team's own findings later on.</p>
+  </div>
+</section>
+
+<!-- ============ DISCOVER EN ============ -->
+<section id="discover-en">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--r)">01 DISCOVER</span>
+    <span class="time">20 min in class</span>
+  </div>
+  <h2>Discover: understand people before solving anything</h2>
+  <div class="prose"><p><b>Goal</b>: build a rich understanding of people's mental-health experiences. <b>Outcome</b>: explore the tensions and patterns within them.</p></div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CLASS</span>Three steps from the slides</div>
+    <ul class="steps">
+      <li><b>Share field stories</b>: each person tells a real moment from their interviews or observations. The more concrete, the better.</li>
+      <li><b>Identify relationships and map tensions and patterns</b>: which stories repeat? Where do they contradict each other?</li>
+      <li><b>Write keywords on red sticky notes</b>: one idea per note, so they are easy to move and cluster later.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">MORE</span>Common methods the class didn't cover in depth</div>
+    <div class="grid2">
+      <div class="card"><b>Rip the brief</b><p class="small">Pull apart every assumption in the client brief. Is it true that students don't come to counselling? Is "an AI chatbot" a solution or a pre-decided answer?</p></div>
+      <div class="card"><b>Primary research</b><p class="small">In-depth interviews, contextual observation, diary studies. Ask "What happened the last time…?" to get concrete experiences rather than opinions.</p></div>
+      <div class="card"><b>Secondary research</b><p class="small">Literature, competitor analysis, statistics. The four Tseng &amp; Liao insights belong here.</p></div>
+      <div class="card"><b>Empathy map</b><p class="small">Sort one user's Says / Thinks / Does / Feels into four boxes. Gaps between what people say and what they do are often where tensions hide.</p></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CASE</span>Field stories from Good Night Station</div>
+    <div class="case">
+      <div class="case-label">CASE · DISCOVER</div>
+      <p>The team interviewed 8 students and 2 counsellors. A few representative stories (example content):</p>
+      <ul class="steps">
+        <li>An, a third-year student: can't sleep at 2 a.m. and wants to talk, but "texting a friend at this hour feels like a bother".</li>
+        <li>Jay, a graduate student: logged his mood with an app for a month. "The charts look nice, but I still don't know what's wrong with me."</li>
+        <li>A counsellor: first appointments have a two-to-three-week wait. "Many students only come once they've already hit breaking point."</li>
+        <li>Mia, a first-year: tried an AI chat. "It kept telling me to take deep breaths. I felt brushed off."</li>
+      </ul>
+      <p>Keywords on red sticky notes:</p>
+      <div class="notes">
+        <div class="note r">Late nights are hardest</div>
+        <div class="note r">Don't want to bother friends</div>
+        <div class="note r">Afraid of being judged</div>
+        <div class="note r">Counselling waitlist</div>
+        <div class="note r">Logged it but can't read it</div>
+        <div class="note r">Canned replies = brushed off</div>
+        <div class="note r">Can't name my feelings</div>
+        <div class="note r">Wish someone would ask first</div>
+      </div>
+      <p>Seen together, the notes reveal three tensions:</p>
+      <div class="tension"><div>Want to be understood and to speak up</div><span class="vs">VS</span><div>Afraid of being seen and judged</div></div>
+      <div class="tension"><div>Want guidance and direction</div><span class="vs">VS</span><div>Hate being lectured or given a formula</div></div>
+      <div class="tension"><div>Have logged lots of mood data</div><span class="vs">VS</span><div>Can't find meaning or reflect on it</div></div>
+      <p class="small">These three tensions line up with Tseng &amp; Liao's "emotional safety &amp; self-disclosure", "structured support &amp; personalization" and "from tracking to reflection". When primary and secondary research agree, the direction is more trustworthy.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DEFINE EN ============ -->
+<section id="define-en">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--g)">02 DEFINE</span>
+    <span class="time">10 + 10 min in class + HMW</span>
+  </div>
+  <h2>Define: narrow findings into a problem worth solving</h2>
+  <div class="prose"><p>The class converges in three steps: mark the pain points, ask why they happen, then rewrite them as an HMW question. This matches the Insights → Themes → Opportunity areas → HMW compression in the diagram.</p></div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CLASS</span>Step 1: Pain point mapping (10 min)</div>
+    <p>Place emojis on the "moments" of the user's experience: 😊 positive moments (delight, flow, success) and 😣 negative moments (confusion, waiting, frustration, distrust). The point is to find the moments where needs go <b>unmet</b>.</p>
+    <p class="small">More: this is a simplified <b>customer journey map</b>. The full version records actions, thoughts, emotions, touchpoints and opportunities for each moment.</p>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · AN'S NIGHT</div>
+    <div class="journey" style="overflow-x:auto">
+      <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An's late-night emotional journey; four of six moments are negative">
+        <line x1="40" y1="110" x2="680" y2="110" stroke="var(--line)" stroke-dasharray="4 4"/>
+        <text x="6" y="46" font-size="11" fill="var(--muted)">Positive</text>
+        <text x="6" y="180" font-size="11" fill="var(--muted)">Negative</text>
+        <polyline fill="none" stroke="var(--accent)" stroke-width="2.5" points="80,150 190,165 300,70 410,60 520,170 630,155"/>
+        <g font-size="22" text-anchor="middle">
+          <text x="80" y="142">😣</text><text x="190" y="157">😣</text><text x="300" y="62">😊</text>
+          <text x="410" y="52">😊</text><text x="520" y="162">😣</text><text x="630" y="147">😣</text>
+        </g>
+        <g font-size="12" text-anchor="middle">
+          <text x="80" y="205">Can't fall asleep</text><text x="80" y="221" fill="var(--muted)">waiting</text>
+          <text x="190" y="205">Starts a text, deletes it</text><text x="190" y="221" fill="var(--muted)">don't want to bother</text>
+          <text x="300" y="205">Opens AI chat</text><text x="300" y="221" fill="var(--muted)">always available</text>
+          <text x="410" y="205">Shares a little</text><text x="410" y="221" fill="var(--muted)">no pressure</text>
+          <text x="520" y="205">Gets canned advice</text><text x="520" y="221" fill="var(--muted)">distrust</text>
+          <text x="630" y="205">Checks mood chart</text><text x="630" y="221" fill="var(--muted)">confusion</text>
+        </g>
+      </svg>
+    </div>
+    <p class="small">Notice that "always there, no pressure" is itself a positive moment. The trouble lies in reply quality and the lack of meaning afterwards, which reminds the team not to throw out the chatbot entirely.</p>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CLASS</span>Step 2: Frame challenges (10 min, green notes)</div>
+    <p>For each negative pain point, ask why it happens, and write it in this format:</p>
+    <div class="card" style="font-size:17px">"The challenge is that [people] struggle to [unmet need / problem], because <span style="color:var(--g);font-weight:700">[root cause]</span>."</div>
+    <p class="small">More: use the <b>5 Whys</b> to dig for root causes. Ask "why" up to five times until you reach a cause you can act on, rather than stopping at a surface symptom.</p>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · DIGGING INTO "GETS CANNED ADVICE 😣"</div>
+    <ul class="steps">
+      <li>Why distrust? → The reply had nothing to do with what she said.</li>
+      <li>Why unrelated? → The bot didn't catch her real feeling, only "can't sleep".</li>
+      <li>Why didn't it catch it? → An couldn't put it into words herself and only shared the surface.</li>
+      <li>Why couldn't she? → She lacks words for emotions and worries about being judged if she says too much.</li>
+    </ul>
+    <div class="notes">
+      <div class="note g big">The challenge is that university students struggle to express how they really feel in low moments, <small>because they lack the vocabulary to name emotions and aren't sure the listener can safely hold what they share.</small></div>
+      <div class="note g big">The challenge is that students struggle to get help from their mood logs, <small>because the tools show data without guiding them to connect events and feelings.</small></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CLASS</span>Step 3: Write your How Might We question (blue notes)</div>
+    <div class="card" style="font-size:17px">How might we help [people / stakeholder] to <span style="color:var(--b);font-weight:700">[fulfill unmet need / achieve a desired outcome]</span> by addressing <span style="color:var(--g);font-weight:700">[root cause]</span>?</div>
+    <p>The HMW format started at Procter &amp; Gamble in the 1970s and was later popularized by IDEO. Each word has a job: <b>How</b> assumes it can be solved, <b>Might</b> allows many possibilities, and <b>We</b> signals working together.</p>
+    <p><b>Common mistake</b>: a scope that is too broad or too narrow.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Scope</th><th>Example</th><th>Problem</th></tr></thead>
+      <tbody>
+        <tr><td>Too broad</td><td>HMW solve students' mental-health problems?</td><td>No idea where to start</td></tr>
+        <tr><td>Too narrow</td><td>HMW add ten more emotion buttons to the chatbot?</td><td>Already assumes the solution</td></tr>
+        <tr><td>Just right</td><td>See the case below</td><td>Gives direction yet leaves room for many solutions</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · GOOD NIGHT STATION'S HMW</div>
+    <div class="notes">
+      <div class="note b big">How might we help sleepless university students <b>feel safe sorting out and expressing their feelings</b> by addressing their lack of emotional vocabulary and fear of being judged?</div>
+      <div class="note b big">How might we help students who log their moods <b>see their own patterns</b> by addressing tools that give data but no meaning?</div>
+    </div>
+    <p class="small">The first diamond ends here. The team has moved from "build an AI chatbot" to two specific, people-centered questions. This is the final brief handed to the second diamond.</p>
+  </div>
+</section>
+
+<!-- ============ DEVELOP EN ============ -->
+<section id="develop-en">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--y)">03 DEVELOP</span>
+    <span class="time">15 min in class</span>
+  </div>
+  <h2>Develop: go for quantity, then cluster</h2>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CLASS</span>Two steps</div>
+    <ul class="steps">
+      <li><b>Rapid ideation</b>: one idea per yellow sticky note, as many as possible for each HMW.</li>
+      <li><b>Group similar ideas into broader concept themes</b>: use large yellow notes as theme headers. This is an <b>affinity diagram</b>.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">MORE</span>IDEO.org's seven brainstorming rules</div>
+    <div class="grid4">
+      <div class="card small"><b style="color:var(--ink)">1. Defer judgment</b><br>No "that's impossible" for now.</div>
+      <div class="card small"><b style="color:var(--ink)">2. Encourage wild ideas</b><br>Outrageous ideas often lead to workable ones.</div>
+      <div class="card small"><b style="color:var(--ink)">3. Build on others' ideas</b><br>Say "yes, and…" instead of "but".</div>
+      <div class="card small"><b style="color:var(--ink)">4. Stay focused</b><br>Keep the HMW on the wall in view.</div>
+      <div class="card small"><b style="color:var(--ink)">5. One conversation at a time</b><br>Every idea gets heard.</div>
+      <div class="card small"><b style="color:var(--ink)">6. Be visual</b><br>Sketch it; drawings travel faster than words.</div>
+      <div class="card small"><b style="color:var(--ink)">7. Go for quantity</b><br>Aim for 50 ideas in 15 minutes.</div>
+      <div class="card small"><b style="color:var(--ink)">Extra: Crazy 8s</b><br>Eight sketches in eight minutes pushes you past your first idea.</div>
+    </div>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · IDEATION AND CLUSTERING</div>
+    <p>For the two HMWs, the team wrote 40+ yellow notes in 15 minutes. A selection, grouped into four themes:</p>
+
+    <div class="notes"><div class="note y big">Theme A: Safe to speak up<small>Matches "emotional safety &amp; self-disclosure"</small></div></div>
+    <div class="notes">
+      <div class="note y">Anonymous "secret tree hole" mode that saves nothing</div>
+      <div class="note y">The bot shares a scenario first to lower the barrier</div>
+      <div class="note y">Send just a color or sticker to show your mood</div>
+    </div>
+
+    <div class="notes"><div class="note y big">Theme B: Structured companionship<small>Matches "structured support"</small></div></div>
+    <div class="notes">
+      <div class="note y">"Three minutes before bed": three fixed prompts</div>
+      <div class="note y">Emotion word cards: from "upset" to "hurt, anxious, let down"</div>
+      <div class="note y">Say "I just want to be heard" to switch off advice</div>
+    </div>
+
+    <div class="notes"><div class="note y big">Theme C: From logs to self-insight<small>Matches "from tracking to reflection"</small></div></div>
+    <div class="notes">
+      <div class="note y">A weekly "letter to yourself" summary</div>
+      <div class="note y">A timeline linking feelings to events</div>
+      <div class="note y">AI asks: "Which moment this week felt most like you?"</div>
+    </div>
+
+    <div class="notes"><div class="note y big">Theme D: Connect to real people<small>Sets the AI's boundaries</small></div></div>
+    <div class="notes">
+      <div class="note y">Detect high-risk words and offer campus and 24-hour helplines</div>
+      <div class="note y">Bring a ready-made summary to your first counselling session in one tap</div>
+      <div class="note y">(Wild idea) AI drafts a message inviting a friend for a late-night snack</div>
+    </div>
+    <p class="small">Three of the four themes overlap with Tseng &amp; Liao's insights. Theme D grew out of the counsellor interviews and reflects the safety needs specific to mental health.</p>
+  </div>
+</section>
+
+<!-- ============ DELIVER EN ============ -->
+<section id="deliver-en">
+  <div class="phase-head">
+    <span class="chip" style="color:var(--accent)">04 DELIVER</span>
+    <span class="time">Evaluate → prototype → test → iterate</span>
+  </div>
+  <h2>Deliver: pick what's worth building, build it, test it</h2>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">CLASS</span>Four evaluation criteria</div>
+    <div class="grid2">
+      <div class="card"><b>Desirability</b><p class="small">Does it meet real user needs or create value?</p></div>
+      <div class="card"><b>Feasibility</b><p class="small">Can it be implemented with available resources and technology?</p></div>
+      <div class="card"><b>Viability</b><p class="small">Is it sustainable for the organization or ecosystem?</p></div>
+      <div class="card"><b>Innovation</b><p class="small">Does it introduce a new perspective or alternative approach?</p></div>
+    </div>
+    <p class="small">More: the first three are IDEO's classic desirability, feasibility and viability (DVF) lenses, and the best solutions sit where all three overlap. The class adds Innovation as a fourth. Design thinking suggests <b>starting with desirability</b> and bringing in the other lenses later.</p>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · INTERACTIVE SCORING (DRAG THE SLIDERS)</div>
+    <p>The team condensed the four themes into three concepts and scored each criterion from 1 to 5. The scores are examples; adjust them to your own judgment.</p>
+    <div class="grid2" id="scoring-en"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title"><span class="tag">MORE</span>Prototyping and testing: build, test, iterate</div>
+    <p>The right half of the second diamond shows several rounds of "build, test, iterate". Converging isn't a single step: each round drops some ideas and keeps others.</p>
+    <div class="grid2">
+      <div class="card"><b>Low-fidelity prototypes</b><p class="small">Paper flows, conversation scripts, Figma wireframes. The aim is fast validation, not polish.</p></div>
+      <div class="card"><b>Wizard of Oz</b><p class="small">Especially suited to chatbots: a person plays the AI behind the scenes, so you validate the conversation design before investing in the technology.</p></div>
+      <div class="card"><b>Usability testing</b><p class="small">Have 5 users think aloud while using it, and watch for moments where they get stuck, hesitate or frown.</p></div>
+      <div class="card"><b>Extra checks for mental health</b><p class="small">Confirm crisis referral, privacy and data retention, and the AI's stated boundaries with professionals before testing.</p></div>
+    </div>
+  </div>
+
+  <div class="case">
+    <div class="case-label">CASE · "THREE MINUTES BEFORE BED" PROTOTYPE</div>
+    <div class="grid2">
+      <div class="chat" aria-label="Prototype conversation example">
+        <div class="bub bot">Hi, still up tonight? Want to talk, or would you rather just have some company?</div>
+        <div class="chips"><span>Want to talk</span><span>Just listen</span><span>Just send a color</span></div>
+        <div class="bub me">Want to talk</div>
+        <div class="bub bot">OK. Which moment today is staying with you? It doesn't have to be the whole story, just one picture.</div>
+        <div class="bub me">My group said my part of the report was terrible</div>
+        <div class="bub bot">That sounds really hard. Does it feel more like "hurt", "embarrassed" or "angry"? Or none of these?</div>
+        <div class="chips"><span>Hurt</span><span>Embarrassed</span><span>Angry</span><span>Not sure</span></div>
+      </div>
+      <div>
+        <p><b>Round 1 findings</b> (Wizard of Oz, 6 students)</p>
+        <ul class="steps">
+          <li>😊 "Just listen" was a favorite. One student said "For once I didn't feel like I needed fixing."</li>
+          <li>😊 Emotion word cards helped 5 of 6 describe their feelings more precisely.</li>
+          <li>😣 Three prompts felt like too many; at 2 a.m. people wanted to answer just one.</li>
+          <li>😣 Unsure whether the counselling centre could see the conversation.</li>
+        </ul>
+        <p><b>Round 2 iteration</b>: cut to one prompt with an option to continue, and state up front that "this conversation stays on your phone".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRACTICE EN ============ -->
+<section id="practice-en">
+  <div class="eyebrow">05 · Practice</div>
+  <h2>Write your own challenge statement and HMW</h2>
+  <p class="small">Fill in your own project, and the two sentence formats from class update as you type.</p>
+  <div class="card builder">
+    <label for="f-people-en">People / stakeholder</label>
+    <input id="f-people-en" value="new graduates in their first job">
+    <label for="f-need-en">Unmet need (or desired outcome)</label>
+    <input id="f-need-en" value="let go of work anxiety after hours">
+    <label for="f-cause-en">Root cause</label>
+    <input id="f-cause-en" value="work messages arrive at all hours and there's no clear end-of-day ritual">
+    <div class="result" id="b-out-en" aria-live="polite"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" id="b-copy-en" type="button">Copy sentences</button>
+      <button class="btn ghost" id="b-case-en" type="button">Fill in the case</button>
+    </div>
+  </div>
+
+  <h3>Workshop agenda (from the class slides)</h3>
+  <div class="card agenda">
+    <div class="row"><span class="t">20 min</span><span><b style="color:var(--r)">Discover</b>　Share field stories → map tensions and patterns → red notes</span></div>
+    <div class="row"><span class="t">10 min</span><span><b style="color:var(--g)">Define</b>　😊😣 pain point mapping</span></div>
+    <div class="row"><span class="t">10 min</span><span><b style="color:var(--g)">Define</b>　Challenge statement + root cause (green)</span></div>
+    <div class="row"><span class="t">—</span><span><b style="color:var(--b)">Define</b>　Write HMW questions (blue)</span></div>
+    <div class="row"><span class="t">15 min</span><span><b style="color:var(--y)">Develop</b>　Rapid ideation (yellow) → concept themes (large yellow)</span></div>
+    <div class="row"><span class="t">—</span><span><b style="color:var(--accent)">Deliver</b>　Evaluate concepts with DVF + Innovation</span></div>
+  </div>
+
+  <h3>Key takeaways</h3>
+  <div class="grid2">
+    <div class="card"><b>Ask the right question first</b><p class="small">The first diamond stops you from efficiently solving the wrong problem. Good Night Station started at "build an AI" and ended at "help people feel safe expressing their feelings".</p></div>
+    <div class="card"><b>Keep diverging and converging apart</b><p class="small">Don't judge while ideating; bring in DVF only when evaluating. Mix the two and ideas get killed before they can grow.</p></div>
+    <div class="card"><b>Leave a traceable trail</b><p class="small">The red → green → blue → yellow chain lets every solution be traced back to a real user's pain point.</p></div>
+    <div class="card"><b>The process isn't a straight line</b><p class="small">When testing uncovers a new problem, go back to Discover or Define. The Double Diamond is a map, not a one-way street.</p></div>
+  </div>
+</section>
+
+<section id="glossary-en">
+  <div class="eyebrow">06 · Glossary</div>
+  <h2>Design thinking glossary</h2>
+  <p class="small">35 terms, ordered by phase. Type a term or abbreviation to filter.</p>
+  <label for="gl-q-en" class="small">Filter terms</label>
+  <input id="gl-q-en" class="gl-q" type="search" placeholder="e.g. HMW, prototype, insight">
+  <div class="tbl-wrap"><table class="gloss" id="gl-t-en">
+    <thead><tr><th>Term</th><th>Abbr.</th><th>Meaning</th><th>Phase</th></tr></thead>
+    <tbody>
+<tr><td><b>Design Thinking</b></td><td><span class="small">—</span></td><td>A human-centered approach to innovation that balances people&#x27;s needs, technical possibility and business requirements.</td><td><span class="ph-tag" style="color:var(--muted)">All</span></td></tr>
+<tr><td><b>Human-Centered Design</b></td><td><span class="abbr">HCD</span></td><td>A design approach that starts from people&#x27;s real needs; the term IDEO.org uses.</td><td><span class="ph-tag" style="color:var(--muted)">All</span></td></tr>
+<tr><td><b>Wicked Problem</b></td><td><span class="small">—</span></td><td>A complex, ill-defined problem with many stakeholders and no single right answer; where design thinking helps most.</td><td><span class="ph-tag" style="color:var(--muted)">All</span></td></tr>
+<tr><td><b>Double Diamond</b></td><td><span class="small">—</span></td><td>The UK Design Council&#x27;s 2004 process model: Discover, Define, Develop, Deliver.</td><td><span class="ph-tag" style="color:var(--muted)">All</span></td></tr>
+<tr><td><b>Diverging / Converging</b></td><td><span class="small">—</span></td><td>Diverging opens up options; converging filters and decides. Every phase does both, in that order.</td><td><span class="ph-tag" style="color:var(--muted)">All</span></td></tr>
+<tr><td><b>Client Brief</b></td><td><span class="small">—</span></td><td>The initial request from the client, often vague and carrying an assumed solution.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Rip the Brief</b></td><td><span class="small">—</span></td><td>Questioning each assumption in the brief to separate facts from pre-decided answers.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Primary Research</b></td><td><span class="small">—</span></td><td>First-hand data you collect yourself: interviews, observation, diary studies.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Secondary Research</b></td><td><span class="small">—</span></td><td>Existing material published by others: literature, reports, competitor analysis.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Field Stories</b></td><td><span class="small">—</span></td><td>Concrete moments heard or observed in research, shared to find patterns.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Empathy Map</b></td><td><span class="small">—</span></td><td>A four-quadrant tool sorting what a user Says, Thinks, Does and Feels.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Tensions / Patterns</b></td><td><span class="small">—</span></td><td>Patterns are things that recur; tensions are conflicts between needs, often hiding design opportunities.</td><td><span class="ph-tag" style="color:var(--r)">Discover</span></td></tr>
+<tr><td><b>Insight</b></td><td><span class="small">—</span></td><td>A new understanding of why users behave as they do, drawn from research.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Theme</b></td><td><span class="small">—</span></td><td>A higher-level grouping of related insights.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Opportunity Area</b></td><td><span class="small">—</span></td><td>A direction worth designing for, between themes and HMW questions.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Pain Point</b></td><td><span class="small">—</span></td><td>A moment in the user&#x27;s experience where a need goes unmet.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Customer Journey Map</b></td><td><span class="small">—</span></td><td>A timeline of a user&#x27;s actions, thoughts and emotions at each moment.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Root Cause</b></td><td><span class="small">—</span></td><td>The underlying reason behind a pain point, not the surface symptom.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>5 Whys</b></td><td><span class="small">—</span></td><td>Asking &quot;why&quot; about five times in a row to reach the root cause.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Challenge Statement / Point of View</b></td><td><span class="abbr">POV</span></td><td>A one-sentence problem description built from person + need + cause.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>How Might We</b></td><td><span class="abbr">HMW</span></td><td>A question that reframes a problem as an open, positive prompt for ideas.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Final Brief</b></td><td><span class="small">—</span></td><td>The output of the first diamond: the reframed design problem.</td><td><span class="ph-tag" style="color:var(--g)">Define</span></td></tr>
+<tr><td><b>Ideation</b></td><td><span class="small">—</span></td><td>Generating many ideas in response to an HMW question.</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>Brainstorming</b></td><td><span class="small">—</span></td><td>Group ideation that defers judgment and goes for quantity.</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>Affinity Diagram</b></td><td><span class="small">—</span></td><td>Clustering sticky notes by similarity and naming each cluster.</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>Crazy 8s</b></td><td><span class="small">—</span></td><td>A fast exercise: eight sketches in eight minutes.</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>Concept</b></td><td><span class="small">—</span></td><td>A rough solution, combined from several ideas, that can be evaluated.</td><td><span class="ph-tag" style="color:var(--y)">Develop</span></td></tr>
+<tr><td><b>Desirability / Feasibility / Viability</b></td><td><span class="abbr">DVF</span></td><td>IDEO&#x27;s three lenses: do people want it, can we build it, can it last.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Innovation</b></td><td><span class="small">—</span></td><td>Whether it brings a new perspective or approach; the class&#x27;s fourth criterion.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Prototype</b></td><td><span class="small">—</span></td><td>A quick version built to test an idea; low-fidelity (low-fi) ones are paper or scripts.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Wizard of Oz</b></td><td><span class="small">—</span></td><td>A person secretly plays the system so you can test the experience before building it.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Usability Testing</b></td><td><span class="small">—</span></td><td>Watching real users try the product to find where they get stuck.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Think-Aloud</b></td><td><span class="small">—</span></td><td>Asking test users to say their thoughts out loud while using it.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Iteration</b></td><td><span class="small">—</span></td><td>The build, test, refine cycle, repeated until the solution matures.</td><td><span class="ph-tag" style="color:var(--accent)">Deliver</span></td></tr>
+<tr><td><b>Conversational Agent</b></td><td><span class="abbr">CA</span></td><td>A system that talks with people in natural language, such as a chatbot.</td><td><span class="ph-tag" style="color:var(--muted)">Case</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small" id="gl-none-en" hidden>No matching terms.</p>
+</section>
+
+</div>
+
+<footer class="en" lang="en">
+  <div class="wrap">
+    <h2 id="sources-en" style="font-size:20px">Sources and further reading</h2>
+    <ol>
+      <li>Class slides (11 Nov 2026), including the Double Diamond diagram and phase activities.</li>
+      <li>Tseng &amp; Liao (2025), design insights for mental-health conversational agents, as cited in the class slides.</li>
+      <li><a href="https://designcouncil.org.uk/our-resources/framework-for-innovation">Design Council – Framework for Innovation (Double Diamond)</a></li>
+      <li><a href="https://designthinking.ideo.com/history">IDEO – What is design thinking? (DVF lenses)</a></li>
+      <li><a href="https://www.designkit.org/methods.html">IDEO.org Design Kit – Methods (HMW, brainstorming rules)</a></li>
+      <li><a href="https://ixdf.org/literature/topics/design-thinking">Interaction Design Foundation – Design Thinking</a></li>
+      <li><a href="https://studio.wadeinstitute.org.au/tool-detail-how-might-we.html">Wade Institute – How Might We tool</a></li>
+    </ol>
+    <p class="small">"Good Night Station" is a fictional teaching case; interview content and test data are examples.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // language toggle
+  var root=document.documentElement, bz=document.getElementById('lang-zh'), be=document.getElementById('lang-en');
+  function setLang(l, scroll){
+    root.setAttribute('data-lang', l);
+    root.lang = l==='en' ? 'en' : 'zh-Hant';
+    bz.setAttribute('aria-pressed', l==='zh'); be.setAttribute('aria-pressed', l==='en');
+    document.title = l==='en' ? 'Design Thinking Double Diamond Handbook' : '設計思考雙鑽石學習手冊';
+    try{ localStorage.setItem('dt-lang', l); }catch(e){}
+    if(scroll) window.scrollTo(0,0);
+  }
+  bz.addEventListener('click',function(){setLang('zh',true);});
+  be.addEventListener('click',function(){setLang('en',true);});
+  var saved='zh'; try{ saved=localStorage.getItem('dt-lang')||'zh'; }catch(e){}
+  setLang(saved==='en'?'en':'zh', false);
+
+  // glossary filter
+  [['gl-q','gl-t','gl-none'],['gl-q-en','gl-t-en','gl-none-en']].forEach(function(a){
+    var q=document.getElementById(a[0]), rows=document.querySelectorAll('#'+a[1]+' tbody tr'), none=document.getElementById(a[2]);
+    q.addEventListener('input',function(){
+      var v=q.value.trim().toLowerCase(), n=0;
+      rows.forEach(function(r){ var hit=!v||r.textContent.toLowerCase().indexOf(v)>-1; r.hidden=!hit; if(hit)n++; });
+      none.hidden=n>0;
+    });
+  });
+
+  // diamond navigation
+  document.querySelectorAll('.ph').forEach(function(el){
+    function go(){ var t=document.getElementById(el.getAttribute('data-go')); if(t) t.scrollIntoView(); }
+    el.addEventListener('click',go);
+    el.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }});
+  });
+
+  // scoring
+  function scoring(boxId, crit, totalLbl, concepts){
+    var box=document.getElementById(boxId);
+    concepts.forEach(function(c,ci){
+      var card=document.createElement('div'); card.className='card concept';
+      var h='<h4>'+c.name+'</h4><p class="small" style="margin-top:0">'+c.desc+'</p>';
+      crit.forEach(function(k){
+        var id=boxId+ci+k[0];
+        h+='<div class="score-row"><label for="'+id+'">'+k[1]+'</label><input type="range" min="1" max="5" step="1" id="'+id+'" value="'+c.s[k[0]]+'" data-c="'+ci+'" data-k="'+k[0]+'"><output for="'+id+'" id="o'+id+'">'+c.s[k[0]]+'</output></div>';
+      });
+      h+='<div class="total"><span>'+totalLbl+'</span><div class="bar"><span class="fill"></span></div><b class="tot"></b></div>';
+      card.innerHTML=h; box.appendChild(card);
+    });
+    var cards=box.querySelectorAll('.concept');
+    function update(){
+      var best=-1,bi=0;
+      concepts.forEach(function(c,ci){
+        var t=0; crit.forEach(function(k){t+=c.s[k[0]];});
+        cards[ci].querySelector('.tot').textContent=t+' / 20';
+        cards[ci].querySelector('.fill').style.width=(t/20*100)+'%';
+        if(t>best){best=t;bi=ci;}
+      });
+      cards.forEach(function(el,i){el.classList.toggle('best',i===bi);});
+    }
+    box.addEventListener('input',function(e){
+      var t=e.target; if(t.type!=='range')return;
+      concepts[+t.dataset.c].s[t.dataset.k]=+t.value;
+      document.getElementById('o'+t.id).textContent=t.value;
+      update();
+    });
+    update();
+  }
+  scoring('scoring',[['d','可欲性'],['f','可行性'],['v','存續性'],['i','創新性']],'總分',[
+    {name:'睡前三分鐘',desc:'一題引導＋情緒詞卡＋「只想被聽」模式',s:{d:5,f:4,v:4,i:3}},
+    {name:'每週給自己的信',desc:'把一週的紀錄寫成可反思的摘要',s:{d:4,f:4,v:3,i:4}},
+    {name:'AI 約朋友吃宵夜',desc:'幫你寫訊息、主動連結身邊的人',s:{d:3,f:3,v:2,i:5}}
+  ]);
+  scoring('scoring-en',[['d','Desirability'],['f','Feasibility'],['v','Viability'],['i','Innovation']],'Total',[
+    {name:'Three minutes before bed',desc:'One prompt + emotion word cards + "just listen" mode',s:{d:5,f:4,v:4,i:3}},
+    {name:'Weekly letter to yourself',desc:'Turns a week of logs into a summary you can reflect on',s:{d:4,f:4,v:3,i:4}},
+    {name:'AI invites a friend for a snack',desc:'Drafts a message to reach out to people around you',s:{d:3,f:3,v:2,i:5}}
+  ]);
+
+  // builder
+  function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function builder(sfx, tpl, caseVals, copyLbl, copiedLbl, failLbl){
+    var fp=document.getElementById('f-people'+sfx),fn=document.getElementById('f-need'+sfx),fc=document.getElementById('f-cause'+sfx),out=document.getElementById('b-out'+sfx);
+    function v(el,ph){return esc(el.value.trim()||ph);}
+    function render(){ out.innerHTML=tpl(v(fp,tpl.ph[0]),v(fn,tpl.ph[1]),v(fc,tpl.ph[2])); }
+    [fp,fn,fc].forEach(function(el){el.addEventListener('input',render);});
+    document.getElementById('b-case'+sfx).addEventListener('click',function(){
+      fp.value=caseVals[0]; fn.value=caseVals[1]; fc.value=caseVals[2]; render();
+    });
+    document.getElementById('b-copy'+sfx).addEventListener('click',function(){
+      var btn=this, txt=out.innerText;
+      try{
+        navigator.clipboard.writeText(txt).then(function(){btn.textContent=copiedLbl;setTimeout(function(){btn.textContent=copyLbl;},1500);},function(){btn.textContent=failLbl;});
+      }catch(e){btn.textContent=failLbl;}
+    });
+    render();
+  }
+  var tz=function(p,n,c){
+    return '<p><span class="note g" style="display:inline-block;max-width:none">挑戰陳述</span><br>挑戰在於<mark>'+p+'</mark>難以<mark>'+n+'</mark>，因為<mark style="color:var(--g)">'+c+'</mark>。</p>'+
+      '<p><span class="note b" style="display:inline-block;max-width:none">HMW</span><br>我們可以如何幫助<mark>'+p+'</mark><mark style="color:var(--b)">'+n+'</mark>，透過處理<mark style="color:var(--g)">'+c+'</mark>的問題？</p>';
+  }; tz.ph=['【人】','【需求】','【根本原因】'];
+  var te=function(p,n,c){
+    return '<p><span class="note g" style="display:inline-block;max-width:none">Challenge statement</span><br>The challenge is that <mark>'+p+'</mark> struggle to <mark>'+n+'</mark>, because <mark style="color:var(--g)">'+c+'</mark>.</p>'+
+      '<p><span class="note b" style="display:inline-block;max-width:none">HMW</span><br>How might we help <mark>'+p+'</mark> to <mark style="color:var(--b)">'+n+'</mark> by addressing <mark style="color:var(--g)">'+c+'</mark>?</p>';
+  }; te.ph=['[people]','[need]','[root cause]'];
+  builder('', tz, ['深夜睡不著的大學生','安心地整理並說出自己的感受','缺乏情緒語彙、又擔心被評價'], '複製句子','已複製','無法複製，請手動選取');
+  builder('-en', te, ['sleepless university students','feel safe sorting out and expressing their feelings','their lack of emotional vocabulary and fear of being judged'], 'Copy sentences','Copied','Copy failed; please select manually');
+})();
+</script>
+<footer class="ls-foot" aria-label="Author and license">
+  <p class="zh"><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p class="en"><b>Author: <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> | Created with Claude's help; reviewed and shared by the author.</p>
+  <p class="zh">內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。課堂簡報、引用的資料與來源，版權屬原作者（授課者），不在上述授權範圍內。</p>
+  <p class="en">Content is licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>: you may use, share and adapt it with credit to iamkylee@gmail.com and a link to <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>, and by noting any changes. Course slides, cited data and sources belong to their original authors (including the instructor) and are not covered by this license.</p>
+  <p class="zh">需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p class="en">For citation or licensing questions, contact <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>. Corrections welcome via <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a>.</p>
+  <p><a href="../index.html"><span class="zh">← 回到「學習空間」目錄</span><span class="en">← Back to Learning Space</span></a></p>
+</footer>
+</body>
+</html>
