@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>長庚大小事 LINE Bot｜CGU Campus Companion — GenAI Term Project Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --card:#fff;
+  --green:#06c755; --green-d:#04a346; --ai:#7c3aed; --ai-bg:#f3e8ff;
+  --warn:#b45309; --warn-bg:#fef3c7; --blue:#1d4ed8; --blue-bg:#dbeafe;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Inter","Noto Sans TC",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;font-size:16px}
+a{color:var(--blue)}
+/* language modes */
+body.m-zh .en{display:none}
+body.m-en .zh{display:none}
+body.m-both .en{color:var(--muted)}
+body.m-both p .en, body.m-both li .en, body.m-both td .en, body.m-both .blk .en{display:block;font-size:.92em}
+body.m-both h1 .en, body.m-both h2 .en, body.m-both h3 .en{display:block;font-size:.6em;font-weight:500;margin-top:.15em}
+body.m-both h3 .en{font-size:.8em}
+/* top bar */
+.bar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap}
+.brand{font-weight:800;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--green)}
+nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+nav a{font-size:13px;text-decoration:none;color:var(--muted);padding:4px 8px;border-radius:6px}
+nav a:hover{background:var(--bg);color:var(--ink)}
+.lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.lang button{border:0;background:#fff;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
+.lang button.on{background:var(--ink);color:#fff}
+/* layout */
+main{max-width:1180px;margin:0 auto;padding:0 20px 80px}
+.hero{padding:56px 0 32px}
+.kicker{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--green-d)}
+h1{font-size:44px;line-height:1.15;margin:.2em 0 .3em;font-weight:900}
+h2{font-size:28px;margin:0 0 16px;font-weight:800}
+h3{font-size:19px;margin:20px 0 8px}
+section{padding:40px 0;border-top:1px solid var(--line)}
+.sec-n{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.06em}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pill{font-size:13px;padding:4px 10px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.sdg{color:#fff;border:0;font-weight:600}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h3{margin-top:0}
+.verdict{background:linear-gradient(135deg,#ecfdf5,#fff);border:1px solid #a7f3d0;border-radius:16px;padding:24px}
+.verdict .big{font-size:22px;font-weight:800;color:var(--green-d)}
+.callout{border-left:4px solid var(--warn);background:var(--warn-bg);padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0}
+.callout.ai{border-color:var(--ai);background:var(--ai-bg)}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f1f5f9;font-size:13px;letter-spacing:.03em}
+tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--ai);color:#fff;vertical-align:middle;margin-right:4px}
+.io{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.io .arrow{display:flex;align-items:center;font-size:28px;color:var(--muted)}
+.diagram{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;overflow-x:auto}
+.diagram svg{min-width:980px;width:100%;height:auto;display:block}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:10px 4px 0}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;border:2px solid}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.st{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;text-align:center}
+.st b{display:block}
+.flow .ar{color:var(--muted)}
+.story{counter-reset:s}
+.frame{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.frame .scr{background:#8cabd8;padding:14px;min-height:190px;display:flex;flex-direction:column;gap:8px}
+.bub{max-width:85%;padding:8px 12px;border-radius:16px;font-size:13px;line-height:1.45}
+.bub.u{align-self:flex-end;background:#a5e88a;border-bottom-right-radius:4px}
+.bub.b{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}
+.frame .cap{padding:12px 14px;font-size:14px}
+.frame .cap b{counter-increment:s}
+.frame .cap b::before{content:counter(s) ". "}
+.tl{position:relative;padding-left:22px}
+.tl::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl .it{position:relative;margin-bottom:16px}
+.tl .it::before{content:"";position:absolute;left:-21px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid #fff;box-shadow:0 0 0 2px var(--green)}
+.tl .d{font-weight:700;font-size:14px}
+.small{font-size:13px;color:var(--muted)}
+ol.refs li{margin-bottom:6px;font-size:14px}
+footer{max-width:1180px;margin:0 auto;padding:24px 20px 60px;color:var(--muted);font-size:13px}
+@media(max-width:640px){h1{font-size:32px}.io{grid-template-columns:1fr}.io .arrow{justify-content:center;transform:rotate(90deg)}}
+</style>
+<meta name="description" content="長庚大小事 LINE Bot（CGU Campus Companion）：讓外籍學生用母語在 LINE 詢問校園資訊的 RAG 機器人提案，含架構、知識庫更新、評估與倫理。學生課程提案，非官方服務。 A student GenAI term-project proposal: a multilingual LINE bot with a self-updating RAG knowledge base for international students. Not an official CGU service.">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>.ls-top a,.ls-foot a{color:var(--blue,#1d4ed8)}.ls-foot{max-width:1000px}</style>
+</head>
+<body class="m-both">
+<div class="ls-top"><a href="../index.html"><span class="zh">← 學習空間</span><span class="en">← Learning Space</span></a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
+
+<div class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span><span class="zh">長庚大小事 Bot</span><span class="en">CGU Campus Companion</span></div>
+  <nav>
+    <a href="#fit"><span class="zh">主題契合</span><span class="en">Fit</span></a>
+    <a href="#motivation"><span class="zh">動機</span><span class="en">Motivation</span></a>
+    <a href="#problem"><span class="zh">問題</span><span class="en">Problem</span></a>
+    <a href="#sota"><span class="zh">現況</span><span class="en">SOTA</span></a>
+    <a href="#arch"><span class="zh">架構</span><span class="en">Architecture</span></a>
+    <a href="#kb"><span class="zh">知識庫</span><span class="en">KB</span></a>
+    <a href="#story"><span class="zh">分鏡</span><span class="en">Storyboard</span></a>
+    <a href="#eval"><span class="zh">評估</span><span class="en">Evaluation</span></a>
+    <a href="#plan"><span class="zh">時程</span><span class="en">Timeline</span></a>
+    <a href="#team"><span class="zh">分工</span><span class="en">Team</span></a>
+    <a href="#risk"><span class="zh">風險</span><span class="en">Risks</span></a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button data-m="zh">中文</button><button data-m="en">English</button><button data-m="both" class="on">雙語 Both</button>
+  </div>
+</div></div>
+
+<main>
+
+<header class="hero">
+  <div class="kicker">GenAI Term Project · Fall 2026 · Proposal</div>
+  <h1><span class="zh">長庚大小事 LINE Bot</span><span class="en">CGU Campus Companion — a self-updating multilingual LINE Bot</span></h1>
+  <p style="font-size:18px;max-width:820px">
+    <span class="zh">讓長庚大學的外籍學生，用自己的母語在 LINE 上問「學校大小事」。系統每天自動爬取校方公告建立 RAG 知識庫；答不出來的問題會開成 Ticket，由 AI 代理補資料、驗證正確性，經使用者回饋後才進入正式知識庫。</span>
+    <span class="en">Let international students at Chang Gung University ask anything about campus life on LINE, in their own language. The system crawls official CGU announcements daily into a RAG knowledge base; unanswered questions become tickets that an AI agent researches and verifies, and answers only enter the production knowledge base after user feedback.</span>
+  </p>
+  <div class="pills">
+    <span class="pill sdg" style="background:#c5192d">SDG 4 Quality Education</span>
+    <span class="pill sdg" style="background:#dd1367">SDG 10 Reduced Inequalities</span>
+    <span class="pill sdg" style="background:#4c9f38">SDG 3 Good Health &amp; Well-being</span>
+    <span class="pill sdg" style="background:#00689d">SDG 16 Strong Institutions</span>
+    <span class="pill">RAG</span><span class="pill">Human-in-the-loop</span><span class="pill">LLM-as-a-Judge</span><span class="pill">LINE Messaging API</span>
+  </div>
+</header>
+
+<!-- 0. FIT -->
+<section id="fit">
+  <div class="sec-n">00</div>
+  <h2><span class="zh">是否符合老師的題目？</span><span class="en">Does this fit the course theme?</span></h2>
+  <div class="verdict">
+    <div class="big"><span class="zh">✅ 符合，而且技術深度足夠</span><span class="en">✅ Yes — and it has enough technical depth</span></div>
+    <p>
+      <span class="zh">課程投影片的主題是「AI for Good」，並以聯合國 17 項永續發展目標（SDGs）為框架；設計思考 workshop 的練習題是「用 GenAI 處理年輕人的心理健康與福祉問題」。外籍學生的資訊落差直接對應 SDG 4（教育品質）與 SDG 10（減少不平等），而「看不懂公告、錯過期限、不知道向誰求助」本身就是留學生壓力與孤立感的來源，可以連結 SDG 3。</span>
+      <span class="en">The course slides frame the project as "AI for Good" using the 17 UN SDGs, and the design-thinking workshop prompt was "use GenAI to address mental health and wellbeing of young people". The information gap faced by international students maps directly to SDG 4 (Quality Education) and SDG 10 (Reduced Inequalities); and not understanding notices, missing deadlines and not knowing whom to ask are themselves sources of stress and isolation, which links to SDG 3.</span>
+    </p>
+  </div>
+  <h3><span class="zh">對照評分標準</span><span class="en">Against the grading rubric</span></h3>
+  <table>
+    <tr><th><span class="zh">評分項目</span><span class="en">Criterion</span></th><th><span class="zh">本專案的亮點</span><span class="en">What this project offers</span></th></tr>
+    <tr><td>Novelty 15%</td><td><span class="zh">一般校園 chatbot 只用固定 FAQ；本專案有「Ticket 驅動的知識補完」+「Staging → Production 雙資料庫晉升機制」，知識庫會依真實需求成長。</span><span class="en">Typical campus chatbots rely on a fixed FAQ. This project adds ticket-driven knowledge acquisition and a two-tier Staging → Production promotion mechanism, so the KB grows from real demand.</span></td></tr>
+    <tr><td>Technical Strengths 60%</td><td><span class="zh">完整的 RAG pipeline、多語查詢改寫、LLM-as-a-Judge 驗證、人機協作（HITL）、可量化的評估指標，技術層次清楚。</span><span class="en">A full RAG pipeline, multilingual query rewriting, LLM-as-a-Judge verification, human-in-the-loop review and measurable metrics give clear technical layers.</span></td></tr>
+    <tr><td>Presentation 25%</td><td><span class="zh">LINE 可以現場 demo：用越南文／印尼文／英文提問，即時回覆並附上官網來源連結。</span><span class="en">LINE allows a live demo: ask in Vietnamese / Indonesian / English and get an instant answer with the official source link.</span></td></tr>
+  </table>
+  <div class="callout">
+    <b><span class="zh">三個建議，讓提案更有說服力</span><span class="en">Three suggestions to make the proposal stronger</span></b>
+    <ol style="margin:8px 0 0">
+      <li><span class="zh"><b>加一個「福祉模組」</b>：偵測到壓力、孤單、想家等訊息時，用使用者的語言提供學生輔導中心的資訊與國際生活動，呼應 workshop 的心理健康主題（Bot 只做轉介，不做諮商）。</span><span class="en"><b>Add a wellbeing module</b>: when messages show stress, loneliness or homesickness, share the counseling center's contact and international-student events in the user's language, echoing the workshop's mental-health prompt. The bot refers students on; it does not counsel.</span></li>
+      <li><span class="zh"><b>修正「沒回應就自動上正式庫」</b>：沉默不等於正確。建議改為「沉默 + AI 驗證分數達標 + 有官方來源」才晉升，簽證、學費、獎學金等高風險類別一律需人工確認（見 <a href="#kb">§06</a>）。</span><span class="en"><b>Rethink "no response → auto-promote"</b>: silence is not proof of correctness. Promote only on silence <i>plus</i> a passing verification score <i>plus</i> an official source, and always require human approval for high-risk categories such as visas, tuition and scholarships (see <a href="#kb">§06</a>).</span></li>
+      <li><span class="zh"><b>準備問卷與測試集</b>：老師的修訂版提案要求加入 Survey；建議做一份長庚外籍生問卷，同時蒐集真實問題作為評估用測試集。</span><span class="en"><b>Prepare a survey and a test set</b>: the revised proposal template asks for a survey. Run a short survey of CGU international students and reuse the real questions as the evaluation test set.</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 1. MOTIVATION -->
+<section id="motivation">
+  <div class="sec-n">01 · Q1–Q2 <span class="zh">問題是什麼？為什麼重要？</span><span class="en">What's the problem? Why is it important?</span></div>
+  <h2><span class="zh">動機與背景</span><span class="en">Motivation &amp; Background</span></h2>
+  <div class="grid g2">
+    <div class="card">
+      <h3><span class="zh">整體面：台灣外籍生快速成長</span><span class="en">General view: a fast-growing population</span></h3>
+      <ul>
+        <li><span class="zh">2025/26 學年台灣外籍生達 140,420 人，比前一年成長 17%，創歷史新高。</span><span class="en">Taiwan's foreign enrolment reached 140,420 in 2025/26, up 17% year on year — an all-time record.</span></li>
+        <li><span class="zh">政府目標是 2030 年吸引 32 萬名國際學生，人數仍需翻倍以上。</span><span class="en">The government aims for 320,000 international students by 2030, so enrolment still needs to more than double.</span></li>
+        <li><span class="zh">約 38% 的外籍生來自越南；新南向國家學生占多數，母語多半不是中文或英文。</span><span class="en">About 38% come from Vietnam, and most come from New Southbound countries, so many students' first language is neither Chinese nor English.</span></li>
+      </ul>
+      <p class="small"><span class="zh">資料來源：ICEF Monitor (2026/08)、Study in Taiwan、Taiwan News。</span><span class="en">Sources: ICEF Monitor (Aug 2026), Study in Taiwan, Taiwan News.</span></p>
+    </div>
+    <div class="card">
+      <h3><span class="zh">具體面：一個情境</span><span class="en">Specific view: a motivating scenario</span></h3>
+      <p><span class="zh">越南籍碩一生 Linh 剛到長庚。宿舍續住申請的公告只有中文、藏在處室網頁的第三頁，截止日是下週五。她不好意思一直問學伴，Google 翻譯 PDF 又亂碼，最後錯過期限，只能在外面找房子。</span><span class="en">Linh, a first-year master's student from Vietnam, has just arrived at CGU. The dorm renewal notice is only in Chinese, buried on page three of an office website, and closes next Friday. She feels awkward asking her buddy again, machine-translating the PDF produces garbage, and she misses the deadline and has to find off-campus housing.</span></p>
+      <p><span class="zh"><b>痛點</b>：資訊分散、語言障礙、更新快、不知道問誰 → 錯過權益、增加壓力與孤立感。</span><span class="en"><b>Pain points</b>: scattered information, language barriers, frequent updates, no clear person to ask → missed entitlements, more stress and isolation.</span></p>
+    </div>
+  </div>
+  <div class="callout ai"><span class="zh"><b>Survey（待補）</b>：建議 11/2x 進度報告前，對長庚外籍生做 5–10 題問卷：最常找不到的資訊類型、使用的語言、目前求助管道、是否每天使用 LINE。結果放在這一節。</span><span class="en"><b>Survey (to do)</b>: before the 11/2x progress check, run a 5–10 question survey of CGU international students: which information is hardest to find, which language they use, how they currently get help, and whether they use LINE daily. Put the results in this section.</span></div>
+</section>
+
+<!-- 2. PROBLEM -->
+<section id="problem">
+  <div class="sec-n">02</div>
+  <h2><span class="zh">目標問題（輸入／輸出定義）</span><span class="en">Target Problem (input / output)</span></h2>
+  <p><span class="zh">將問題定義為一個 <b>多語、可持續更新、具可信度控管的檢索增強生成（RAG）問答任務</b>。</span><span class="en">We frame it as a <b>multilingual, continuously updated, trust-controlled Retrieval-Augmented Generation (RAG) question-answering task</b>.</span></p>
+  <div class="io">
+    <div class="card"><h3>Input</h3>
+      <ul>
+        <li><span class="zh">使用者在 LINE 上以任意語言輸入的自然語言問題</span><span class="en">A natural-language question in any language, sent on LINE</span></li>
+        <li><span class="zh">對話脈絡（同一使用者的前幾輪）</span><span class="en">Conversation context (previous turns of the same user)</span></li>
+        <li><span class="zh">知識庫：長庚官網公告、處室頁面、規章、行事曆（中／英文）</span><span class="en">Knowledge base: CGU announcements, office pages, regulations, academic calendar (Chinese / English)</span></li>
+      </ul>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card"><h3>Output</h3>
+      <ul>
+        <li><span class="zh">以使用者語言回覆的答案 + 官方來源連結 + 資料日期</span><span class="en">An answer in the user's language + official source link + data date</span></li>
+        <li><span class="zh">或：信心不足時誠實告知，並建立 Ticket，稍後主動推播答案</span><span class="en">Or, when confidence is low: an honest "not sure yet", a ticket, and a push message later with the answer</span></li>
+        <li><span class="zh">系統面：一筆經驗證、帶來源的新知識條目</span><span class="en">System side: a new, verified knowledge entry with its source</span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="small"><span class="zh">限制條件：答案必須可追溯到官方來源；不可捏造日期、金額、規定；高風險資訊需標示「請以官方公告為準」。</span><span class="en">Constraints: every answer must trace back to an official source; no fabricated dates, amounts or rules; high-risk information carries a "refer to the official notice" disclaimer.</span></p>
+</section>
+
+<!-- 3. SOTA -->
+<section id="sota">
+  <div class="sec-n">03 · Q3 <span class="zh">現有做法</span><span class="en">State of the art</span></div>
+  <h2><span class="zh">現有做法與相關研究</span><span class="en">State of the Art &amp; Related Work</span></h2>
+  <table>
+    <tr><th><span class="zh">做法</span><span class="en">Approach</span></th><th><span class="zh">優點</span><span class="en">Strengths</span></th><th><span class="zh">不足</span><span class="en">Gaps</span></th></tr>
+    <tr><td><span class="zh">學校官網 + 國際處 Email／學伴</span><span class="en">University website + international office email / buddies</span></td><td><span class="zh">資訊權威</span><span class="en">Authoritative</span></td><td><span class="zh">分散、多為中文、回覆慢、依賴人力</span><span class="en">Scattered, mostly Chinese, slow, labor-intensive</span></td></tr>
+    <tr><td><span class="zh">規則式／FAQ 校園聊天機器人</span><span class="en">Rule-based / FAQ campus chatbots</span></td><td><span class="zh">可控、便宜</span><span class="en">Controllable, cheap</span></td><td><span class="zh">只能答預設問題，內容很快過時</span><span class="en">Only answers predefined questions; content goes stale</span></td></tr>
+    <tr><td><span class="zh">直接問 ChatGPT 等通用 LLM</span><span class="en">General LLMs (e.g. ChatGPT)</span></td><td><span class="zh">多語能力強</span><span class="en">Strong multilingual ability</span></td><td><span class="zh">不知道長庚最新公告，容易幻覺</span><span class="en">Unaware of current CGU notices; hallucinates</span></td></tr>
+    <tr><td>RAG (Lewis et al., 2020)</td><td><span class="zh">以檢索文件為依據生成</span><span class="en">Grounds generation in retrieved documents</span></td><td><span class="zh">知識庫靜態；缺資料時無補救機制</span><span class="en">Static KB; no remedy when data is missing</span></td></tr>
+    <tr><td>Self-RAG / Corrective RAG (2023–24)</td><td><span class="zh">模型自我評估檢索品質，必要時改用網路搜尋</span><span class="en">The model critiques retrieval and falls back to web search</span></td><td><span class="zh">補到的資料不會沉澱回知識庫，也無人工驗證</span><span class="en">Retrieved fixes are not persisted to the KB and are not human-verified</span></td></tr>
+    <tr><td><b><span class="zh">本專案</span><span class="en">This project</span></b></td><td colspan="2"><span class="zh">結合 Corrective RAG 的「偵測不足」與 HITL 的「驗證後沉澱」：缺口 → Ticket → AI 補資料 → LLM-as-a-Judge → Staging → 使用者回饋 → Production。</span><span class="en">Combines Corrective RAG's gap detection with human-in-the-loop persistence: gap → ticket → AI research → LLM-as-a-Judge → Staging → user feedback → Production.</span></td></tr>
+  </table>
+</section>
+
+<!-- 4. ARCH -->
+<section id="arch">
+  <div class="sec-n">04 · Q4–Q5 <span class="zh">核心構想與解法</span><span class="en">Big idea &amp; how we solve it</span></div>
+  <h2><span class="zh">系統架構（紫色＝GenAI 元件）</span><span class="en">Solution Architecture (purple = GenAI components)</span></h2>
+  <div class="diagram">
+<svg viewBox="0 0 1210 770" xmlns="http://www.w3.org/2000/svg" font-family="Inter, 'Noto Sans TC', sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#04a346"/></marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+    <style>
+      .ln{fill:none;stroke:#475569;stroke-width:1.8}
+      .bx{fill:#fff;stroke:#94a3b8;stroke-width:1.5}
+      .gai{fill:#f3e8ff;stroke:#7c3aed;stroke-width:2}
+      .db{fill:#dbeafe;stroke:#1d4ed8;stroke-width:2}
+      .stg{fill:#fef3c7;stroke:#b45309;stroke-width:2}
+      .usr{fill:#dcfce7;stroke:#06c755;stroke-width:2}
+      .t1{font-size:14px;font-weight:700;fill:#0f172a}
+      .t2{font-size:11.5px;fill:#475569}
+      .lane{font-size:13px;font-weight:800;fill:#334155}
+      .lbl{font-size:11px;fill:#334155}
+      .gt{font-size:9.5px;font-weight:800;fill:#fff}
+    </style>
+  </defs>
+
+  <!-- lanes -->
+  <rect x="2" y="4" width="1206" height="222" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="2" y="236" width="1206" height="222" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="2" y="468" width="1206" height="298" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="18" y="28" class="lane">① 知識庫建置 Knowledge Ingestion — daily / weekly / per semester</text>
+  <text x="18" y="260" class="lane">② 即時問答 Real-time Q&amp;A</text>
+  <text x="18" y="492" class="lane">③ Ticket 補完與回饋迴圈 Ticket, Verification &amp; Feedback Loop</text>
+
+  <!-- Lane A -->
+  <rect x="20" y="70" width="150" height="76" rx="10" class="bx"/>
+  <text x="95" y="98" text-anchor="middle" class="t1">CGU 官網資料</text>
+  <text x="95" y="116" text-anchor="middle" class="t2">Announcements, offices,</text>
+  <text x="95" y="131" text-anchor="middle" class="t2">regulations, calendar</text>
+
+  <rect x="210" y="70" width="150" height="76" rx="10" class="bx"/>
+  <text x="285" y="98" text-anchor="middle" class="t1">排程器 Scheduler</text>
+  <text x="285" y="116" text-anchor="middle" class="t2">cron / GitHub Actions</text>
+  <text x="285" y="131" text-anchor="middle" class="t2">日 / 週 / 學期</text>
+
+  <rect x="400" y="70" width="150" height="76" rx="10" class="bx"/>
+  <text x="475" y="98" text-anchor="middle" class="t1">爬蟲與解析</text>
+  <text x="475" y="116" text-anchor="middle" class="t2">Crawler + PDF parser</text>
+  <text x="475" y="131" text-anchor="middle" class="t2">dedupe by content hash</text>
+
+  <rect x="590" y="70" width="150" height="76" rx="10" class="gai"/>
+  <rect x="596" y="60" width="44" height="16" rx="8" fill="#7c3aed"/><text x="618" y="72" text-anchor="middle" class="gt">GenAI</text>
+  <text x="665" y="98" text-anchor="middle" class="t1">LLM 清理與標註</text>
+  <text x="665" y="116" text-anchor="middle" class="t2">summary, category,</text>
+  <text x="665" y="131" text-anchor="middle" class="t2">deadline, expiry date</text>
+
+  <rect x="780" y="70" width="150" height="76" rx="10" class="gai"/>
+  <rect x="786" y="60" width="44" height="16" rx="8" fill="#7c3aed"/><text x="808" y="72" text-anchor="middle" class="gt">GenAI</text>
+  <text x="855" y="98" text-anchor="middle" class="t1">多語向量化</text>
+  <text x="855" y="116" text-anchor="middle" class="t2">Multilingual embedding</text>
+  <text x="855" y="131" text-anchor="middle" class="t2">chunking + BGE-M3</text>
+
+  <rect x="970" y="64" width="210" height="88" rx="10" class="db"/>
+  <text x="1075" y="96" text-anchor="middle" class="t1">正式知識庫</text>
+  <text x="1075" y="114" text-anchor="middle" class="t1">Production KB</text>
+  <text x="1075" y="134" text-anchor="middle" class="t2">vector DB + metadata</text>
+
+  <path d="M170 108 H206" class="ln" marker-end="url(#a)"/>
+  <path d="M360 108 H396" class="ln" marker-end="url(#a)"/>
+  <path d="M550 108 H586" class="ln" marker-end="url(#a)"/>
+  <path d="M740 108 H776" class="ln" marker-end="url(#a)"/>
+  <path d="M930 108 H966" class="ln" marker-end="url(#a)"/>
+  <text x="20" y="182" class="lbl">每日 Daily：最新消息、各處室公告 latest news &amp; office notices　｜　每週 Weekly：處室服務頁、宿舍、FAQ office pages, dorms　｜　每學期 Per semester：行事曆、規章、選課須知 calendar, regulations</text>
+  <text x="20" y="202" class="lbl">過期公告依 expiry date 自動降權 / 下架 — expired notices are down-weighted or removed automatically</text>
+
+  <!-- Lane B -->
+  <rect x="20" y="300" width="150" height="76" rx="10" class="usr"/>
+  <text x="95" y="330" text-anchor="middle" class="t1">外籍生 Student</text>
+  <text x="95" y="348" text-anchor="middle" class="t2">asks in any language</text>
+  <text x="95" y="363" text-anchor="middle" class="t2">on LINE</text>
+
+  <rect x="210" y="300" width="150" height="76" rx="10" class="bx"/>
+  <text x="285" y="330" text-anchor="middle" class="t1">LINE Messaging API</text>
+  <text x="285" y="348" text-anchor="middle" class="t2">webhook → FastAPI</text>
+  <text x="285" y="363" text-anchor="middle" class="t2">session memory</text>
+
+  <rect x="400" y="300" width="150" height="76" rx="10" class="gai"/>
+  <rect x="406" y="290" width="44" height="16" rx="8" fill="#7c3aed"/><text x="428" y="302" text-anchor="middle" class="gt">GenAI</text>
+  <text x="475" y="330" text-anchor="middle" class="t1">問題理解</text>
+  <text x="475" y="348" text-anchor="middle" class="t2">language detect,</text>
+  <text x="475" y="363" text-anchor="middle" class="t2">rewrite to zh + en</text>
+
+  <rect x="590" y="300" width="150" height="76" rx="10" class="bx"/>
+  <text x="665" y="330" text-anchor="middle" class="t1">混合檢索 + 重排</text>
+  <text x="665" y="348" text-anchor="middle" class="t2">Hybrid retrieval</text>
+  <text x="665" y="363" text-anchor="middle" class="t2">BM25 + vector, rerank</text>
+
+  <rect x="780" y="300" width="150" height="76" rx="10" class="gai"/>
+  <rect x="786" y="290" width="44" height="16" rx="8" fill="#7c3aed"/><text x="808" y="302" text-anchor="middle" class="gt">GenAI</text>
+  <text x="855" y="330" text-anchor="middle" class="t1">回答生成</text>
+  <text x="855" y="348" text-anchor="middle" class="t2">answer in user's language</text>
+  <text x="855" y="363" text-anchor="middle" class="t2">+ citations + date</text>
+
+  <rect x="970" y="300" width="150" height="76" rx="10" class="gai"/>
+  <rect x="976" y="290" width="44" height="16" rx="8" fill="#7c3aed"/><text x="998" y="302" text-anchor="middle" class="gt">GenAI</text>
+  <text x="1045" y="330" text-anchor="middle" class="t1">信心判斷</text>
+  <text x="1045" y="348" text-anchor="middle" class="t2">Confidence gate</text>
+  <text x="1045" y="363" text-anchor="middle" class="t2">grounded? enough?</text>
+
+  <path d="M170 338 H206" class="ln" marker-end="url(#a)"/>
+  <path d="M360 338 H396" class="ln" marker-end="url(#a)"/>
+  <path d="M550 338 H586" class="ln" marker-end="url(#a)"/>
+  <path d="M740 338 H776" class="ln" marker-end="url(#a)"/>
+  <path d="M930 338 H966" class="ln" marker-end="url(#a)"/>
+  <!-- retrieve from production -->
+  <path d="M1040 152 V232 H700 V296" class="ln" marker-end="url(#a)"/>
+  <text x="712" y="226" class="lbl">retrieve 檢索</text>
+  <!-- high-confidence reply -->
+  <path d="M1045 376 V424 H95 V380" fill="none" stroke="#04a346" stroke-width="2.2" marker-end="url(#ag)"/>
+  <text x="420" y="442" class="lbl" fill="#04a346" style="fill:#04a346;font-weight:700">✔ 高信心：以母語回覆並附官方連結 / High confidence: reply in user's language with source links</text>
+  <!-- low-confidence to ticket -->
+  <path d="M1120 338 H1160 V572 H1124" fill="none" stroke="#dc2626" stroke-width="2.2" marker-end="url(#ar)"/>
+  <text x="1166" y="460" class="lbl" style="fill:#dc2626;font-weight:700" transform="rotate(90 1166 460)">✘ 低信心 Low → Ticket</text>
+
+  <!-- Lane C row 1 (right to left) -->
+  <rect x="970" y="534" width="150" height="76" rx="10" class="bx"/>
+  <text x="1045" y="562" text-anchor="middle" class="t1">Ticket 佇列</text>
+  <text x="1045" y="580" text-anchor="middle" class="t2">dedupe similar questions,</text>
+  <text x="1045" y="595" text-anchor="middle" class="t2">priority = # askers</text>
+
+  <rect x="780" y="534" width="150" height="76" rx="10" class="gai"/>
+  <rect x="786" y="524" width="44" height="16" rx="8" fill="#7c3aed"/><text x="808" y="536" text-anchor="middle" class="gt">GenAI</text>
+  <text x="855" y="562" text-anchor="middle" class="t1">AI 研究代理</text>
+  <text x="855" y="580" text-anchor="middle" class="t2">Research agent: targeted</text>
+  <text x="855" y="595" text-anchor="middle" class="t2">search within cgu.edu.tw</text>
+
+  <rect x="590" y="534" width="150" height="76" rx="10" class="gai"/>
+  <rect x="596" y="524" width="44" height="16" rx="8" fill="#7c3aed"/><text x="618" y="536" text-anchor="middle" class="gt">GenAI</text>
+  <text x="665" y="562" text-anchor="middle" class="t1">正確性驗證</text>
+  <text x="665" y="580" text-anchor="middle" class="t2">LLM-as-a-Judge: source,</text>
+  <text x="665" y="595" text-anchor="middle" class="t2">date, consistency → score</text>
+
+  <rect x="400" y="534" width="150" height="76" rx="10" class="bx" stroke-dasharray="6 4"/>
+  <text x="475" y="562" text-anchor="middle" class="t1">人工審核</text>
+  <text x="475" y="580" text-anchor="middle" class="t2">Admin review (TA / team)</text>
+  <text x="475" y="595" text-anchor="middle" class="t2">high-risk or low score</text>
+
+  <rect x="210" y="528" width="150" height="88" rx="10" class="stg"/>
+  <text x="285" y="560" text-anchor="middle" class="t1">樣本知識庫</text>
+  <text x="285" y="578" text-anchor="middle" class="t1">Staging KB</text>
+  <text x="285" y="598" text-anchor="middle" class="t2">verified, not yet trusted</text>
+
+  <rect x="20" y="534" width="150" height="76" rx="10" class="usr"/>
+  <text x="95" y="562" text-anchor="middle" class="t1">主動推播答案</text>
+  <text x="95" y="580" text-anchor="middle" class="t2">LINE push message</text>
+  <text x="95" y="595" text-anchor="middle" class="t2">to everyone who asked</text>
+
+  <path d="M970 572 H934" class="ln" marker-end="url(#a)"/>
+  <path d="M780 572 H744" class="ln" marker-end="url(#a)"/>
+  <path d="M590 572 H554" class="ln" marker-end="url(#a)"/>
+  <path d="M400 572 H364" class="ln" marker-end="url(#a)"/>
+  <path d="M210 572 H174" class="ln" marker-end="url(#a)"/>
+  <path d="M640 534 V516 H400 V520" class="ln" stroke-dasharray="4 3"/>
+  <path d="M640 516 H300 V524" class="ln" stroke-dasharray="4 3" marker-end="url(#a)"/>
+  <text x="430" y="510" class="lbl">score ≥ 0.8 &amp; not high-risk → skip review</text>
+  <!-- staging also retrievable -->
+  <path d="M250 528 V476 H620 V380" fill="none" stroke="#b45309" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a)"/>
+  <text x="440" y="470" class="lbl" style="fill:#b45309">staging 也可被檢索（標示「待確認」）/ also retrievable, flagged "pending"</text>
+
+  <!-- Lane C row 2 -->
+  <rect x="20" y="660" width="150" height="80" rx="10" class="usr"/>
+  <text x="95" y="690" text-anchor="middle" class="t1">使用者回饋</text>
+  <text x="95" y="710" text-anchor="middle" class="t2">👍 / 👎 / comment</text>
+  <text x="95" y="726" text-anchor="middle" class="t2">or no response</text>
+  <path d="M95 610 V656" class="ln" marker-end="url(#a)"/>
+
+  <rect x="230" y="652" width="430" height="96" rx="10" class="bx"/>
+  <text x="246" y="676" class="t1">晉升規則 Promotion rules</text>
+  <text x="246" y="696" class="t2">👍 ≥ 1 且無 👎 → 晉升 promote</text>
+  <text x="246" y="713" class="t2">👎 或意見 → 重開 Ticket re-open with the comment</text>
+  <text x="246" y="730" class="t2">無回應 7 天 + 驗證分數 ≥ 0.8 + 官方來源 → 晉升；高風險類別需人工核可</text>
+  <path d="M170 700 H226" class="ln" marker-end="url(#a)"/>
+
+  <!-- re-open -->
+  <path d="M660 676 H1045 V614" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+  <text x="760" y="670" class="lbl" style="fill:#dc2626">👎 re-open 重開</text>
+  <!-- promote -->
+  <path d="M660 728 H1196 V108 H1184" fill="none" stroke="#04a346" stroke-width="2.2" marker-end="url(#ag)"/>
+  <text x="760" y="722" class="lbl" style="fill:#04a346;font-weight:700">promote → Production KB 晉升正式庫</text>
+</svg>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="background:#f3e8ff;border-color:#7c3aed"></i>GenAI <span class="zh">元件</span><span class="en">component</span></span>
+    <span><i class="sw" style="background:#dbeafe;border-color:#1d4ed8"></i>Production KB</span>
+    <span><i class="sw" style="background:#fef3c7;border-color:#b45309"></i>Staging KB</span>
+    <span><i class="sw" style="background:#dcfce7;border-color:#06c755"></i><span class="zh">使用者接觸點</span><span class="en">User touchpoint</span></span>
+    <span><i class="sw" style="background:#fff;border-color:#94a3b8;border-style:dashed"></i><span class="zh">人工（選擇性）</span><span class="en">Human (optional)</span></span>
+  </div>
+
+  <h3><span class="zh">GenAI 元件說明</span><span class="en">GenAI components</span></h3>
+  <table>
+    <tr><th>#</th><th><span class="zh">元件</span><span class="en">Component</span></th><th><span class="zh">做什麼</span><span class="en">What it does</span></th><th><span class="zh">候選模型／工具</span><span class="en">Candidate models / tools</span></th></tr>
+    <tr><td>G1</td><td><span class="tag">GenAI</span><span class="zh">LLM 清理與標註</span><span class="en">LLM cleaning &amp; tagging</span></td><td><span class="zh">把公告整理成摘要，抽出類別、對象、截止日、失效日</span><span class="en">Summarizes notices; extracts category, audience, deadline and expiry date</span></td><td>GPT-4o-mini / Gemini Flash / Llama 3</td></tr>
+    <tr><td>G2</td><td><span class="tag">GenAI</span><span class="zh">多語向量化</span><span class="en">Multilingual embedding</span></td><td><span class="zh">讓越南文的問題也能找到中文公告（跨語言檢索）</span><span class="en">Lets a Vietnamese question match a Chinese notice (cross-lingual retrieval)</span></td><td>BGE-M3, multilingual-e5, text-embedding-3</td></tr>
+    <tr><td>G3</td><td><span class="tag">GenAI</span><span class="zh">問題理解</span><span class="en">Query understanding</span></td><td><span class="zh">偵測語言、補全指代（「那個申請」）、改寫成中英檢索詞</span><span class="en">Detects language, resolves references ("that application"), rewrites into Chinese + English search queries</span></td><td><span class="zh">同 G1</span><span class="en">Same as G1</span></td></tr>
+    <tr><td>G4</td><td><span class="tag">GenAI</span><span class="zh">回答生成</span><span class="en">Answer generation</span></td><td><span class="zh">只根據檢索內容，以使用者語言回答，附來源與日期</span><span class="en">Answers only from retrieved context, in the user's language, with source and date</span></td><td>GPT-4o / Claude / Gemini</td></tr>
+    <tr><td>G5</td><td><span class="tag">GenAI</span><span class="zh">信心判斷</span><span class="en">Confidence gate</span></td><td><span class="zh">判斷答案是否有依據、資料是否過期，決定回覆或開 Ticket</span><span class="en">Checks grounding and staleness; decides between replying and opening a ticket</span></td><td><span class="zh">rerank 分數 + LLM 自評</span><span class="en">Rerank score + LLM self-check</span></td></tr>
+    <tr><td>G6</td><td><span class="tag">GenAI</span><span class="zh">AI 研究代理</span><span class="en">Research agent</span></td><td><span class="zh">針對 Ticket 到指定網站範圍搜尋、爬取、整理候選答案</span><span class="en">Searches and crawls within allowed domains to draft a candidate answer for a ticket</span></td><td>LangGraph / tool-calling agent</td></tr>
+    <tr><td>G7</td><td><span class="tag">GenAI</span>LLM-as-a-Judge</td><td><span class="zh">檢查來源是否官方、日期是否有效、答案與來源是否一致，輸出 0–1 分數</span><span class="en">Checks the source is official, the date is valid and the answer matches the source; outputs a 0–1 score</span></td><td><span class="zh">與 G4 不同的模型，避免自己評自己</span><span class="en">A different model from G4, to avoid self-grading</span></td></tr>
+    <tr><td>G8</td><td><span class="tag">GenAI</span><span class="zh">福祉模組（建議）</span><span class="en">Wellbeing module (suggested)</span></td><td><span class="zh">偵測壓力／孤單訊號，提供輔導中心與活動資訊</span><span class="en">Detects stress / loneliness cues; shares counseling and event information</span></td><td><span class="zh">LLM 分類 + 固定轉介模板</span><span class="en">LLM classifier + fixed referral template</span></td></tr>
+  </table>
+
+  <h3><span class="zh">技術堆疊</span><span class="en">Tech stack</span></h3>
+  <div class="grid g4">
+    <div class="card"><b><span class="zh">介面</span><span class="en">Interface</span></b><p class="small">LINE Messaging API, LINE Official Account, Flex Message (👍/👎 buttons)</p></div>
+    <div class="card"><b><span class="zh">後端</span><span class="en">Backend</span></b><p class="small">Python, FastAPI, LangChain / LlamaIndex, LangGraph</p></div>
+    <div class="card"><b><span class="zh">資料</span><span class="en">Data</span></b><p class="small">Scrapy / BeautifulSoup / Playwright, PyMuPDF, PostgreSQL + pgvector (or Qdrant)</p></div>
+    <div class="card"><b><span class="zh">部署與評估</span><span class="en">Deploy &amp; eval</span></b><p class="small">Docker, Cloud Run / Render, GitHub Actions cron, RAGAS, Streamlit admin dashboard</p></div>
+  </div>
+</section>
+
+<!-- 5. KB -->
+<section id="kb">
+  <div class="sec-n">05–06</div>
+  <h2><span class="zh">知識庫更新策略與 Ticket 生命週期</span><span class="en">Knowledge Update Policy &amp; Ticket Lifecycle</span></h2>
+  <table>
+    <tr><th><span class="zh">資料類型</span><span class="en">Data type</span></th><th><span class="zh">頻率</span><span class="en">Frequency</span></th><th><span class="zh">範例</span><span class="en">Examples</span></th></tr>
+    <tr><td><span class="zh">公告、最新消息</span><span class="en">Announcements, news</span></td><td><span class="zh">每天</span><span class="en">Daily</span></td><td><span class="zh">獎學金、活動、停課、宿舍申請</span><span class="en">Scholarships, events, class suspensions, dorm applications</span></td></tr>
+    <tr><td><span class="zh">處室服務頁面</span><span class="en">Office service pages</span></td><td><span class="zh">每週</span><span class="en">Weekly</span></td><td><span class="zh">國際處、註冊組、學務處、圖書館、健康中心</span><span class="en">International office, registry, student affairs, library, health center</span></td></tr>
+    <tr><td><span class="zh">規章、行事曆、選課須知</span><span class="en">Regulations, calendar, course rules</span></td><td><span class="zh">每學期</span><span class="en">Per semester</span></td><td><span class="zh">學則、畢業門檻、加退選時程</span><span class="en">Academic rules, graduation requirements, add/drop schedule</span></td></tr>
+    <tr><td><span class="zh">Ticket 補完的知識</span><span class="en">Ticket-sourced knowledge</span></td><td><span class="zh">依需求</span><span class="en">On demand</span></td><td><span class="zh">官網沒有寫清楚、但很多人問的問題</span><span class="en">Questions many students ask that the website doesn't answer clearly</span></td></tr>
+  </table>
+
+  <h3><span class="zh">Ticket 狀態流程</span><span class="en">Ticket states</span></h3>
+  <div class="flow">
+    <div class="st"><b>New</b><span class="zh">新建</span><span class="en">opened</span></div><span class="ar">→</span>
+    <div class="st"><b>Researching</b><span class="zh">AI 補資料</span><span class="en">agent search</span></div><span class="ar">→</span>
+    <div class="st"><b>Verifying</b><span class="zh">AI 驗證</span><span class="en">judge score</span></div><span class="ar">→</span>
+    <div class="st" style="border-style:dashed"><b>Review</b><span class="zh">人工（選擇性）</span><span class="en">human, optional</span></div><span class="ar">→</span>
+    <div class="st" style="background:#fef3c7"><b>Staged</b><span class="zh">樣本庫</span><span class="en">Staging KB</span></div><span class="ar">→</span>
+    <div class="st"><b>Answered</b><span class="zh">已推播</span><span class="en">pushed</span></div><span class="ar">→</span>
+    <div class="st" style="background:#dbeafe"><b>Promoted</b><span class="zh">正式庫</span><span class="en">Production KB</span></div>
+    <span class="ar">／</span>
+    <div class="st" style="background:#fee2e2"><b>Re-opened</b><span class="zh">被倒讚</span><span class="en">thumbs-down</span></div>
+  </div>
+
+  <h3><span class="zh">晉升規則（建議修正版）</span><span class="en">Promotion rules (recommended revision)</span></h3>
+  <div class="grid g3">
+    <div class="card"><b style="color:#04a346">👍 <span class="zh">有讚</span><span class="en">Thumbs-up</span></b><p><span class="zh">至少 1 個讚且沒有倒讚 → 晉升正式庫。</span><span class="en">At least one 👍 and no 👎 → promote to Production.</span></p></div>
+    <div class="card"><b style="color:#dc2626">👎 <span class="zh">倒讚</span><span class="en">Thumbs-down</span></b><p><span class="zh">附上使用者意見重開 Ticket，該條目暫停被檢索。</span><span class="en">Re-open the ticket with the user's comment and stop retrieving the entry.</span></p></div>
+    <div class="card"><b style="color:#b45309">⏳ <span class="zh">沒有回應</span><span class="en">No response</span></b><p><span class="zh">7 天後，<b>且</b>驗證分數 ≥ 0.8、<b>且</b>有官方來源連結 → 晉升。簽證、居留證、學費、獎學金、畢業等高風險類別一律需人工核可。</span><span class="en">After 7 days, <b>and</b> a judge score ≥ 0.8, <b>and</b> an official source link → promote. High-risk categories (visa, residence permit, tuition, scholarships, graduation) always need human approval.</span></p></div>
+  </div>
+  <p class="small"><span class="zh">為什麼要修正：沉默可能代表使用者沒看到，不代表答案正確；把「AI 驗證分數」與「來源可信度」加進來，可以在不增加太多人力的情況下控制錯誤擴散，這也是報告中可以討論的技術亮點。</span><span class="en">Why revise: silence may mean the user never read the reply, not that it was right. Adding the judge score and source credibility limits error propagation without much extra human effort — and it's a technical point worth discussing in the report.</span></p>
+</section>
+
+<!-- 7. STORYBOARD -->
+<section id="story">
+  <div class="sec-n">07</div>
+  <h2><span class="zh">使用情境分鏡</span><span class="en">Storyboard</span></h2>
+  <div class="grid g4 story">
+    <div class="frame"><div class="scr">
+      <div class="bub u">Hạn chót đăng ký ký túc xá học kỳ sau là khi nào?</div>
+      <div class="bub b">Hạn chót là 17:00 ngày 28/11 📅<br>Nguồn: Phòng Ký túc xá CGU (cập nhật 15/11)<br>🔗 cgu.edu.tw/…</div>
+    </div><div class="cap"><b><span class="zh">直接回答</span><span class="en">Instant answer</span></b><br><span class="zh">Linh 用越南文問宿舍申請截止日，Bot 以越南文回覆並附官網連結。</span><span class="en">Linh asks in Vietnamese about the dorm deadline; the bot answers in Vietnamese with the official link.</span></div></div>
+
+    <div class="frame"><div class="scr">
+      <div class="bub u">Can I bring my cat to the dorm?</div>
+      <div class="bub b">I couldn't find an official answer yet 🙏 I've opened a ticket and will message you once it's verified.</div>
+    </div><div class="cap"><b><span class="zh">誠實說不知道</span><span class="en">Honest "not yet"</span></b><br><span class="zh">官網沒有資料，Bot 不亂編，改開 Ticket。</span><span class="en">The website has no answer, so the bot opens a ticket instead of making one up.</span></div></div>
+
+    <div class="frame"><div class="scr">
+      <div class="bub b">📬 Update on your question: pets are not allowed in CGU dorms (Dorm Rules Art. 12).<br>🔗 source<br>Was this helpful? 👍 👎</div>
+      <div class="bub u">👍</div>
+    </div><div class="cap"><b><span class="zh">補完並推播</span><span class="en">Researched &amp; pushed</span></b><br><span class="zh">AI 代理找到宿舍規章，驗證通過後推播；使用者按讚。</span><span class="en">The agent finds the dorm rules, verification passes, the answer is pushed, and the user taps 👍.</span></div></div>
+
+    <div class="frame"><div class="scr">
+      <div class="bub u">Saya merasa sangat kesepian di sini…</div>
+      <div class="bub b">Terima kasih sudah bercerita 💛 Pusat Konseling CGU bisa membantu (gratis, ada layanan bahasa Inggris). Ada juga acara mahasiswa internasional Jumat ini.</div>
+    </div><div class="cap"><b><span class="zh">福祉轉介（建議）</span><span class="en">Wellbeing referral (suggested)</span></b><br><span class="zh">偵測到孤單訊號，以印尼文提供輔導中心與活動資訊。</span><span class="en">Detects loneliness and shares counseling and event info in Indonesian.</span></div></div>
+  </div>
+  <p class="small"><span class="zh">＊分鏡中的日期、條文編號與服務內容為示意，實作時以官網資料為準。</span><span class="en">* Dates, article numbers and service details in the storyboard are illustrative; the real bot uses official data.</span></p>
+</section>
+
+<!-- 8. EVAL -->
+<section id="eval">
+  <div class="sec-n">08 · Q6 <span class="zh">成果如何衡量</span><span class="en">How we'll measure results</span></div>
+  <h2><span class="zh">評估計畫</span><span class="en">Evaluation Plan</span></h2>
+  <p><span class="zh">建立 100–150 題測試集（來自問卷 + 組員整理），涵蓋中、英、越南文、印尼文等語言，每題標註正確答案與官方來源。</span><span class="en">Build a 100–150 question test set (from the survey and team curation) covering Chinese, English, Vietnamese, Indonesian and more, each labeled with the correct answer and official source.</span></p>
+  <table>
+    <tr><th><span class="zh">面向</span><span class="en">Aspect</span></th><th><span class="zh">指標</span><span class="en">Metric</span></th><th><span class="zh">目標（暫定）</span><span class="en">Target (tentative)</span></th></tr>
+    <tr><td><span class="zh">檢索</span><span class="en">Retrieval</span></td><td>Hit@5, MRR <span class="zh">（跨語言）</span><span class="en">(cross-lingual)</span></td><td>Hit@5 ≥ 0.85</td></tr>
+    <tr><td><span class="zh">回答品質</span><span class="en">Answer quality</span></td><td><span class="zh">正確率、Faithfulness（RAGAS）</span><span class="en">Accuracy, faithfulness (RAGAS)</span></td><td><span class="zh">正確率 ≥ 85%，Faithfulness ≥ 0.9</span><span class="en">Accuracy ≥ 85%, faithfulness ≥ 0.9</span></td></tr>
+    <tr><td><span class="zh">誠實度</span><span class="en">Honesty</span></td><td><span class="zh">對「官網無資料」題目的正確拒答率</span><span class="en">Correct "I don't know" rate on unanswerable questions</span></td><td>≥ 90%</td></tr>
+    <tr><td><span class="zh">驗證器</span><span class="en">Verifier</span></td><td><span class="zh">LLM-as-a-Judge 與人工標註的一致率</span><span class="en">Agreement between the judge and human labels</span></td><td>≥ 80%</td></tr>
+    <tr><td><span class="zh">Ticket 迴圈</span><span class="en">Ticket loop</span></td><td><span class="zh">平均解決時間、晉升後被倒讚比例</span><span class="en">Mean time to resolve; 👎 rate after promotion</span></td><td><span class="zh">&lt; 24 小時；&lt; 5%</span><span class="en">&lt; 24 h; &lt; 5%</span></td></tr>
+    <tr><td><span class="zh">使用者</span><span class="en">Users</span></td><td><span class="zh">讚比例、回應延遲、小規模試用滿意度</span><span class="en">👍 ratio, latency, pilot satisfaction</span></td><td><span class="zh">延遲 &lt; 5 秒</span><span class="en">Latency &lt; 5 s</span></td></tr>
+  </table>
+  <p class="small"><span class="zh">消融實驗（Ablation）：比較「純 LLM」vs「靜態 RAG」vs「RAG + Ticket 迴圈」，展示每個元件的貢獻，有助於 Technical Strengths 60% 的分數。</span><span class="en">Ablation: compare plain LLM vs static RAG vs RAG + ticket loop to show each component's contribution — this supports the 60% Technical Strengths score.</span></p>
+</section>
+
+<!-- 9. TIMELINE -->
+<section id="plan">
+  <div class="sec-n">09</div>
+  <h2><span class="zh">時程規劃（依課程時程）</span><span class="en">Timeline (aligned to course milestones)</span></h2>
+  <div class="tl">
+    <div class="it"><div class="d">11/16 · Proposal &amp; Storyboard</div><span class="zh">提案、架構圖、分鏡（本頁）。</span><span class="en">Proposal, architecture and storyboard (this page).</span></div>
+    <div class="it"><div class="d">11/17 – 11/2x · Sprint 1</div><span class="zh">問卷發放；爬蟲 + 知識庫 MVP；LINE Bot 串接；能回答公告類問題。</span><span class="en">Send survey; crawler + KB MVP; connect the LINE bot; answer announcement questions.</span></div>
+    <div class="it"><div class="d">11/2x · Progress Check (5 min + Q&amp;A)</div><span class="zh">展示 MVP demo、問卷初步結果、修訂版架構（Q4、Q5）。</span><span class="en">Show the MVP demo, early survey results and the revised architecture (Q4, Q5).</span></div>
+    <div class="it"><div class="d">12/01 – 12/10 · Sprint 2</div><span class="zh">Ticket 系統、AI 研究代理、LLM-as-a-Judge、Staging/Production 晉升、👍/👎 Flex Message。</span><span class="en">Ticket system, research agent, LLM-as-a-Judge, Staging/Production promotion, 👍/👎 Flex Message.</span></div>
+    <div class="it"><div class="d">12/11 – 12/18 · Sprint 3</div><span class="zh">測試集評估、消融實驗、小規模外籍生試用、管理後台、福祉模組。</span><span class="en">Test-set evaluation, ablation, small pilot with international students, admin dashboard, wellbeing module.</span></div>
+    <div class="it"><div class="d">12/21 · Final Presentation</div><span class="zh">現場多語 demo + 結果分析。</span><span class="en">Live multilingual demo + results analysis.</span></div>
+    <div class="it"><div class="d">12/25 · Project Report</div><span class="zh">依期末報告格式：成員貢獻、相關研究、技術細節（附程式碼連結）、結果、Demo、參考文獻、簡報 Q&amp;A 回覆。</span><span class="en">Per the final report guidelines: member contributions, related work, technical details (with code links), results, demo, references, answers to presentation questions.</span></div>
+  </div>
+</section>
+
+<!-- 10. TEAM -->
+<section id="team">
+  <div class="sec-n">10</div>
+  <h2><span class="zh">團隊與分工（請自行填寫）</span><span class="en">Team &amp; Roles (fill in)</span></h2>
+  <table>
+    <tr><th><span class="zh">姓名／學號</span><span class="en">Name / ID</span></th><th><span class="zh">角色</span><span class="en">Role</span></th><th><span class="zh">負責項目</span><span class="en">Responsibilities</span></th></tr>
+    <tr><td>—</td><td>PM &amp; Product</td><td><span class="zh">時程、問卷、分鏡、簡報與報告整合</span><span class="en">Schedule, survey, storyboard, slides and report</span></td></tr>
+    <tr><td>—</td><td>Data Engineer</td><td><span class="zh">爬蟲、排程、PDF 解析、知識庫</span><span class="en">Crawlers, scheduling, PDF parsing, knowledge base</span></td></tr>
+    <tr><td>—</td><td>GenAI / RAG Engineer</td><td><span class="zh">檢索、Prompt、回答生成、LLM-as-a-Judge、研究代理</span><span class="en">Retrieval, prompts, generation, LLM-as-a-Judge, research agent</span></td></tr>
+    <tr><td>—</td><td>Backend &amp; LINE</td><td><span class="zh">FastAPI、LINE 串接、Ticket 系統、部署</span><span class="en">FastAPI, LINE integration, ticket system, deployment</span></td></tr>
+    <tr><td>—</td><td>Evaluation &amp; Multilingual QA</td><td><span class="zh">測試集、多語測試（外籍組員）、評估與分析</span><span class="en">Test set, multilingual testing (international teammates), evaluation and analysis</span></td></tr>
+  </table>
+  <p class="small"><span class="zh">協作方式：GitHub（程式碼 + Issues）、LINE 群組溝通、每週一次站立會議；本頁可作為共用的提案文件。</span><span class="en">Collaboration: GitHub (code + issues), a LINE group for chat, a weekly stand-up; this page serves as the shared proposal document.</span></p>
+</section>
+
+<!-- 11. RISKS -->
+<section id="risk">
+  <div class="sec-n">11</div>
+  <h2><span class="zh">風險與倫理</span><span class="en">Risks &amp; Ethics</span></h2>
+  <div class="grid g2">
+    <div class="card"><h3><span class="zh">幻覺與錯誤資訊</span><span class="en">Hallucination &amp; misinformation</span></h3><p><span class="zh">只依檢索內容回答、強制附來源、信心不足就開 Ticket；高風險類別加註「以官方公告為準」並需人工核可。</span><span class="en">Answer only from retrieved context, always cite, open a ticket when unsure; high-risk categories carry a disclaimer and need human approval.</span></p></div>
+    <div class="card"><h3><span class="zh">隱私</span><span class="en">Privacy</span></h3><p><span class="zh">只保存 LINE userId 的雜湊值與問題文字；不蒐集姓名、學號；提供刪除紀錄的指令；福祉相關訊息不寫入知識庫。</span><span class="en">Store only a hashed LINE userId and question text; no names or student IDs; offer a delete-my-data command; wellbeing messages never enter the KB.</span></p></div>
+    <div class="card"><h3><span class="zh">爬蟲禮儀與著作權</span><span class="en">Crawler etiquette &amp; copyright</span></h3><p><span class="zh">遵守 robots.txt、限速、只爬公開頁面；回答時引用並導回原網頁；正式上線前可與國際處溝通合作。</span><span class="en">Respect robots.txt, rate-limit, crawl public pages only; cite and link back to the original page; talk to the international office before any real launch.</span></p></div>
+    <div class="card"><h3><span class="zh">心理健康界線</span><span class="en">Mental-health boundaries</span></h3><p><span class="zh">Bot 不提供診斷或諮商，只做資訊轉介；偵測到危機訊號時提供校內輔導與緊急求助資訊。</span><span class="en">The bot never diagnoses or counsels; it only refers. On crisis cues it shares campus counseling and emergency contacts.</span></p></div>
+    <div class="card"><h3><span class="zh">成本</span><span class="en">Cost</span></h3><p><span class="zh">日常問答用小模型、驗證用較強模型；快取常見問題；LINE 免費方案每月推播則數有限，推播僅用於 Ticket 結果。</span><span class="en">Small models for routine Q&amp;A, a stronger model for verification; cache frequent questions; LINE's free plan caps monthly push messages, so pushes are used only for ticket results.</span></p></div>
+    <div class="card"><h3><span class="zh">回饋被濫用</span><span class="en">Feedback abuse</span></h3><p><span class="zh">單一使用者的讚不足以讓高風險內容晉升；異常大量倒讚會觸發人工檢查。</span><span class="en">One user's 👍 cannot promote high-risk content; unusual bursts of 👎 trigger a human check.</span></p></div>
+  </div>
+</section>
+
+<!-- REFS -->
+<section id="refs">
+  <div class="sec-n">12</div>
+  <h2><span class="zh">參考資料</span><span class="en">References</span></h2>
+  <ol class="refs">
+    <li>ICEF Monitor (2026). <a href="https://monitor.icef.com/2026/08/taiwans-international-enrolment-up-by-17-in-2025-26/">Taiwan's international enrolment up by 17% in 2025/26</a>.</li>
+    <li>Study in Taiwan. <a href="https://www.studyintaiwan.org/why-taiwan/key-numbers/chart1">Key Numbers</a>.</li>
+    <li>Taiwan News (2025). <a href="https://www.taiwannews.com.tw/en/news/6185803">New Southbound students in Taiwan hit record high</a>.</li>
+    <li>Lewis, P. et al. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. NeurIPS. <a href="https://arxiv.org/abs/2005.11401">arXiv:2005.11401</a></li>
+    <li>Asai, A. et al. (2023). Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection. <a href="https://arxiv.org/abs/2310.11511">arXiv:2310.11511</a></li>
+    <li>Yan, S.-Q. et al. (2024). Corrective Retrieval Augmented Generation. <a href="https://arxiv.org/abs/2401.15884">arXiv:2401.15884</a></li>
+    <li>Chen, J. et al. (2024). BGE M3-Embedding: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings. <a href="https://arxiv.org/abs/2402.03216">arXiv:2402.03216</a></li>
+    <li>Zheng, L. et al. (2023). Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. <a href="https://arxiv.org/abs/2306.05685">arXiv:2306.05685</a></li>
+    <li>Es, S. et al. (2023). RAGAS: Automated Evaluation of Retrieval Augmented Generation. <a href="https://arxiv.org/abs/2309.15217">arXiv:2309.15217</a></li>
+    <li>LINE Developers. <a href="https://developers.line.biz/en/docs/messaging-api/">Messaging API documentation</a>.</li>
+    <li><span class="zh">課程投影片：</span><span class="en">Course slides: </span>Term Project, Generative Artificial Intelligence, Fall 2026 (AI for Good, SDGs, proposal templates, grading rubric).</li>
+  </ol>
+</section>
+
+</main>
+<footer><span class="zh">GenAI 期末專題提案 · 2026 秋季 · 本頁可分享給組員共同檢視</span><span class="en">GenAI Term Project Proposal · Fall 2026 · Share this page with your team</span></footer>
+
+<script>
+(function(){
+  var btns=document.querySelectorAll('.lang button');
+  function set(m){
+    document.body.className='m-'+m;
+    btns.forEach(function(b){b.classList.toggle('on',b.dataset.m===m)});
+    document.documentElement.lang = m==='en'?'en':'zh-Hant';
+    try{localStorage.setItem('cgu-lang',m)}catch(e){}
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){set(b.dataset.m)})});
+  try{var s=localStorage.getItem('cgu-lang'); if(s) set(s);}catch(e){}
+})();
+</script>
+<footer class="ls-foot" aria-label="Author and license">
+  <p class="zh"><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p class="en"><b>Author: <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> | Created with Claude's help; reviewed and shared by the author.</p>
+  <p class="zh">本頁是學生的課程專題提案，<b>不是長庚大學的官方服務或公告</b>；文中的功能尚在規劃階段，並非已上線的服務。</p>
+  <p class="en">This page is a student course-project proposal. <b>It is not an official Chang Gung University service or announcement</b>; the features described are planned, not a live service.</p>
+  <p class="zh">內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。課程投影片、引用的資料與來源，版權屬原作者，不在上述授權範圍內。</p>
+  <p class="en">Content is licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>: you may use, share and adapt it with credit to iamkylee@gmail.com and a link to <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>, and by noting any changes. Course slides, cited data and sources belong to their original authors and are not covered by this license.</p>
+  <p class="zh">需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p class="en">For citation or licensing questions, contact <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>. Corrections welcome via <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a>.</p>
+  <p><a href="../index.html"><span class="zh">← 回到「學習空間」目錄</span><span class="en">← Back to Learning Space</span></a></p>
+</footer>
+</body>
+</html>

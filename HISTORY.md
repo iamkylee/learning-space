@@ -1,5 +1,8 @@
 # HISTORY
 
+## v0.10.0 — 2026-11-17
+- 新增 Workshop 範例「長庚大小事 LINE Bot（CGU Campus Companion）」GenAI 期末專題提案（`notes/cgu-campus-linebot.html`，原頁已有中／英／雙語切換）；雙語目錄列與頁尾，並註明「學生課程提案，非長庚大學官方服務」；首頁 Workshop 區塊新增雙語卡片。
+
 ## v0.9.0 — 2026-11-12
 - 新增 Workshop 範例「設計思考雙鑽石學習手冊」（`notes/design-thinking.html`，原頁已有中英切換）；中英雙語目錄列與署名／授權頁尾（註明課堂簡報版權屬授課者）；首頁 Workshop 區塊新增雙語卡片。
 
