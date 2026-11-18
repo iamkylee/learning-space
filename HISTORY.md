@@ -1,5 +1,8 @@
 # HISTORY
 
+## v0.10.1 — 2026-11-18
+- GenAI 期末專題提案更新為新版「What's UP! 長庚大小事」：新增 UN SDGs 官方圖表（可展開）、RRF 參考文獻等；頁尾新增聯合國 SDG 圖示的使用說明（非商業說明性使用、未修改、不代表聯合國背書），並移除該圖的圓角以維持原樣；首頁卡片標題同步更新。
+
 ## v0.10.0 — 2026-11-17
 - 新增 Workshop 範例「長庚大小事 LINE Bot（CGU Campus Companion）」GenAI 期末專題提案（`notes/cgu-campus-linebot.html`，原頁已有中／英／雙語切換）；雙語目錄列與頁尾，並註明「學生課程提案，非長庚大學官方服務」；首頁 Workshop 區塊新增雙語卡片。
 
