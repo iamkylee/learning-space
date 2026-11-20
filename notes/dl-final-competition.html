@@ -1,0 +1,375 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>IDRiD 2026 Team Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column with a sticky top bar (nav + language switch); wide tables/code scroll in place. */
+:root{
+  --bg:#f5f7f9; --surface:#ffffff; --ink:#14212b; --muted:#566673; --line:#d9e1e7;
+  --accent:#0f6e74; --accent-soft:#e2f1f1; --code-bg:#0f1b24; --code-ink:#d8e6ee;
+  --g0:#2e8b57; --g1:#8db33a; --g2:#d4a017; --g3:#d9682b; --g4:#b8322a;
+  --warn-bg:#fff6e0; --warn-line:#e6b84a;
+  --f-display:"Space Grotesk","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Noto Sans TC",system-ui,-apple-system,"PingFang TC",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e161c; --surface:#15212a; --ink:#e3ebf0; --muted:#94a6b3; --line:#26353f;
+  --accent:#4cc3c3; --accent-soft:#163236; --code-bg:#091117; --code-ink:#d8e6ee;
+  --warn-bg:#2b2412; --warn-line:#8a6a1f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e161c; --surface:#15212a; --ink:#e3ebf0; --muted:#94a6b3; --line:#26353f;
+  --accent:#4cc3c3; --accent-soft:#163236; --code-bg:#091117; --code-ink:#d8e6ee;
+  --warn-bg:#2b2412; --warn-line:#8a6a1f; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65}
+html[data-lang="zh"] .en, html[data-lang="en"] .zh{display:none!important}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:16px;padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;white-space:nowrap}
+.brand b{color:var(--accent)}
+.nav{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.nav a{color:var(--muted);text-decoration:none;font-size:14px;padding:4px 8px;border-radius:6px;white-space:nowrap}
+.nav a:hover,.nav a:focus-visible{color:var(--ink);background:var(--accent-soft);outline:none}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.lang button{font:500 13px var(--f-body);border:0;background:transparent;color:var(--muted);padding:5px 12px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.lang button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+main{max-width:1040px;margin:0 auto;padding-block:32px 80px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:760px}
+header.hero{padding-block:12px 28px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--f-display);font-size:clamp(30px,5vw,44px);line-height:1.15;margin:8px 0 12px;text-wrap:balance}
+h2{font-family:var(--f-display);font-size:26px;line-height:1.25;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--f-display);font-size:18px;margin:24px 0 8px}
+p{margin:0 0 12px}
+.lede{font-size:18px;color:var(--muted);max-width:68ch}
+section{padding-block:40px;border-bottom:1px solid var(--line);scroll-margin-top:64px}
+section:last-of-type{border-bottom:0}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-ink);font:13px/1.6 var(--f-mono);padding:14px 16px;border-radius:8px;overflow-x:auto;margin:8px 0 16px}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.c{color:#7f97a6}
+
+/* severity scale */
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:20px 0 8px}
+.grade{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 10px 12px;border-top:4px solid var(--gc);min-width:0}
+.grade .n{font:700 22px var(--f-display);color:var(--gc)}
+.grade .k{font:500 11px var(--f-mono);color:var(--muted);word-break:break-all}
+.grade .t{font-size:14px;font-weight:600;line-height:1.3}
+@media (max-width:620px){.scale{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:20px 0}
+.fact{border-left:3px solid var(--accent);padding:2px 0 2px 12px}
+.fact .lbl{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fact .val{font-weight:600}
+
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:8px;padding:12px 14px;margin:16px 0}
+.note strong{display:block;margin-bottom:2px}
+.tip{background:var(--accent-soft);border-radius:8px;padding:12px 14px;margin:16px 0}
+
+.tbl{overflow-x:auto;margin:12px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num,th.num{text-align:right}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}
+.chart svg{display:block;width:100%;height:auto}
+.chart text{fill:var(--muted);font:12px var(--f-mono)}
+.chart .lab{fill:var(--ink);font:500 12px var(--f-mono)}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:16px 0}
+.step{flex:1 1 150px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.step .s{font:500 11px var(--f-mono);color:var(--accent)}
+.step .h{font-weight:600;line-height:1.3}
+.step .d{font-size:13px;color:var(--muted);line-height:1.45;margin-top:4px}
+
+ol.steps{padding-left:22px;margin:8px 0}
+ol.steps li{margin-bottom:8px}
+ul{padding-left:22px;margin:8px 0 12px}
+li{margin-bottom:4px}
+.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.idea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
+.idea .h{font-weight:600;margin-bottom:4px}
+.idea p{font-size:14px;color:var(--muted);margin:0}
+.pri{font:500 11px var(--f-mono);padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px;background:var(--accent-soft);color:var(--accent)}
+footer{color:var(--muted);font-size:13px;padding-top:24px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+<meta name="description" content="DL 期末競賽（IDRiD 糖尿病視網膜病變 5 類分級）團隊說明：目標、資料、基準程式、提交流程、常見錯誤與提升方向。學生整理，非官方公告。 Team briefing for the DL final competition (IDRiD diabetic retinopathy 5-grade classification): goal, data, baseline, submission, gotchas and ideas. Student summary, not official.">
+<meta name="author" content="iamkylee@gmail.com">
+<style id="ls-style">
+.ls-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 16px;font:500 13px/1.4 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);background:var(--surface2,var(--bg,#f4f5f8));border-bottom:1px solid var(--line,#d6dae3);color:var(--muted,#586174)}
+.ls-top a{color:var(--accent,#2640c4);text-decoration:none;font-weight:700}
+.ls-top a:hover,.ls-top a:focus-visible{text-decoration:underline}
+.ls-foot{max-width:960px;margin:40px auto 0;padding:20px 16px 36px;border-top:1px solid var(--line,#d6dae3);font:13px/1.8 var(--font-body,"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif);color:var(--muted,#586174)}
+.ls-foot p{margin:.3em 0}
+.ls-foot a{color:var(--accent,#2640c4)}
+.ls-links{list-style:none;padding:0;margin:12px 0;display:grid;gap:10px}
+.ls-links li{border:1px solid var(--line,#d6dae3);border-radius:10px;padding:12px 14px;background:var(--surface,transparent)}
+.ls-links a{font-weight:700}
+.ls-links small{display:block;margin-top:2px;color:var(--muted,#586174);line-height:1.6}
+</style>
+<style>.ls-top a,.ls-foot a{color:var(--accent,#2563eb)}.ls-foot{max-width:1000px}</style>
+</head><body>
+<div class="ls-top"><a href="../index.html"><span class="zh">← 學習空間</span><span class="en">← Learning Space</span></a><span><a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></span></div>
+<div class="bar"><div class="bar-in">
+  <div class="brand">IDRiD <b>2026</b></div>
+  <nav class="nav" aria-label="Sections">
+    <a href="#overview"><span class="zh">概要</span><span class="en">Overview</span></a>
+    <a href="#data"><span class="zh">資料集</span><span class="en">Data</span></a>
+    <a href="#pipeline"><span class="zh">程式流程</span><span class="en">Pipeline</span></a>
+    <a href="#submit"><span class="zh">提交與平台</span><span class="en">Submit</span></a>
+    <a href="#rules"><span class="zh">注意事項</span><span class="en">Gotchas</span></a>
+    <a href="#ideas"><span class="zh">改進方向</span><span class="en">Ideas</span></a>
+    <a href="#links"><span class="zh">連結</span><span class="en">Links</span></a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button id="btn-zh" type="button" data-set="zh" aria-pressed="true">中文</button>
+    <button id="btn-en" type="button" data-set="en" aria-pressed="false">EN</button>
+  </div>
+</div></div>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Deep Learning Architecture 2026 · Final Competition</div>
+  <h1><span class="zh">糖尿病視網膜病變分級競賽：團隊說明</span><span class="en">Diabetic Retinopathy Grading: Team Briefing</span></h1>
+  <p class="lede"><span class="zh">整理自課程簡報〈DL competition 2026〉與官方程式碼 competition2026。說明比賽目標、資料、基準程式如何運作、怎麼提交，以及我們可以從哪裡提升分數。</span><span class="en">A summary of the course slides “DL competition 2026” and the official competition2026 code: the goal, the data, how the baseline works, how to submit, and where we can gain score.</span></p>
+</header>
+
+<!-- ============ OVERVIEW ============ -->
+<section id="overview"><div class="col">
+  <h2><span class="zh">比賽在做什麼</span><span class="en">What the competition asks</span></h2>
+  <p><span class="zh">輸入一張視網膜眼底照片，模型要輸出 5 個糖尿病視網膜病變（DR）嚴重程度之一。這是一個 <b>5 類影像分類</b> 問題，評分指標是 <b>準確率（accuracy）</b>。</span><span class="en">Given one retinal fundus photo, the model outputs one of five diabetic retinopathy (DR) severity grades. It is a <b>5-class image classification</b> task scored by plain <b>accuracy</b>.</span></p>
+</div>
+  <div class="scale" aria-label="DR grades">
+    <div class="grade" style="--gc:var(--g0)"><div class="n">0</div><div class="t"><span class="zh">無病變</span><span class="en">No DR</span></div><div class="k">anoDR</div></div>
+    <div class="grade" style="--gc:var(--g1)"><div class="n">1</div><div class="t"><span class="zh">輕度</span><span class="en">Mild</span></div><div class="k">bmildDR</div></div>
+    <div class="grade" style="--gc:var(--g2)"><div class="n">2</div><div class="t"><span class="zh">中度</span><span class="en">Moderate</span></div><div class="k">cmoderateDR</div></div>
+    <div class="grade" style="--gc:var(--g3)"><div class="n">3</div><div class="t"><span class="zh">重度</span><span class="en">Severe</span></div><div class="k">dsevereDR</div></div>
+    <div class="grade" style="--gc:var(--g4)"><div class="n">4</div><div class="t"><span class="zh">增殖性</span><span class="en">Proliferative</span></div><div class="k">eproDR</div></div>
+  </div>
+<div class="col">
+  <p style="font-size:14px;color:var(--muted)"><span class="zh">資料夾名稱前面加了 a–e 字首，是為了讓字母排序剛好等於等級順序；實際的類別索引寫在 <code>class_to_idx.txt</code>。</span><span class="en">The a–e prefixes on folder names make alphabetical order match grade order; the actual class index is defined in <code>class_to_idx.txt</code>.</span></p>
+
+  <div class="facts">
+    <div class="fact"><div class="lbl"><span class="zh">難點</span><span class="en">Key challenge</span></div><div class="val"><span class="zh">病灶很小、資料少且不平衡</span><span class="en">Tiny lesions, small and imbalanced data</span></div></div>
+    <div class="fact"><div class="lbl"><span class="zh">提交物</span><span class="en">Deliverable</span></div><div class="val"><code>idrid_model.pth</code> (TorchScript)</div></div>
+    <div class="fact"><div class="lbl"><span class="zh">排名</span><span class="en">Ranking</span></div><div class="val"><span class="zh">上傳後自動評分，排行榜即時更新</span><span class="en">Auto-scored on upload, live leaderboard</span></div></div>
+    <div class="fact"><div class="lbl"><span class="zh">最終成績</span><span class="en">Final score</span></div><div class="val"><span class="zh">隱藏測試集（比賽當天公開）</span><span class="en">Hidden test set (released on competition day)</span></div></div>
+  </div>
+
+  <div class="note"><strong><span class="zh">簡報特別提醒</span><span class="en">The slides stress this</span></strong>
+  <span class="zh">訓練集只有 16 張「輕度」，但有 107 張「無病變」。模型可能整體準確率不錯，卻幾乎抓不到輕度病例。</span><span class="en">The training set has only 16 mild cases against 107 no-DR images. A model can post good overall accuracy while still missing almost every mild case.</span></div>
+</div></section>
+
+<!-- ============ DATA ============ -->
+<section id="data"><div class="col">
+  <h2><span class="zh">資料集</span><span class="en">The dataset</span></h2>
+  <p><span class="zh">資料來自 IDRiD（Indian Diabetic Retinopathy Image Dataset）。原始影像為 PNG、RGB，約 3400×3400 像素；基準程式縮成 512×512。資料已分成 <code>train</code> 與 <code>val</code>，每個等級一個子資料夾。</span><span class="en">Images come from IDRiD (Indian Diabetic Retinopathy Image Dataset): RGB PNGs of about 3400×3400 pixels, resized to 512×512 by the baseline. The data is pre-split into <code>train</code> and <code>val</code>, with one sub-folder per grade.</span></p>
+</div>
+
+  <div class="chart" role="img" aria-label="Images per grade: train 107,16,108,59,39; val 27,4,28,15,10">
+    <svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg">
+      <!-- scale: 0..120 images -> 0..160 px height, baseline y=190 -->
+      <g stroke="var(--line)" stroke-width="1">
+        <line x1="44" y1="190" x2="630" y2="190"/>
+        <line x1="44" y1="136.7" x2="630" y2="136.7" stroke-dasharray="3 4"/>
+        <line x1="44" y1="83.3" x2="630" y2="83.3" stroke-dasharray="3 4"/>
+        <line x1="44" y1="30" x2="630" y2="30" stroke-dasharray="3 4"/>
+      </g>
+      <text x="36" y="194" text-anchor="end">0</text>
+      <text x="36" y="140.7" text-anchor="end">40</text>
+      <text x="36" y="87.3" text-anchor="end">80</text>
+      <text x="36" y="34" text-anchor="end">120</text>
+      <!-- groups: centers at 104,222,340,458,576 ; train bar w=40 at c-42, val at c+2 -->
+      <g>
+        <rect x="62" y="47.3" width="40" height="142.7" rx="2" fill="var(--g0)"/>
+        <rect x="106" y="154" width="40" height="36" rx="2" fill="var(--g0)" fill-opacity=".45"/>
+        <text class="lab" x="82" y="41" text-anchor="middle">107</text><text class="lab" x="126" y="148" text-anchor="middle">27</text>
+        <text x="104" y="210" text-anchor="middle">anoDR</text>
+
+        <rect x="180" y="168.7" width="40" height="21.3" rx="2" fill="var(--g1)"/>
+        <rect x="224" y="184.7" width="40" height="5.3" rx="2" fill="var(--g1)" fill-opacity=".45"/>
+        <text class="lab" x="200" y="162" text-anchor="middle">16</text><text class="lab" x="244" y="178" text-anchor="middle">4</text>
+        <text x="222" y="210" text-anchor="middle">bmildDR</text>
+
+        <rect x="298" y="46" width="40" height="144" rx="2" fill="var(--g2)"/>
+        <rect x="342" y="152.7" width="40" height="37.3" rx="2" fill="var(--g2)" fill-opacity=".45"/>
+        <text class="lab" x="318" y="40" text-anchor="middle">108</text><text class="lab" x="362" y="146" text-anchor="middle">28</text>
+        <text x="340" y="210" text-anchor="middle">cmoderateDR</text>
+
+        <rect x="416" y="111.3" width="40" height="78.7" rx="2" fill="var(--g3)"/>
+        <rect x="460" y="170" width="40" height="20" rx="2" fill="var(--g3)" fill-opacity=".45"/>
+        <text class="lab" x="436" y="105" text-anchor="middle">59</text><text class="lab" x="480" y="164" text-anchor="middle">15</text>
+        <text x="458" y="210" text-anchor="middle">dsevereDR</text>
+
+        <rect x="534" y="138" width="40" height="52" rx="2" fill="var(--g4)"/>
+        <rect x="578" y="176.7" width="40" height="13.3" rx="2" fill="var(--g4)" fill-opacity=".45"/>
+        <text class="lab" x="554" y="132" text-anchor="middle">39</text><text class="lab" x="598" y="170" text-anchor="middle">10</text>
+        <text x="576" y="210" text-anchor="middle">eproDR</text>
+      </g>
+    </svg>
+    <div class="legend"><span><span class="dot" style="background:var(--muted)"></span><span class="zh">實色 = train（329 張）</span><span class="en">Solid = train (329 images)</span></span><span><span class="dot" style="background:var(--muted);opacity:.45"></span><span class="zh">淡色 = val（84 張）</span><span class="en">Faded = val (84 images)</span></span></div>
+  </div>
+
+<div class="col">
+  <div class="tbl"><table>
+    <thead><tr><th><span class="zh">資料夾</span><span class="en">Folder</span></th><th class="num"><span class="zh">等級</span><span class="en">Grade</span></th><th class="num">Train</th><th class="num">Val</th><th class="num"><span class="zh">佔 train 比例</span><span class="en">Share of train</span></th></tr></thead>
+    <tbody>
+      <tr><td><span class="dot" style="background:var(--g0)"></span>anoDR</td><td class="num">0</td><td class="num">107</td><td class="num">27</td><td class="num">32.5%</td></tr>
+      <tr><td><span class="dot" style="background:var(--g1)"></span>bmildDR</td><td class="num">1</td><td class="num">16</td><td class="num">4</td><td class="num">4.9%</td></tr>
+      <tr><td><span class="dot" style="background:var(--g2)"></span>cmoderateDR</td><td class="num">2</td><td class="num">108</td><td class="num">28</td><td class="num">32.8%</td></tr>
+      <tr><td><span class="dot" style="background:var(--g3)"></span>dsevereDR</td><td class="num">3</td><td class="num">59</td><td class="num">15</td><td class="num">17.9%</td></tr>
+      <tr><td><span class="dot" style="background:var(--g4)"></span>eproDR</td><td class="num">4</td><td class="num">39</td><td class="num">10</td><td class="num">11.9%</td></tr>
+      <tr><td><b><span class="zh">合計</span><span class="en">Total</span></b></td><td></td><td class="num"><b>329</b></td><td class="num"><b>84</b></td><td class="num">100%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="tip"><span class="zh"><b>基準線怎麼看：</b>如果模型永遠猜「中度」，val 準確率就有 28/84 ≈ <b>33.3%</b>。任何模型都至少要明顯超過這個數字才算有學到東西。簡報示範上傳的分數是 54.76%（= 46/84）。</span><span class="en"><b>Reading the baseline:</b> always guessing “moderate” already scores 28/84 ≈ <b>33.3%</b> on val, so a model has to clearly beat that to show it learned anything. The example upload in the slides scored 54.76% (= 46/84).</span></div>
+
+  <p><span class="zh"><b>取得資料：</b>Git 倉庫不含影像。在課程叢集上，<code>train.py</code> 直接讀共用路徑 <code>/mnt/groups/aid002-a3463-7ef7d056/competition_2026</code>；在其他電腦上要從簡報提供的 Google Drive 下載，並把 <code>data_dir</code> 改成本機路徑。<code>evaluate.py</code> 則固定讀取專案根目錄下的 <code>idrid_data/val/</code>。</span><span class="en"><b>Getting the data:</b> the git repo does not contain the images. On the course cluster, <code>train.py</code> reads the shared path <code>/mnt/groups/aid002-a3463-7ef7d056/competition_2026</code>. Elsewhere, download from the Google Drive folder in the slides and point <code>data_dir</code> at it. <code>evaluate.py</code> always reads <code>idrid_data/val/</code> under the project root.</span></p>
+</div></section>
+
+<!-- ============ PIPELINE ============ -->
+<section id="pipeline"><div class="col">
+  <h2><span class="zh">基準程式怎麼運作</span><span class="en">How the baseline works</span></h2>
+  <p><span class="zh">簡報第 4–10 頁逐段解說 <code>train.py</code> 與 <code>evaluate.py</code>。整個流程如下：</span><span class="en">Slides 4–10 walk through <code>train.py</code> and <code>evaluate.py</code> section by section. The whole flow:</span></p>
+</div>
+  <div class="flow">
+    <div class="step"><div class="s">train.py</div><div class="h"><span class="zh">選裝置</span><span class="en">Pick device</span></div><div class="d"><span class="zh">有 CUDA 用 GPU，否則 CPU</span><span class="en">CUDA GPU if available, else CPU</span></div></div>
+    <div class="step"><div class="s">train.py</div><div class="h"><span class="zh">前處理</span><span class="en">Transforms</span></div><div class="d"><span class="zh">縮放 512、翻轉、旋轉、色彩抖動、正規化</span><span class="en">Resize 512, flips, rotation, color jitter, normalize</span></div></div>
+    <div class="step"><div class="s">train.py</div><div class="h"><span class="zh">載入資料</span><span class="en">Load data</span></div><div class="d">ImageFolder + DataLoader, batch 16</div></div>
+    <div class="step"><div class="s">train.py</div><div class="h"><span class="zh">訓練 50 epoch</span><span class="en">Train 50 epochs</span></div><div class="d"><span class="zh">每個 epoch 後算 val 準確率，保留最佳</span><span class="en">Val accuracy after each epoch; keep the best</span></div></div>
+    <div class="step"><div class="s">train.py</div><div class="h"><span class="zh">匯出</span><span class="en">Export</span></div><div class="d">torch.jit.script → idrid_model.pth</div></div>
+    <div class="step"><div class="s">evaluate.py</div><div class="h"><span class="zh">評分</span><span class="en">Score</span></div><div class="d"><span class="zh">輸出 total / correct / accuracy</span><span class="en">Prints total / correct / accuracy JSON</span></div></div>
+  </div>
+<div class="col">
+  <h3><span class="zh">1. 前處理（Transforms）</span><span class="en">1. Pre-processing (transforms)</span></h3>
+  <p><span class="zh">訓練集用資料增強（隨機水平/垂直翻轉、±20° 旋轉、亮度與對比 ±0.2），讓模型看到更多變化；驗證/測試集只做縮放與正規化，保持結果穩定。正規化用的是 ImageNet 的平均值與標準差。</span><span class="en">The training set gets augmentation (random horizontal/vertical flips, ±20° rotation, ±0.2 brightness and contrast) for variety; val/test only resize and normalize so results are deterministic. Normalization uses ImageNet mean and std.</span></p>
+  <pre><code>transforms.Resize((512, 512))
+transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))</code></pre>
+
+  <h3><span class="zh">2. 模型結構</span><span class="en">2. Model</span></h3>
+  <p><span class="zh">一個從零訓練的小型 CNN：三個「Conv 3×3 → ReLU → MaxPool」區塊（通道 3→32→64→128），接著攤平後經過兩層全連接層輸出 5 類分數。</span><span class="en">A small CNN trained from scratch: three “Conv 3×3 → ReLU → MaxPool” blocks (channels 3→32→64→128), then flatten and two fully connected layers that output 5 class scores.</span></p>
+  <div class="tbl"><table>
+    <thead><tr><th><span class="zh">層</span><span class="en">Layer</span></th><th><span class="zh">輸出大小</span><span class="en">Output</span></th><th class="num"><span class="zh">參數量</span><span class="en">Params</span></th></tr></thead>
+    <tbody>
+      <tr><td>Conv 3→32 + Pool</td><td>32×256×256</td><td class="num">896</td></tr>
+      <tr><td>Conv 32→64 + Pool</td><td>64×128×128</td><td class="num">18,496</td></tr>
+      <tr><td>Conv 64→128 + Pool</td><td>128×64×64</td><td class="num">73,856</td></tr>
+      <tr><td>Flatten → Linear 524,288→128</td><td>128</td><td class="num"><b>67,108,992</b></td></tr>
+      <tr><td>Linear 128→5</td><td>5</td><td class="num">645</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><strong><span class="zh">觀察</span><span class="en">Observation</span></strong><span class="zh">全部約 6,720 萬個參數，其中 99.9% 在第一層全連接層。用 329 張圖訓練這麼大的全連接層非常容易過擬合，這是我們最容易改進的地方。</span><span class="en">About 67.2M parameters in total, 99.9% of them in the first fully connected layer. Training a layer that size on 329 images overfits easily, which makes it the most obvious thing to improve.</span></div>
+
+  <h3><span class="zh">3. 訓練與驗證</span><span class="en">3. Training and validation</span></h3>
+  <ul>
+    <li><span class="zh">損失函數 CrossEntropyLoss，優化器 SGD（lr = 0.01，無 momentum），50 個 epoch。</span><span class="en">CrossEntropyLoss, SGD optimizer (lr = 0.01, no momentum), 50 epochs.</span></li>
+    <li><span class="zh">每個 epoch：<code>model.train()</code> → 前向 → 反向傳播 → 更新權重；再 <code>model.eval()</code> + <code>torch.no_grad()</code> 計算 val 準確率。</span><span class="en">Each epoch: <code>model.train()</code> → forward → backward → step; then <code>model.eval()</code> + <code>torch.no_grad()</code> to compute val accuracy.</span></li>
+    <li><span class="zh">val 準確率創新高時，用 <code>copy.deepcopy</code> 保存權重；結束後載回最佳權重並匯出 TorchScript。</span><span class="en">When val accuracy hits a new best, the weights are saved with <code>copy.deepcopy</code>; at the end the best weights are reloaded and exported to TorchScript.</span></li>
+  </ul>
+
+  <h3><span class="zh">4. 評估</span><span class="en">4. Evaluation</span></h3>
+  <pre><code>python evaluate.py idrid_model.pth training   <span class="c"># val set → {"total":84,"correct":..,"accuracy":..}</span>
+python evaluate.py idrid_model.pth hidden     <span class="c"># hidden test set (graders only)</span></code></pre>
+  <p><span class="zh"><code>evaluate.py</code> 用 <code>torch.jit.load</code> 載入模型，所以 <b>不需要你的 Python 類別定義</b>，但模型必須能被 TorchScript 轉換。</span><span class="en"><code>evaluate.py</code> loads the model with <code>torch.jit.load</code>, so it <b>does not need your Python class</b>, but the model must be convertible to TorchScript.</span></p>
+</div></section>
+
+<!-- ============ SUBMIT ============ -->
+<section id="submit"><div class="col">
+  <h2><span class="zh">提交流程與 Kflow 平台</span><span class="en">Submitting and the Kflow platform</span></h2>
+  <p><span class="zh">課程提供 Kubeflow 平台（Kflow）上的 JupyterLab 與 NVIDIA GPU。簡報第 12–20 頁的步驟：</span><span class="en">The course provides JupyterLab with an NVIDIA GPU on a Kubeflow platform (Kflow). Steps from slides 12–20:</span></p>
+  <ol class="steps">
+    <li><span class="zh">登入 <a href="https://kflow2.cgu.edu.tw/" target="_blank" rel="noopener">kflow2.cgu.edu.tw</a>。帳號與初始密碼依課程公告，第一次登入後請立即更改密碼。</span><span class="en">Log in at <a href="https://kflow2.cgu.edu.tw/" target="_blank" rel="noopener">kflow2.cgu.edu.tw</a>. Use the account and initial password announced by the course, and change the password right after your first login.</span></li>
+    <li><span class="zh">Notebooks → 建立 Notebook：名稱全小寫、無特殊字元；CPU ≥ 8、記憶體 ≥ 16 GB、GPU 1 張（NVIDIA）。</span><span class="en">Notebooks → New notebook: name in lowercase with no special characters; CPU ≥ 8, memory ≥ 16 GB, 1 GPU (NVIDIA).</span></li>
+    <li><span class="zh">開啟 Notebook，選擇 <b>Terminal</b>。</span><span class="en">Open the notebook server and choose <b>Terminal</b>.</span></li>
+    <li><span class="zh">在終端機執行：</span><span class="en">In the terminal run:</span>
+<pre><code>git clone https://github.com/kantippayamontri/competition2026.git
+cd competition2026/
+bash install.sh   <span class="c"># creates .venv and the "Python (IDRiD 2026)" kernel</span></code></pre></li>
+    <li><span class="zh">打開 <code>train.ipynb</code>，核心選 <b>Python (IDRiD 2026)</b>。第一格確認裝置是 <code>cuda</code>，第二格 <code>%run train.py</code> 開始訓練。</span><span class="en">Open <code>train.ipynb</code> and select the <b>Python (IDRiD 2026)</b> kernel. Cell 1 checks the device is <code>cuda</code>; cell 2 runs <code>%run train.py</code>.</span></li>
+    <li><span class="zh">Competition → IDRiD 2026 → SUBMISSION：上傳 <code>idrid_model.pth</code>，馬上顯示分數；LEADER BOARD 看排名。</span><span class="en">Competition → IDRiD 2026 → SUBMISSION: upload <code>idrid_model.pth</code> and the score appears; check rank on LEADER BOARD.</span></li>
+  </ol>
+  <div class="note"><strong><span class="zh">分數的意義會改變</span><span class="en">What the score means changes</span></strong><span class="zh">比賽日之前，排行榜分數是用 <b>val 集</b>算的（我們看得到的那 84 張）；測試集在比賽當天公開，最終成績以隱藏測試集為準。所以不要把 val 分數調得太「剛好」，那可能只是過擬合 84 張圖。</span><span class="en">Before competition day the leaderboard is scored on the <b>val set</b> (the 84 images we already have). The test set is released on the day and the final ranking uses it. Don't over-tune to val: a perfect val score may just mean overfitting 84 images.</span></div>
+  <p style="font-size:14px;color:var(--muted)"><span class="zh">備註：本資料夾內的 <code>competition2026-main.zip</code> 是較舊的版本，沒有 <code>install.sh</code> 與 <code>train.ipynb</code>；GitHub 上的最新版有。<code>train.py</code> 與 <code>evaluate.py</code> 兩版內容相同。</span><span class="en">Note: the <code>competition2026-main.zip</code> in our folder is an older snapshot without <code>install.sh</code> and <code>train.ipynb</code>; the current GitHub version has them. <code>train.py</code> and <code>evaluate.py</code> are identical in both.</span></p>
+</div></section>
+
+<!-- ============ RULES ============ -->
+<section id="rules"><div class="col">
+  <h2><span class="zh">容易出錯的地方</span><span class="en">Gotchas</span></h2>
+  <ul>
+    <li><span class="zh"><b>輸入格式被評分程式固定。</b><code>evaluate.py</code> 會把圖縮到 512×512 並用 ImageNet 正規化後才餵給模型。若想用其他解析度（例如 384 或 768），最安全的做法是把 <code>F.interpolate</code> 寫進模型的 <code>forward</code> 裡，而不是改 evaluate.py。</span><span class="en"><b>The grader fixes the input.</b> <code>evaluate.py</code> resizes to 512×512 and applies ImageNet normalization before calling the model. To use another resolution (say 384 or 768), the safe route is an <code>F.interpolate</code> inside the model’s <code>forward</code>, not editing evaluate.py.</span></li>
+    <li><span class="zh"><b>必須能 <code>torch.jit.script</code>。</b>torchvision 內建模型（ResNet、EfficientNet、ConvNeXt 等）都可以；自己寫的模型避免動態 Python 型別或不支援的語法。匯出前請先在本機跑一次 <code>evaluate.py</code>。</span><span class="en"><b>It must pass <code>torch.jit.script</code>.</b> torchvision models (ResNet, EfficientNet, ConvNeXt …) work; for custom code avoid dynamic Python typing and unsupported syntax. Run <code>evaluate.py</code> locally before uploading.</span></li>
+    <li><span class="zh"><b>匯出時移到 CPU。</b>基準程式用 <code>model.to("cpu")</code> 再 script，評分端才能在任何裝置上載入。</span><span class="en"><b>Export on CPU.</b> The baseline calls <code>model.to("cpu")</code> before scripting so the grader can load it on any device.</span></li>
+    <li><span class="zh"><b>輸出要是 5 個 logits。</b>評分用 <code>torch.max(outputs, 1)</code> 取類別，所以 forward 只能回傳形狀 [B, 5] 的張量，索引順序依 <code>class_to_idx.txt</code>。</span><span class="en"><b>Return 5 logits.</b> The grader takes <code>torch.max(outputs, 1)</code>, so forward must return a [B, 5] tensor in <code>class_to_idx.txt</code> order.</span></li>
+    <li><span class="zh"><b>val 只有 84 張。</b>1 張圖 ≈ 1.19 個百分點，分數波動很大；比較模型時可以用多個 seed 或交叉驗證。</span><span class="en"><b>Val is only 84 images.</b> One image ≈ 1.19 percentage points, so scores are noisy; compare models over several seeds or with cross-validation.</span></li>
+  </ul>
+</div></section>
+
+<!-- ============ IDEAS ============ -->
+<section id="ideas"><div class="col">
+  <h2><span class="zh">可以從哪裡提升分數</span><span class="en">Where to gain score</span></h2>
+  <p><span class="zh">依預期效果大致排序。這些是建議起點，需要實驗驗證。</span><span class="en">Roughly ordered by expected payoff. These are starting points to test, not guarantees.</span></p>
+</div>
+  <div class="ideas">
+    <div class="idea"><div class="h"><span class="zh">使用預訓練模型</span><span class="en">Use a pretrained backbone</span><span class="pri">high</span></div><p><span class="zh">torchvision 的 ResNet / EfficientNet / ConvNeXt 用 ImageNet 權重做遷移學習，通常比從零訓練好很多，而且輸入正規化剛好與評分程式一致。</span><span class="en">Fine-tune torchvision ResNet / EfficientNet / ConvNeXt with ImageNet weights. Usually far better than training from scratch, and the input normalization already matches the grader.</span></p></div>
+    <div class="idea"><div class="h"><span class="zh">處理類別不平衡</span><span class="en">Handle class imbalance</span><span class="pri">high</span></div><p><span class="zh">類別加權的 CrossEntropy、WeightedRandomSampler 或 focal loss，讓輕度病例不被忽略。</span><span class="en">Class-weighted CrossEntropy, a WeightedRandomSampler, or focal loss so mild cases are not ignored.</span></p></div>
+    <div class="idea"><div class="h"><span class="zh">更好的優化設定</span><span class="en">Better optimization</span><span class="pri">high</span></div><p><span class="zh">AdamW + cosine 學習率排程 + warmup；搭配 early stopping 或保留最佳權重。</span><span class="en">AdamW with a cosine schedule and warmup; keep early stopping or best-weight saving.</span></p></div>
+    <div class="idea"><div class="h"><span class="zh">眼底影像專用前處理</span><span class="en">Fundus-specific preprocessing</span><span class="pri">mid</span></div><p><span class="zh">裁掉黑邊、調整對比；但評分端只做 resize + normalize，所以任何前處理都要放進模型 forward 或只用在訓練增強。</span><span class="en">Crop black borders, boost contrast. The grader only resizes and normalizes, so any preprocessing must live inside forward or be used only as training augmentation.</span></p></div>
+    <div class="idea"><div class="h"><span class="zh">利用等級的順序性</span><span class="en">Use the ordinal labels</span><span class="pri">mid</span></div><p><span class="zh">等級 0–4 有順序，可試 label smoothing、回歸頭再四捨五入，或順序型損失；輸出仍需轉成 5 個分數。</span><span class="en">Grades 0–4 are ordered: try label smoothing, a regression head with rounding, or an ordinal loss. Output must still be 5 scores.</span></p></div>
+    <div class="idea"><div class="h"><span class="zh">集成與 TTA</span><span class="en">Ensembles and TTA</span><span class="pri">mid</span></div><p><span class="zh">把多個模型或翻轉後的預測平均，包成一個 TorchScript 模組就能直接提交。</span><span class="en">Average several models or flipped predictions and wrap them in one TorchScript module to submit.</span></p></div>
+    <div class="idea"><div class="h"><span class="zh">最後用 train + val 一起訓練</span><span class="en">Final fit on train + val</span><span class="pri">low</span></div><p><span class="zh">設定定案後，用全部 413 張重訓一次，再提交給測試集。</span><span class="en">Once settings are fixed, retrain on all 413 images before the test-set submission.</span></p></div>
+  </div>
+</section>
+
+<!-- ============ LINKS ============ -->
+<section id="links"><div class="col">
+  <h2><span class="zh">連結</span><span class="en">Links</span></h2>
+  <ul>
+    <li><span class="zh">程式碼</span><span class="en">Code</span>: <a href="https://github.com/kantippayamontri/competition2026" target="_blank" rel="noopener">github.com/kantippayamontri/competition2026</a></li>
+    <li><span class="zh">資料集</span><span class="en">Dataset</span>: <span class="zh">由課程提供，請見課程公告（本頁不放下載連結）</span><span class="en">provided by the course; see the course announcement (no download link on this page)</span></li>
+    <li><span class="zh">Kflow 平台</span><span class="en">Kflow platform</span>: <a href="https://kflow2.cgu.edu.tw/" target="_blank" rel="noopener">kflow2.cgu.edu.tw</a></li>
+  </ul>
+  <footer><span class="zh">來源：課程簡報〈DL competition 2026〉（20 頁）與 competition2026 官方程式碼。參數量依 train.py 的模型定義計算。</span><span class="en">Sources: course slides “DL competition 2026” (20 pages) and the official competition2026 code. Parameter counts computed from the model in train.py.</span></footer>
+</div></section>
+</main>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  function set(l){
+    root.setAttribute('data-lang',l); root.lang = l==='zh' ? 'zh-Hant' : 'en';
+    document.querySelectorAll('.lang button').forEach(function(b){b.setAttribute('aria-pressed', String(b.dataset.set===l));});
+    try{localStorage.setItem('idrid-lang',l);}catch(e){}
+  }
+  var saved=null; try{saved=localStorage.getItem('idrid-lang');}catch(e){}
+  set(saved==='en'||saved==='zh'?saved:'zh');
+  document.querySelectorAll('.lang button').forEach(function(b){b.addEventListener('click',function(){set(b.dataset.set);});});
+})();
+</script>
+
+<footer class="ls-foot" aria-label="Author and license">
+  <p class="zh"><b>作者：<a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> ｜ 由 Claude 協助產生分享，作者審閱分享。</p>
+  <p class="en"><b>Author: <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a></b> | Created with Claude's help; reviewed and shared by the author.</p>
+  <p class="zh">本頁是學生整理的課程競賽說明，<b>不是課程或長庚大學的官方公告</b>；請以課程公告與官方程式碼為準。</p>
+  <p class="en">This page is a student's summary of a course competition. <b>It is not an official announcement of the course or Chang Gung University</b>; the course announcements and official code take precedence.</p>
+  <p class="zh">內容採 <a href="https://creativecommons.org/licenses/by/4.0/deed.zh-hant" target="_blank" rel="noopener">CC BY 4.0</a> 授權：歡迎使用、轉載與改作，請標示作者 iamkylee@gmail.com 並附上出處連結 <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>，若有修改請註明。課程簡報、官方程式碼與資料集，版權或授權屬原作者，不在上述授權範圍內。</p>
+  <p class="en">Content is licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>: you may use, share and adapt it with credit to iamkylee@gmail.com and a link to <a href="https://iamkylee.github.io/learning-space/">https://iamkylee.github.io/learning-space/</a>, and by noting any changes. Course slides, the official code and the dataset belong to their original authors and are not covered by this license.</p>
+  <p class="zh">需要引用或授權相關問題，請聯絡 <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>。發現錯誤歡迎到 <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a> 回報。</p>
+  <p class="en">For citation or licensing questions, contact <a href="mailto:iamkylee@gmail.com">iamkylee@gmail.com</a>. Corrections welcome via <a href="https://github.com/iamkylee/learning-space/issues" target="_blank" rel="noopener">GitHub Issues</a>.</p>
+  <p><a href="../index.html"><span class="zh">← 回到「學習空間」目錄</span><span class="en">← Back to Learning Space</span></a></p>
+</footer>
+</body></html>
